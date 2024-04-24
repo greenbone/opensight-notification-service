@@ -1,0 +1,15 @@
+name: Hygiene
+
+on: [push, pull_request]
+
+jobs:
+  format-vet-staticcheck:
+    name: Check for common mistakes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: test $(gofmt -l ./.. | wc -l) == 0 || (printf "Formatting issue; please run go fmt ./..\n" && exit 1)
+      - run: go vet ./... 
+      - run: go install honnef.co/go/tools/cmd/staticcheck
+      - run: ~/go/bin/staticcheck ./...
