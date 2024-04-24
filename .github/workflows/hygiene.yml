@@ -7,8 +7,8 @@ jobs:
     name: Check for common mistakes
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
       - run: test $(gofmt -l ./.. | wc -l) == 0 || (printf "Formatting issue; please run go fmt ./..\n" && exit 1)
       - run: go vet ./... 
       - run: go install honnef.co/go/tools/cmd/staticcheck
