@@ -1,0 +1,41 @@
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+info:
+  contact: {}
+  description: HTTP API for live probes
+  license:
+    name: AGPL-3.0-or-later
+  title: Health API
+  version: "1.0"
+paths:
+  /health/alive:
+    get:
+      description: Endpoint for 'alive' health probes
+      responses:
+        "200":
+          description: Alive
+      summary: Service health status Alive
+      tags:
+      - health
+  /health/ready:
+    get:
+      description: Indicates if the service is ready to serve traffic
+      responses:
+        "200":
+          description: Ready
+        "404":
+          description: Not ready
+      summary: Service health status Ready
+      tags:
+      - health
+  /health/started:
+    get:
+      description: Endpoint for 'started' health probes
+      responses:
+        "200":
+          description: Started
+      summary: Service health status Started
+      tags:
+      - health
+swagger: "2.0"
