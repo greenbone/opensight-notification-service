@@ -1,3 +1,3 @@
-module github.com/greenbone/go-project-template
+module github.com/greenbone/opensight-notification-service
 
-go 1.18
+go 1.22.2
