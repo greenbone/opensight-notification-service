@@ -1,0 +1,29 @@
+name: Release
+# with pontos
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      release-type:
+        type: choice
+        description: What kind of release do you want to do (pontos --release-type argument)?
+        options:
+          - alpha
+          - patch
+          - minor
+          - major
+          - release-candidate
+      release-version:
+        type: string
+        description: Set an explicit version, that will overwrite release-type. Fails if version is not compliant.
+
+jobs:
+  release:
+    name: OpenSight Notification Service
+    uses: greenbone/workflows/.github/workflows/release-3rd-gen.yml@main
+    with:
+      release-type: ${{ inputs.release-type }}
+      release-version: ${{ inputs.release-version }}
+    secrets: inherit

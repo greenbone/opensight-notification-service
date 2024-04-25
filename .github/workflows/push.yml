@@ -1,0 +1,26 @@
+name: Build and Push Container and Helm Chart
+
+on:
+  push:
+    branches: [ main ]
+    tags: ["v*"]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  building:
+    name: Vulnerability Intelligence Backend
+    uses: greenbone/workflows/.github/workflows/helm-container-build-push-3rd-gen.yml@main
+    with:
+      # helm-chart: opensight-notification-service # TODO: reference relevant helm chart as soon as it exists
+      image-url: ${{ github.repository }}
+      image-labels: |
+        org.opencontainers.image.vendor=Greenbone
+        org.opencontainers.image.base.name=busybox
+    secrets: inherit
