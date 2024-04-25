@@ -1,0 +1,22 @@
+# only to be used in combination with `docker-compose.yml`
+
+# version: '3' # uncomment for compatibility with old docker compose versions
+
+services:
+  notification-service:
+    build: . # replace this line with `image: ghcr.io/greenbone/notification-service:<desired vibd docker image>` if you want to use an already built image instead of building one from the active working directory
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: $DB_PASSWORD
+      DB_NAME: notification_service
+      DB_SSL_MODE: disable
+      LOG_LEVEL: debug
+    ports:
+      - 8085:8085
+    networks:
+      - notification-service-net
+    depends_on: 
+      postgres:
+        condition: service_healthy

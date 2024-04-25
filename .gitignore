@@ -16,3 +16,6 @@
 
 # common editors config files
 .vscode
+
+# docker compose env file, might be used to store secrets -> must not be comitted
+.env
