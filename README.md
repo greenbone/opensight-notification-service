@@ -23,7 +23,7 @@ Backend services can send notifications via the `Create Notification` endpoint. 
 
 ## Requirements
 
-To run the service and its dependencies on you local machine you need a working installation of [docker](https://docs.docker.com/engine/install/) and `make`.
+To run the service and its dependencies on your local machine you need a working installation of [docker](https://docs.docker.com/engine/install/) and `make`.
 
 For running the Notification Service outside of docker the latest version of [go](https://go.dev/doc/install) must be installed.
 

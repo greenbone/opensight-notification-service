@@ -1,6 +1,6 @@
 # only intended to be used for the local setup
 
-# volues for which we don't have a default
+# values for which we don't have a default
 export DB_USERNAME=postgres
 export DB_NAME=notification_service
 export DB_SSL_MODE=disable
