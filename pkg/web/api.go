@@ -23,6 +23,13 @@ import (
 //	@externalDocs.description	OpenAPI
 //	@externalDocs.url			https://swagger.io/resources/open-api/
 
+const (
+	// APIVersion is the current version of the web API
+	APIVersion = "1.0"
+)
+
+const APIVersionKey = "api-version"
+
 func RegisterSwaggerDocsRoute(docsRouter gin.IRouter) {
 	apiDocsHandler := swagger.GetApiDocsHandler(docs.SwaggerInfonotificationservice)
 	docsRouter.GET("/notification-service/*any", apiDocsHandler)
