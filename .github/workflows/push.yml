@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   building:
-    name: Vulnerability Intelligence Backend
+    name: OpenSight Notification Service
     uses: greenbone/workflows/.github/workflows/helm-container-build-push-3rd-gen.yml@main
     with:
       # helm-chart: opensight-notification-service # TODO: reference relevant helm chart as soon as it exists
