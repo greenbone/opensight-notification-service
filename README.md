@@ -17,7 +17,7 @@ The Notification Service allows to display all notifications in a central place 
 
 ## Usage
 
-The Notification Service is intended to be deployed along the others openSight services on the appliance. The service provides a REST API. See the [OpenApi definition](../api/notification-service/notificationService_swagger.yaml) for details. You can view them e.g. in the [Swagger Editor](https://editor.swagger.io/).
+The Notification Service is intended to be deployed along the others openSight services on the appliance. The service provides a REST API. See the [OpenApi definition](api/notificationservice/notificationservice_swagger.yaml) for details. You can view them e.g. in the [Swagger Editor](https://editor.swagger.io/).
 
 Backend services can send notifications via the `Create Notification` endpoint. Those notifications can then be retrieved via `List Notifications` to provide them to the user.
 
