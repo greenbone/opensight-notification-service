@@ -21,9 +21,15 @@ COPY pkg/web pkg/web
 COPY pkg/models pkg/models
 RUN make api-docs
 
-# copy rest of the source files and build
+# copy rest of the source files
 COPY cmd cmd
 COPY pkg pkg
+
+# (re)generate mocks
+COPY .mockery.yaml .mockery.yaml
+RUN make generate-code
+
+# test and build
 RUN make test
 RUN make build
 

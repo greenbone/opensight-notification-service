@@ -1,0 +1,10 @@
+with-expecter: true
+dir: "{{.InterfaceDir}}/mocks"
+outpkg: "mocks"
+mockname: "{{.InterfaceName}}"
+filename: "{{.InterfaceNameSnake}}.go"
+
+packages:
+  github.com/greenbone/opensight-notification-service/pkg/port:
+    interfaces:
+      NotificationService:

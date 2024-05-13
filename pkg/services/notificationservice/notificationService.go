@@ -21,9 +21,9 @@ func NewNotificationService(store port.NotificationRepository) *NotificationServ
 }
 
 func (s *NotificationService) ListNotifications(ctx context.Context, resultSelector query.ResultSelector) (notifications []models.Notification, totalResult uint64, err error) {
-	return
+	return s.store.ListNotifications(ctx, resultSelector)
 }
 
 func (s *NotificationService) CreateNotification(ctx context.Context, notificationIn models.Notification) (notification models.Notification, err error) {
-	return
+	return s.store.CreateNotification(ctx, notificationIn)
 }

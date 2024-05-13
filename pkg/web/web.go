@@ -11,6 +11,6 @@ import (
 
 func NewWebEngine() *gin.Engine {
 	ginWebEngine := gin.New()
-	ginWebEngine.Use(logger.SetLogger(), gin.Recovery())
+	ginWebEngine.Use(logger.SetLogger(), gin.Recovery(), getCors())
 	return ginWebEngine
 }

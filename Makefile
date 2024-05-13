@@ -1,6 +1,7 @@
 all: api-docs build test
 
 SWAG = github.com/swaggo/swag/cmd/swag@v1.16.2
+MOCKERY = github.com/vektra/mockery/v2@v2.40.2
 GOLANGCI-LINT = github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 .PHONY: lint
@@ -10,6 +11,11 @@ lint:
 .PHONY: install-code-generation-tools
 install-code-generation-tools:
 	go install $(SWAG)
+	go install $(MOCKERY)
+
+.PHONY: generate-code
+generate-code: # create mocks
+	go run $(MOCKERY)
 
 .PHONY: api-docs
 api-docs:
