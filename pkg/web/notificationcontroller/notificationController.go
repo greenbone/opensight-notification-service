@@ -5,8 +5,11 @@
 package notificationcontroller
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
@@ -124,11 +127,25 @@ func (c *NotificationController) GetOptions(gc *gin.Context) {
 	gc.JSON(http.StatusOK, query.ResponseWithMetadata[[]query.FilterOption]{Data: permittedFilters})
 }
 
-func parseAndValidateNotification(gc *gin.Context) (notification models.Notification, err error) { // TODO: refine
+func parseAndValidateNotification(gc *gin.Context) (notification models.Notification, err error) {
 	var empty models.Notification
 	err = gc.ShouldBindJSON(&notification)
 	if err != nil {
-		return empty, &errs.ErrValidation{Message: fmt.Sprintf("can't parse body: %v", err)}
+		switch {
+		case errors.Is(err, io.EOF):
+			return empty, &errs.ErrValidation{Message: "body must not be empty"}
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			return empty, &errs.ErrValidation{Message: "body is not valid json"}
+		default:
+			return empty, &errs.ErrValidation{Message: fmt.Sprintf("invalid input: %v", err)}
+		}
+	}
+
+	// validating the timestamp format via gin is rather clumsy, as it does not allow usage of the time layout constants and returns only a cryptic error message,
+	// so instead we do it manually here
+	_, err = time.Parse(time.RFC3339Nano, notification.Timestamp)
+	if err != nil {
+		return empty, &errs.ErrValidation{Message: fmt.Sprintf("invalid timestamp format: %v", err)}
 	}
 
 	return notification, nil
