@@ -14,7 +14,7 @@ import (
 const notificationsTable = "notification_service.notifications"
 
 const createNotificationQuery = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
-const unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable + ` `
+const unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable
 
 type notificationRow struct {
 	Id           string  `db:"id"`
@@ -34,7 +34,6 @@ func notificationFieldMapping() map[string]string {
 		dtos.LevelFieldName:       "level",
 		dtos.OccurrenceFieldName:  "timestamp",
 		dtos.OriginFieldName:      "origin",
-		dtos.TitleFieldName:       "title",
 	}
 }
 

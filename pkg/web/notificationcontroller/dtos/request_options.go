@@ -75,5 +75,5 @@ var AllowedNotificationsSortFields = []string{dtos.NameField, dtos.DescriptionFi
 
 var DefaultSortingRequest = &sorting.Request{
 	SortColumn:    dtos.OccurrenceFieldName, // default sort by latest notification
-	SortDirection: sorting.DirectionAscending,
+	SortDirection: sorting.DirectionDescending,
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
 )
 
 type NotificationRepository struct {
@@ -31,7 +30,6 @@ func NewNotificationRepository(db *sqlx.DB) (port.NotificationRepository, error)
 }
 
 func (r *NotificationRepository) ListNotifications(ctx context.Context, resultSelector query.ResultSelector) (notifications []models.Notification, totalResults uint64, err error) {
-	log.Debug().Msgf("list notifications")
 	var rows []notificationRow
 
 	queryString, args, err := repository.BuildQuery(resultSelector, unfilteredListNotificationsQuery, notificationFieldMapping())
