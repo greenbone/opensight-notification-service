@@ -6,15 +6,15 @@ package notificationrepository
 
 import (
 	"encoding/json"
-
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
 )
 
 const notificationsTable = "notification_service.notifications"
 
 const createNotificationQuery = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
-const unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable
+const unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable + ` `
 
 type notificationRow struct {
 	Id           string  `db:"id"`
@@ -25,6 +25,17 @@ type notificationRow struct {
 	Detail       string  `db:"detail"`
 	Level        string  `db:"level"`
 	CustomFields []byte  `db:"custom_fields"`
+}
+
+func notificationFieldMapping() map[string]string {
+	return map[string]string{
+		dtos.NameField:            "title",
+		dtos.DescriptionFieldName: "detail",
+		dtos.LevelFieldName:       "level",
+		dtos.OccurrenceFieldName:  "timestamp",
+		dtos.OriginFieldName:      "origin",
+		dtos.TitleFieldName:       "title",
+	}
 }
 
 func toNotificationRow(n models.Notification) (notificationRow, error) {

@@ -1,5 +1,73 @@
 basePath: /api/notification-service
 definitions:
+  filter.CompareOperator:
+    enum:
+    - beginsWith
+    - doesNotBeginWith
+    - contains
+    - doesNotContain
+    - isNumberEqualTo
+    - isEqualTo
+    - isIpEqualTo
+    - isStringEqualTo
+    - isNotEqualTo
+    - isNumberNotEqualTo
+    - isIpNotEqualTo
+    - isStringNotEqualTo
+    - isGreaterThan
+    - isGreaterThanOrEqualTo
+    - isLessThan
+    - isLessThanOrEqualTo
+    - beforeDate
+    - afterDate
+    - exists
+    type: string
+    x-enum-varnames:
+    - CompareOperatorBeginsWith
+    - CompareOperatorDoesNotBeginWith
+    - CompareOperatorContains
+    - CompareOperatorDoesNotContain
+    - CompareOperatorIsNumberEqualTo
+    - CompareOperatorIsEqualTo
+    - CompareOperatorIsIpEqualTo
+    - CompareOperatorIsStringEqualTo
+    - CompareOperatorIsNotEqualTo
+    - CompareOperatorIsNumberNotEqualTo
+    - CompareOperatorIsIpNotEqualTo
+    - CompareOperatorIsStringNotEqualTo
+    - CompareOperatorIsGreaterThan
+    - CompareOperatorIsGreaterThanOrEqualTo
+    - CompareOperatorIsLessThan
+    - CompareOperatorIsLessThanOrEqualTo
+    - CompareOperatorBeforeDate
+    - CompareOperatorAfterDate
+    - CompareOperatorExists
+  filter.ControlType:
+    enum:
+    - enum
+    - float
+    - integer
+    - string
+    - dateTime
+    - uuid
+    - autocomplete
+    type: string
+    x-enum-varnames:
+    - ControlTypeEnum
+    - ControlTypeFloat
+    - ControlTypeInteger
+    - ControlTypeString
+    - ControlTypeDateTime
+    - ControlTypeUuid
+    - ControlTypeAutocomplete
+  filter.LogicOperator:
+    enum:
+    - and
+    - or
+    type: string
+    x-enum-varnames:
+    - LogicOperatorAnd
+    - LogicOperatorOr
   filter.ReadableValue-string:
     properties:
       label:
@@ -16,7 +84,7 @@ definitions:
           $ref: '#/definitions/filter.RequestField'
         type: array
       operator:
-        type: string
+        $ref: '#/definitions/filter.LogicOperator'
     required:
     - operator
     type: object
@@ -29,7 +97,7 @@ definitions:
       name:
         type: string
       operator:
-        type: string
+        $ref: '#/definitions/filter.CompareOperator'
       value:
         description: Value can be a list of values or a value
     required:
@@ -40,12 +108,13 @@ definitions:
   filter.RequestOptionType:
     properties:
       type:
+        allOf:
+        - $ref: '#/definitions/filter.ControlType'
         enum:
         - string
         - float
         - integer
         - enum
-        type: string
     type: object
   models.Notification:
     properties:
@@ -114,8 +183,9 @@ definitions:
               description: Label is the human-readable form of the value
               type: string
             value:
+              allOf:
+              - $ref: '#/definitions/filter.CompareOperator'
               description: Value is the value for the backend
-              type: string
           type: object
         type: array
       values:
@@ -185,8 +255,18 @@ definitions:
       column:
         type: string
       direction:
-        type: string
+        $ref: '#/definitions/sorting.SortDirection'
     type: object
+  sorting.SortDirection:
+    enum:
+    - desc
+    - asc
+    - ""
+    type: string
+    x-enum-varnames:
+    - DirectionDescending
+    - DirectionAscending
+    - NoDirection
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
