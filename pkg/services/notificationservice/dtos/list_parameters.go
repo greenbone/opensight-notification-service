@@ -10,5 +10,4 @@ const (
 	OccurrenceFieldName  = "occurrence"
 	LevelFieldName       = "level"
 	OriginFieldName      = "origin"
-	TitleFieldName       = "title"
 )

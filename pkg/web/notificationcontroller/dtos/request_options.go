@@ -71,7 +71,7 @@ var NotificationsRequestOptions = []filter.RequestOption{
 	},
 }
 
-var AllowedNotificationsSortFields = []string{dtos.NameField, dtos.DescriptionFieldName, dtos.OccurrenceFieldName, dtos.LevelFieldName, dtos.OriginFieldName, dtos.TitleFieldName}
+var AllowedNotificationsSortFields = []string{dtos.NameField, dtos.DescriptionFieldName, dtos.OccurrenceFieldName, dtos.LevelFieldName, dtos.OriginFieldName}
 
 var DefaultSortingRequest = &sorting.Request{
 	SortColumn:    dtos.OccurrenceFieldName, // default sort by latest notification
