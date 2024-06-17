@@ -7,7 +7,7 @@ require (
 	github.com/gin-contrib/logger v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-migrate/migrate/v4 v4.17.1
-	github.com/greenbone/opensight-golang-libraries v1.7.5
+	github.com/greenbone/opensight-golang-libraries v1.7.6
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/rs/zerolog v1.33.0
 	github.com/samber/lo v1.39.0
