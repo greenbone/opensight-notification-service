@@ -150,6 +150,83 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
+        "filter.CompareOperator": {
+            "type": "string",
+            "enum": [
+                "beginsWith",
+                "doesNotBeginWith",
+                "contains",
+                "doesNotContain",
+                "isNumberEqualTo",
+                "isEqualTo",
+                "isIpEqualTo",
+                "isStringEqualTo",
+                "isNotEqualTo",
+                "isNumberNotEqualTo",
+                "isIpNotEqualTo",
+                "isStringNotEqualTo",
+                "isGreaterThan",
+                "isGreaterThanOrEqualTo",
+                "isLessThan",
+                "isLessThanOrEqualTo",
+                "beforeDate",
+                "afterDate",
+                "exists"
+            ],
+            "x-enum-varnames": [
+                "CompareOperatorBeginsWith",
+                "CompareOperatorDoesNotBeginWith",
+                "CompareOperatorContains",
+                "CompareOperatorDoesNotContain",
+                "CompareOperatorIsNumberEqualTo",
+                "CompareOperatorIsEqualTo",
+                "CompareOperatorIsIpEqualTo",
+                "CompareOperatorIsStringEqualTo",
+                "CompareOperatorIsNotEqualTo",
+                "CompareOperatorIsNumberNotEqualTo",
+                "CompareOperatorIsIpNotEqualTo",
+                "CompareOperatorIsStringNotEqualTo",
+                "CompareOperatorIsGreaterThan",
+                "CompareOperatorIsGreaterThanOrEqualTo",
+                "CompareOperatorIsLessThan",
+                "CompareOperatorIsLessThanOrEqualTo",
+                "CompareOperatorBeforeDate",
+                "CompareOperatorAfterDate",
+                "CompareOperatorExists"
+            ]
+        },
+        "filter.ControlType": {
+            "type": "string",
+            "enum": [
+                "enum",
+                "float",
+                "integer",
+                "string",
+                "dateTime",
+                "uuid",
+                "autocomplete"
+            ],
+            "x-enum-varnames": [
+                "ControlTypeEnum",
+                "ControlTypeFloat",
+                "ControlTypeInteger",
+                "ControlTypeString",
+                "ControlTypeDateTime",
+                "ControlTypeUuid",
+                "ControlTypeAutocomplete"
+            ]
+        },
+        "filter.LogicOperator": {
+            "type": "string",
+            "enum": [
+                "and",
+                "or"
+            ],
+            "x-enum-varnames": [
+                "LogicOperatorAnd",
+                "LogicOperatorOr"
+            ]
+        },
         "filter.ReadableValue-string": {
             "type": "object",
             "properties": {
@@ -176,7 +253,7 @@ const docTemplatenotificationservice = `{
                     }
                 },
                 "operator": {
-                    "type": "string"
+                    "$ref": "#/definitions/filter.LogicOperator"
                 }
             }
         },
@@ -198,7 +275,7 @@ const docTemplatenotificationservice = `{
                     "type": "string"
                 },
                 "operator": {
-                    "type": "string"
+                    "$ref": "#/definitions/filter.CompareOperator"
                 },
                 "value": {
                     "description": "Value can be a list of values or a value"
@@ -209,12 +286,16 @@ const docTemplatenotificationservice = `{
             "type": "object",
             "properties": {
                 "type": {
-                    "type": "string",
                     "enum": [
                         "string",
                         "float",
                         "integer",
                         "enum"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/filter.ControlType"
+                        }
                     ]
                 }
             }
@@ -321,7 +402,11 @@ const docTemplatenotificationservice = `{
                             },
                             "value": {
                                 "description": "Value is the value for the backend",
-                                "type": "string"
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/filter.CompareOperator"
+                                    }
+                                ]
                             }
                         }
                     }
@@ -420,9 +505,22 @@ const docTemplatenotificationservice = `{
                     "type": "string"
                 },
                 "direction": {
-                    "type": "string"
+                    "$ref": "#/definitions/sorting.SortDirection"
                 }
             }
+        },
+        "sorting.SortDirection": {
+            "type": "string",
+            "enum": [
+                "desc",
+                "asc",
+                ""
+            ],
+            "x-enum-varnames": [
+                "DirectionDescending",
+                "DirectionAscending",
+                "NoDirection"
+            ]
         }
     },
     "externalDocs": {

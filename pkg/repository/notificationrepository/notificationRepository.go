@@ -8,10 +8,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -31,15 +31,13 @@ func NewNotificationRepository(db *sqlx.DB) (port.NotificationRepository, error)
 
 func (r *NotificationRepository) ListNotifications(ctx context.Context, resultSelector query.ResultSelector) (notifications []models.Notification, totalResults uint64, err error) {
 	var rows []notificationRow
-	query := unfilteredListNotificationsQuery
 
-	if resultSelector.Paging != nil { // TODO: add support for filtering and sorting
-		limit := resultSelector.Paging.PageSize
-		offset := resultSelector.Paging.PageIndex * resultSelector.Paging.PageSize
-		query += fmt.Sprint(` LIMIT `, limit, ` OFFSET `, offset)
+	queryString, args, err := repository.BuildQuery(resultSelector, unfilteredListNotificationsQuery, notificationFieldMapping())
+	if err != nil {
+		return nil, 0, err
 	}
-
-	err = r.client.SelectContext(ctx, &rows, query)
+	queryString = r.client.Rebind(queryString)
+	err = r.client.SelectContext(ctx, &rows, queryString, args...)
 	if err != nil {
 		err = fmt.Errorf("error getting notifications from database: %w", err)
 		return

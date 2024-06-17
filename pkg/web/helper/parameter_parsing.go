@@ -6,16 +6,15 @@ package helper
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
-	"github.com/greenbone/opensight-notification-service/pkg/errs"
 
-	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -33,10 +32,6 @@ func PrepareResultSelector(gc *gin.Context, filterOptions []filter.RequestOption
 
 	//apply defaults
 	resultSelector = applyDefaults(resultSelector, defaults)
-	if resultSelector.Sorting != nil { // TODO: implement sorting, and remove this if-branch
-		resultSelector.Sorting = nil
-		log.Warn().Msg("sorting not yet supported, dropping sort property from request")
-	}
 
 	err = validate(resultSelector, filterOptions, allowedSortFields)
 	if err != nil {
@@ -47,16 +42,13 @@ func PrepareResultSelector(gc *gin.Context, filterOptions []filter.RequestOption
 }
 
 // ResultSelectorDefaults holds default result selectors
-func ResultSelectorDefaults() query.ResultSelector {
+func ResultSelectorDefaults(sortingRequest *sorting.Request) query.ResultSelector {
 	return query.ResultSelector{
 		Paging: &paging.Request{
 			PageIndex: 0,
 			PageSize:  int(DefaultLimit),
 		},
-		Sorting: &sorting.Request{ // TODO: implement sorting, then we need a different default per endpoint instead of this dummy
-			SortColumn:    "",
-			SortDirection: "",
-		},
+		Sorting: sortingRequest,
 	}
 }
 

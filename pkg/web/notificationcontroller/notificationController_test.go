@@ -6,6 +6,8 @@ package notificationcontroller
 
 import (
 	"errors"
+	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -51,6 +53,10 @@ func TestListNotifications(t *testing.T) {
 	resultSelectorWithoutFilter := query.ResultSelector{
 		Filter: &filter.Request{Operator: filter.LogicOperatorAnd},
 		Paging: &paging.Request{PageSize: 10},
+		Sorting: &sorting.Request{
+			SortColumn:    dtos.OccurrenceFieldName,
+			SortDirection: sorting.DirectionAscending,
+		},
 	}
 
 	tests := []struct {

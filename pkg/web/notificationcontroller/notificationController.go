@@ -7,6 +7,8 @@ package notificationcontroller
 import (
 	"errors"
 	"fmt"
+	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller/dtos"
+	"github.com/samber/lo"
 	"io"
 	"net/http"
 	"time"
@@ -14,7 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	_ "github.com/greenbone/opensight-golang-libraries/pkg/query"
-	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	_ "github.com/greenbone/opensight-notification-service/pkg/models"
@@ -90,7 +91,7 @@ func (c *NotificationController) CreateNotification(gc *gin.Context) {
 func (c *NotificationController) ListNotifications(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
-	resultSelector, err := helper.PrepareResultSelector(gc, []filter.RequestOption{}, []string{}, helper.ResultSelectorDefaults())
+	resultSelector, err := helper.PrepareResultSelector(gc, dtos.NotificationsRequestOptions, dtos.AllowedNotificationsSortFields, helper.ResultSelectorDefaults(dtos.DefaultSortingRequest))
 	if err != nil {
 		restErrorHandler.ErrorHandler(gc, "could not prepare result selector", err)
 		return
@@ -121,10 +122,11 @@ func (c *NotificationController) ListNotifications(gc *gin.Context) {
 func (c *NotificationController) GetOptions(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
-	// for now we don't support filtering
-	permittedFilters := []query.FilterOption{}
-
-	gc.JSON(http.StatusOK, query.ResponseWithMetadata[[]query.FilterOption]{Data: permittedFilters})
+	requestOptions := lo.Map(dtos.NotificationsRequestOptions, web.ToFilterOption)
+	response := query.ResponseWithMetadata[[]query.FilterOption]{
+		Data: requestOptions,
+	}
+	gc.JSON(http.StatusOK, response)
 }
 
 func parseAndValidateNotification(gc *gin.Context) (notification models.Notification, err error) {
