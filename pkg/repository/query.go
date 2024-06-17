@@ -21,7 +21,7 @@ func BuildQuery(resultSelector query.ResultSelector, baseQuery string, fieldMapp
 		return "", nil, fmt.Errorf("error building query condition: %w", err)
 	}
 
-	listQuery := baseQuery + queryCondition
+	listQuery := baseQuery + ` ` + queryCondition
 
 	return listQuery, arg, nil
 }
