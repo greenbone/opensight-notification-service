@@ -73,9 +73,11 @@ func (n *notificationRow) ToNotificationModel() (models.Notification, error) {
 		// CustomFields is set below
 	}
 
-	err := json.Unmarshal(n.CustomFields, &notification.CustomFields)
-	if err != nil {
-		return empty, err
+	if len(n.CustomFields) > 0 {
+		err := json.Unmarshal(n.CustomFields, &notification.CustomFields)
+		if err != nil {
+			return empty, err
+		}
 	}
 
 	return notification, nil
