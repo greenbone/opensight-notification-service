@@ -1,12 +1,51 @@
 name: 'Dependency Review'
-on: [pull_request]
+on: 
+  pull_request:
+  workflow_dispatch: # on demand
+  push: # temp, on each push
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   dependency-review:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Dependency Review'
-        uses: greenbone/actions/dependency-review@v3
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+      - name: "Dependency Review"
+        uses: actions/dependency-review-action@v4
+        with:
+          base-ref: 69b9a2d3753e5c1deff8ca62d6732f7ebc877769 # initial commit
+          head-ref: HEAD
+          fail-on-severity: high
+          comment-summary-in-pr: true
+          vulnerability-check: true
+          license-check: true
+          allow-licenses: |
+            0BSD,
+            AGPL-3.0-or-later,
+            GPL-3.0-or-later,
+            LGPL-2.1,
+            EPL-2.0,
+            Python-2.0,
+            GPL-2.0-or-later,
+            GPL-2.0-only,
+            LGPL-2.1-only,
+            LGPL-3.0,
+            LGPL-3.0-only,
+            GPL-2.0,
+            LGPL-2.1-or-later,
+            MIT,
+            Unlicense,
+            Apache-2.0,
+            MPL-2.0,
+            Python-2.0.1,
+            PSF-2.0,
+            LGPL-2.0-only,
+            CAL-1.0,
+            BSD-3-Clause,
+            BSD-2-Clause,
+            BSD-3-Clause-Clear,
+            ISC
