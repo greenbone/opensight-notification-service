@@ -10,7 +10,7 @@ require (
 	github.com/greenbone/opensight-golang-libraries v1.7.7
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/rs/zerolog v1.33.0
-	github.com/samber/lo v1.46.0
+	github.com/samber/lo v1.47.0
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
