@@ -6,9 +6,10 @@ package helper
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
-	"strings"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -101,8 +102,8 @@ func validateSorting(sortingRequest *sorting.Request, allowedSortFields []string
 	}
 
 	if !lo.Contains(allowedSortFields, sortingRequest.SortColumn) {
-		return sorting.NewSortingError(fmt.Sprintf("%s is no valid sort column, possible values: %s",
-			sortingRequest.SortColumn, strings.Join(allowedSortFields, ", ")))
+		return sorting.NewSortingError("%s is no valid sort column, possible values: %s",
+			sortingRequest.SortColumn, strings.Join(allowedSortFields, ", "))
 	}
 
 	return nil
