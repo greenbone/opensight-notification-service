@@ -11,8 +11,8 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 )
 
-// helper function to build the query condition
-func buildQueryCondition(resultSelector query.ResultSelector, baseQuery string, fieldMapping map[string]string) (string, []any, error) {
+// BuildQuery builds a query for retrieving results based on the provided result selector
+func BuildQuery(resultSelector query.ResultSelector, baseQuery string, fieldMapping map[string]string) (string, []any, error) {
 	querySettings := &pgQuery.Settings{
 		FilterFieldMapping: fieldMapping,
 	}
@@ -27,20 +27,17 @@ func buildQueryCondition(resultSelector query.ResultSelector, baseQuery string, 
 	return fullQuery, args, nil
 }
 
-// BuildQuery builds a query for retrieving results based on the provided result selector
-func BuildQuery(resultSelector query.ResultSelector, baseQuery string, fieldMapping map[string]string) (string, []any, error) {
-	return buildQueryCondition(resultSelector, baseQuery, fieldMapping)
-}
-
 // BuildCountQuery builds a count query based on the provided filter request
 func BuildCountQuery(filterRequest *filter.Request, baseQuery string, fieldMapping map[string]string) (string, []any, error) {
 	if filterRequest == nil {
 		return baseQuery, nil, nil
 	}
 
+	// create a resultSelector for the filter, sorting and paging are intentionally omitted here.
+	// sorting does not affect the count, and paging (limiting or offsetting rows) is not necessary for counting.
 	resultSelector := query.ResultSelector{
-		Filter: filterRequest,
+		Filter: filterRequest, // only the filter is applied to narrow down the count based on conditions.
 	}
 
-	return buildQueryCondition(resultSelector, baseQuery, fieldMapping)
+	return BuildQuery(resultSelector, baseQuery, fieldMapping)
 }
