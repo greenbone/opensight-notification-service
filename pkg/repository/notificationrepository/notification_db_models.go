@@ -15,6 +15,7 @@ const notificationsTable = "notification_service.notifications"
 
 const createNotificationQuery = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
 const unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable
+const unfilteredCountNotificationsQuery = `SELECT COUNT(*) FROM ` + notificationsTable
 
 type notificationRow struct {
 	Id           string  `db:"id"`
