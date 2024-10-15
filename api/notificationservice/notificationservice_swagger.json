@@ -191,6 +191,7 @@
         "filter.ControlType": {
             "type": "string",
             "enum": [
+                "bool",
                 "enum",
                 "float",
                 "integer",
@@ -200,6 +201,7 @@
                 "autocomplete"
             ],
             "x-enum-varnames": [
+                "ControlTypeBool",
                 "ControlTypeEnum",
                 "ControlTypeFloat",
                 "ControlTypeInteger",
@@ -283,7 +285,8 @@
                         "string",
                         "float",
                         "integer",
-                        "enum"
+                        "enum",
+                        "bool"
                     ],
                     "allOf": [
                         {
@@ -354,6 +357,11 @@
         },
         "paging.Response": {
             "type": "object",
+            "required": [
+                "index",
+                "size",
+                "totalDisplayableResults"
+            ],
             "properties": {
                 "index": {
                     "type": "integer"
@@ -361,7 +369,10 @@
                 "size": {
                     "type": "integer"
                 },
-                "total": {
+                "totalDisplayableResults": {
+                    "type": "integer"
+                },
+                "totalResults": {
                     "type": "integer"
                 }
             }

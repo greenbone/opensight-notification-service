@@ -11,10 +11,12 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
 )
 
-const notificationsTable = "notification_service.notifications"
-
-const createNotificationQuery = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
-const unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable
+const (
+	notificationsTable                = "notification_service.notifications"
+	createNotificationQuery           = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
+	unfilteredListNotificationsQuery  = `SELECT * FROM ` + notificationsTable
+	unfilteredCountNotificationsQuery = `SELECT COUNT(*) FROM ` + notificationsTable
+)
 
 type notificationRow struct {
 	Id           string  `db:"id"`
