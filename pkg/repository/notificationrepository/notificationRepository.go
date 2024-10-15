@@ -30,27 +30,33 @@ func NewNotificationRepository(db *sqlx.DB) (port.NotificationRepository, error)
 }
 
 func (r *NotificationRepository) ListNotifications(ctx context.Context, resultSelector query.ResultSelector) (notifications []models.Notification, totalResults uint64, err error) {
-	var rows []notificationRow
+	var (
+		notificationRows          []notificationRow
+		notificationFieldMappings = notificationFieldMapping()
+	)
 
-	queryString, args, err := repository.BuildQuery(resultSelector, unfilteredListNotificationsQuery, notificationFieldMapping())
+	listQuery, queryParams, err := repository.BuildQuery(resultSelector, unfilteredListNotificationsQuery, notificationFieldMappings)
 	if err != nil {
 		return nil, 0, err
 	}
-	queryString = r.client.Rebind(queryString)
-	err = r.client.SelectContext(ctx, &rows, queryString, args...)
+	err = r.client.SelectContext(ctx, &notificationRows, r.client.Rebind(listQuery), queryParams...)
 	if err != nil {
 		err = fmt.Errorf("error getting notifications from database: %w", err)
 		return
 	}
 
-	err = r.client.QueryRowxContext(ctx, `SELECT count(*) FROM `+notificationsTable).Scan(&totalResults)
+	countQuery, queryParams, err := repository.BuildCountQuery(resultSelector.Filter, unfilteredCountNotificationsQuery, notificationFieldMappings)
+	if err != nil {
+		return nil, 0, err
+	}
+	err = r.client.QueryRowxContext(ctx, r.client.Rebind(countQuery), queryParams...).Scan(&totalResults)
 	if err != nil {
 		err = fmt.Errorf("error getting total results: %w", err)
 		return
 	}
 
-	notifications = make([]models.Notification, 0, len(rows))
-	for _, row := range rows {
+	notifications = make([]models.Notification, 0, len(notificationRows))
+	for _, row := range notificationRows {
 		notification, err := row.ToNotificationModel()
 		if err != nil {
 			return nil, 0, fmt.Errorf("failed to transform notification db entry: %w", err)

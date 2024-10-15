@@ -198,6 +198,7 @@ const docTemplatenotificationservice = `{
         "filter.ControlType": {
             "type": "string",
             "enum": [
+                "bool",
                 "enum",
                 "float",
                 "integer",
@@ -207,6 +208,7 @@ const docTemplatenotificationservice = `{
                 "autocomplete"
             ],
             "x-enum-varnames": [
+                "ControlTypeBool",
                 "ControlTypeEnum",
                 "ControlTypeFloat",
                 "ControlTypeInteger",
@@ -290,7 +292,8 @@ const docTemplatenotificationservice = `{
                         "string",
                         "float",
                         "integer",
-                        "enum"
+                        "enum",
+                        "bool"
                     ],
                     "allOf": [
                         {
@@ -361,6 +364,11 @@ const docTemplatenotificationservice = `{
         },
         "paging.Response": {
             "type": "object",
+            "required": [
+                "index",
+                "size",
+                "totalDisplayableResults"
+            ],
             "properties": {
                 "index": {
                     "type": "integer"
@@ -368,7 +376,10 @@ const docTemplatenotificationservice = `{
                 "size": {
                     "type": "integer"
                 },
-                "total": {
+                "totalDisplayableResults": {
+                    "type": "integer"
+                },
+                "totalResults": {
                     "type": "integer"
                 }
             }
