@@ -1,4 +1,4 @@
-name: Build and Push Container and Helm Chart
+name: Build and Push Container with Product Compose Upgrade
 
 on:
   push:
@@ -16,9 +16,9 @@ permissions:
 jobs:
   building:
     name: OpenSight Notification Service
-    uses: greenbone/workflows/.github/workflows/helm-container-build-push-3rd-gen.yml@main
+    uses: greenbone/workflows/.github/workflows/container-build-push-3rd-gen.yml@main
     with:
-      helm-chart: opensight-notification-service
+      service: opensight-notification-service
       image-url: ${{ github.repository }}
       image-labels: |
         org.opencontainers.image.vendor=Greenbone
