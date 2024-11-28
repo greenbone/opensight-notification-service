@@ -6,37 +6,29 @@ package config
 
 import (
 	"time"
-
-	"github.com/greenbone/opensight-golang-libraries/pkg/configReader"
 )
 
+// Note: The `envconfig` entries of fields in nested structs are prefixed by the `envconfig` entry of the struct
+// I.e. the env var in {INNER1:{INNER2:{FIELD1:"foo"}}} for FIELD1 is `INNER1_INNER2_FIELD1`
+
 type Config struct {
-	Http     Http
-	Database Database
-	LogLevel string `viperEnv:"LOG_LEVEL" default:"info"`
+	Http     Http     `envconfig:"HTTP"`
+	Database Database `envconfig:"DB"`
+	LogLevel string   `envconfig:"LOG_LEVEL" default:"info"`
 }
 
 type Http struct {
-	Port         int           `validate:"required,min=1,max=65535" viperEnv:"HTTP_PORT" default:"8085"`
-	ReadTimeout  time.Duration `viperEnv:"HTTP_READ_TIMEOUT" default:"10s"`
-	WriteTimeout time.Duration `viperEnv:"HTTP_WRITE_TIMEOUT" default:"60s"`
-	IdleTimeout  time.Duration `viperEnv:"HTTP_IDLE_TIMEOUT" default:"60s"`
+	Port         int           `validate:"required,min=1,max=65535" envconfig:"PORT" default:"8085"`
+	ReadTimeout  time.Duration `envconfig:"READ_TIMEOUT" default:"10s"`
+	WriteTimeout time.Duration `envconfig:"WRITE_TIMEOUT" default:"60s"`
+	IdleTimeout  time.Duration `envconfig:"IDLE_TIMEOUT" default:"60s"`
 }
 
 type Database struct {
-	Host     string `viperEnv:"DB_HOST" default:"localhost"`
-	Port     int    `validate:"required,min=1,max=65535" viperEnv:"DB_PORT" default:"5432"`
-	User     string `validate:"required" viperEnv:"DB_USERNAME"`
-	Password string `validate:"required" viperEnv:"DB_PASSWORD"`
-	DBName   string `validate:"required" viperEnv:"DB_NAME"`
-	SSLMode  string `viperEnv:"DB_SSL_MODE" default:"require"`
-}
-
-func ReadConfig() (Config, error) {
-	var config Config
-	_, err := configReader.ReadEnvVarsIntoStruct(&config)
-	if err != nil {
-		return config, err
-	}
-	return config, nil
+	Host     string `envconfig:"HOST" default:"localhost"`
+	Port     int    `validate:"required,min=1,max=65535" envconfig:"PORT" default:"5432"`
+	User     string `validate:"required" envconfig:"USERNAME"`
+	Password string `validate:"required" envconfig:"PASSWORD"`
+	DBName   string `validate:"required" envconfig:"NAME"`
+	SSLMode  string `envconfig:"SSL_MODE" default:"require"`
 }
