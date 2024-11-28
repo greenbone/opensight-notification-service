@@ -31,6 +31,8 @@ For running the Notification Service outside of docker the latest version of [go
 
 The service is configured via environment variables. Refer to the [Config](pkg/config/config.go) for the available options and their defaults.
 
+The secret `DB_PASSWORD` can be also passed by file. Simply pass the path to the file containing the secret to the service by appending `_FILE` to the env var name, i.e. `DB_PASSWORD_FILE`. If the secret is supplied in both ways, the one directly passed by env var takes precedence.
+
 ## Running
 
 > The following instructions are targeted at openSight developers. As end user the services should be run in orchestration with the other openSight services, which is not in the scope of this readme.

@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
+	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
 	"github.com/greenbone/opensight-notification-service/pkg/logging"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
@@ -28,6 +29,12 @@ import (
 
 func main() {
 	var cfg config.Config
+	// Note: secrets can be passed directly by env var or via file
+	// if the same secret is supplied in both ways, the env var takes precedence
+	err := secretfiles.Read(&cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to read secrets from files")
+	}
 	err = envconfig.Process("", &cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to read config")
