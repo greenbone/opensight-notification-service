@@ -1,14 +1,16 @@
 module github.com/greenbone/opensight-notification-service
 
-go 1.22.5
+go 1.23.3
 
 require (
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/logger v1.2.0
 	github.com/gin-gonic/gin v1.10.0
+	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.18.1
-	github.com/greenbone/opensight-golang-libraries v1.9.2
+	github.com/greenbone/opensight-golang-libraries v1.10.0
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/rs/zerolog v1.33.0
 	github.com/samber/lo v1.47.0
 	github.com/stretchr/testify v1.10.0
@@ -76,6 +78,7 @@ require (
 	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/tools v0.27.0 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/gorm v1.25.12 // indirect

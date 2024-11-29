@@ -11,7 +11,9 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
+	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
 	"github.com/greenbone/opensight-notification-service/pkg/logging"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
@@ -20,22 +22,34 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller"
+	"github.com/kelseyhightower/envconfig"
 
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	config, err := config.ReadConfig()
+	var cfg config.Config
+	// Note: secrets can be passed directly by env var or via file
+	// if the same secret is supplied in both ways, the env var takes precedence
+	err := secretfiles.Read(&cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to read secrets from files")
+	}
+	err = envconfig.Process("", &cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to read config")
 	}
+	err = validator.New().Struct(cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("invalid config")
+	}
 
-	err = logging.SetupLogger(config.LogLevel)
+	err = logging.SetupLogger(cfg.LogLevel)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to set up logger")
 	}
 
-	check(run(config))
+	check(run(cfg))
 }
 
 func run(config config.Config) error {
