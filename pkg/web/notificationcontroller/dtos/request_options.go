@@ -66,7 +66,7 @@ var NotificationsRequestOptions = []filter.RequestOption{
 		Operators: []filter.ReadableValue[filter.CompareOperator]{
 			web.OperatorEqual,
 		},
-		Values:      []string{"info", "warning", "error", "critical"},
+		Values:      []string{"info", "warning", "error"},
 		MultiSelect: true,
 	},
 }

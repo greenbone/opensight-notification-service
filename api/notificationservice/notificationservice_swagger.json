@@ -323,8 +323,7 @@
                     "enum": [
                         "info",
                         "warning",
-                        "error",
-                        "critical"
+                        "error"
                     ]
                 },
                 "origin": {

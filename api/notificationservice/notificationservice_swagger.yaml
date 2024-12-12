@@ -135,7 +135,6 @@ definitions:
         - info
         - warning
         - error
-        - critical
         type: string
       origin:
         type: string

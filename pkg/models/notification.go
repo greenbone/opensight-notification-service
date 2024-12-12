@@ -11,6 +11,6 @@ type Notification struct {
 	Timestamp    string         `json:"timestamp" binding:"required" format:"date-time"`
 	Title        string         `json:"title" binding:"required"` // can also be seen as the 'type'
 	Detail       string         `json:"detail" binding:"required"`
-	Level        string         `json:"level" binding:"required" enums:"info,warning,error,critical"`
+	Level        string         `json:"level" binding:"required" enums:"info,warning,error"`
 	CustomFields map[string]any `json:"customFields,omitempty"` // can contain arbitrary structured information about the notification
 }
