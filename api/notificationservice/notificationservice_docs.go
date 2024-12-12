@@ -330,8 +330,7 @@ const docTemplatenotificationservice = `{
                     "enum": [
                         "info",
                         "warning",
-                        "error",
-                        "critical"
+                        "error"
                     ]
                 },
                 "origin": {
