@@ -1,6 +1,6 @@
 module github.com/greenbone/opensight-notification-service
 
-go 1.23.3
+go 1.23.4
 
 require (
 	github.com/gin-contrib/cors v1.7.3
