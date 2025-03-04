@@ -315,6 +315,8 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/query.ResponseWithMetadata-models_Notification'
+      security:
+      - KeycloakAuth: []
       summary: Create Notification
       tags:
       - notification
@@ -346,6 +348,8 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/query.ResponseListWithMetadata-models_Notification'
+      security:
+      - KeycloakAuth: []
       summary: List Notifications
       tags:
       - notification
@@ -370,7 +374,14 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/query.ResponseWithMetadata-array_query_FilterOption'
+      security:
+      - KeycloakAuth: []
       summary: Notification filter options
       tags:
       - notification
+securityDefinitions:
+  KeycloakAuth:
+    authorizationUrl: '{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth'
+    flow: implicit
+    type: oauth2
 swagger: "2.0"

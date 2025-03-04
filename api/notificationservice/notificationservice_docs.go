@@ -20,6 +20,11 @@ const docTemplatenotificationservice = `{
     "paths": {
         "/notifications": {
             "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Returns a list of notifications matching the provided filters",
                 "consumes": [
                     "application/json"
@@ -66,6 +71,11 @@ const docTemplatenotificationservice = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Create a new notification",
                 "consumes": [
                     "application/json"
@@ -114,6 +124,11 @@ const docTemplatenotificationservice = `{
         },
         "/notifications/options": {
             "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Get filter options for listing notifications",
                 "produces": [
                     "application/json"
@@ -531,6 +546,13 @@ const docTemplatenotificationservice = `{
                 "DirectionAscending",
                 "NoDirection"
             ]
+        }
+    },
+    "securityDefinitions": {
+        "KeycloakAuth": {
+            "type": "oauth2",
+            "flow": "implicit",
+            "authorizationUrl": "{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth"
         }
     },
     "externalDocs": {
