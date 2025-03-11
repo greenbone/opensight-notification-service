@@ -169,6 +169,7 @@
                 "isEqualTo",
                 "isIpEqualTo",
                 "isStringEqualTo",
+                "isStringCaseInsensitiveEqualTo",
                 "isNotEqualTo",
                 "isNumberNotEqualTo",
                 "isIpNotEqualTo",
@@ -179,7 +180,14 @@
                 "isLessThanOrEqualTo",
                 "beforeDate",
                 "afterDate",
-                "exists"
+                "exists",
+                "isEqualToRating",
+                "isNotEqualToRating",
+                "isGreaterThanRating",
+                "isLessThanRating",
+                "isGreaterThanOrEqualToRating",
+                "isLessThanOrEqualToRating",
+                "betweenDates"
             ],
             "x-enum-varnames": [
                 "CompareOperatorBeginsWith",
@@ -190,6 +198,7 @@
                 "CompareOperatorIsEqualTo",
                 "CompareOperatorIsIpEqualTo",
                 "CompareOperatorIsStringEqualTo",
+                "CompareOperatorIsStringCaseInsensitiveEqualTo",
                 "CompareOperatorIsNotEqualTo",
                 "CompareOperatorIsNumberNotEqualTo",
                 "CompareOperatorIsIpNotEqualTo",
@@ -200,7 +209,14 @@
                 "CompareOperatorIsLessThanOrEqualTo",
                 "CompareOperatorBeforeDate",
                 "CompareOperatorAfterDate",
-                "CompareOperatorExists"
+                "CompareOperatorExists",
+                "CompareOperatorIsEqualToRating",
+                "CompareOperatorIsNotEqualToRating",
+                "CompareOperatorIsGreaterThanRating",
+                "CompareOperatorIsLessThanRating",
+                "CompareOperatorIsGreaterThanOrEqualToRating",
+                "CompareOperatorIsLessThanOrEqualToRating",
+                "CompareOperatorBetweenDates"
             ]
         },
         "filter.ControlType": {

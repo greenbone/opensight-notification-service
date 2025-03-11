@@ -176,6 +176,7 @@ const docTemplatenotificationservice = `{
                 "isEqualTo",
                 "isIpEqualTo",
                 "isStringEqualTo",
+                "isStringCaseInsensitiveEqualTo",
                 "isNotEqualTo",
                 "isNumberNotEqualTo",
                 "isIpNotEqualTo",
@@ -186,7 +187,14 @@ const docTemplatenotificationservice = `{
                 "isLessThanOrEqualTo",
                 "beforeDate",
                 "afterDate",
-                "exists"
+                "exists",
+                "isEqualToRating",
+                "isNotEqualToRating",
+                "isGreaterThanRating",
+                "isLessThanRating",
+                "isGreaterThanOrEqualToRating",
+                "isLessThanOrEqualToRating",
+                "betweenDates"
             ],
             "x-enum-varnames": [
                 "CompareOperatorBeginsWith",
@@ -197,6 +205,7 @@ const docTemplatenotificationservice = `{
                 "CompareOperatorIsEqualTo",
                 "CompareOperatorIsIpEqualTo",
                 "CompareOperatorIsStringEqualTo",
+                "CompareOperatorIsStringCaseInsensitiveEqualTo",
                 "CompareOperatorIsNotEqualTo",
                 "CompareOperatorIsNumberNotEqualTo",
                 "CompareOperatorIsIpNotEqualTo",
@@ -207,7 +216,14 @@ const docTemplatenotificationservice = `{
                 "CompareOperatorIsLessThanOrEqualTo",
                 "CompareOperatorBeforeDate",
                 "CompareOperatorAfterDate",
-                "CompareOperatorExists"
+                "CompareOperatorExists",
+                "CompareOperatorIsEqualToRating",
+                "CompareOperatorIsNotEqualToRating",
+                "CompareOperatorIsGreaterThanRating",
+                "CompareOperatorIsLessThanRating",
+                "CompareOperatorIsGreaterThanOrEqualToRating",
+                "CompareOperatorIsLessThanOrEqualToRating",
+                "CompareOperatorBetweenDates"
             ]
         },
         "filter.ControlType": {
