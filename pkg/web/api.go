@@ -7,10 +7,15 @@ package web
 import (
 	"github.com/gin-gonic/gin"
 	docs "github.com/greenbone/opensight-notification-service/api/notificationservice"
+	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/swagger"
+	"strings"
 )
 
 // comment block for api docs generation via swag:
+
+//	@securitydefinitions.oauth2.implicit	KeycloakAuth
+//	@authorizationUrl						{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth
 
 //	@title			Notification Service API
 //	@version		1.0
@@ -30,7 +35,11 @@ const (
 
 const APIVersionKey = "api-version"
 
-func RegisterSwaggerDocsRoute(docsRouter gin.IRouter) {
+func RegisterSwaggerDocsRoute(docsRouter gin.IRouter, kc config.KeycloakConfig) {
+	docs.SwaggerInfonotificationservice.SwaggerTemplate = strings.ReplaceAll(docs.SwaggerInfonotificationservice.SwaggerTemplate,
+		"{{.KeycloakAuthUrl}}", kc.PublicUrl)
+	docs.SwaggerInfonotificationservice.SwaggerTemplate = strings.ReplaceAll(docs.SwaggerInfonotificationservice.SwaggerTemplate,
+		"{{.KeycloakRealm}}", kc.Realm)
 	apiDocsHandler := swagger.GetApiDocsHandler(docs.SwaggerInfonotificationservice)
 	docsRouter.GET("/notification-service/*any", apiDocsHandler)
 }

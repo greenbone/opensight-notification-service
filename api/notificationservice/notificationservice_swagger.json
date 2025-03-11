@@ -13,6 +13,11 @@
     "paths": {
         "/notifications": {
             "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Returns a list of notifications matching the provided filters",
                 "consumes": [
                     "application/json"
@@ -59,6 +64,11 @@
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Create a new notification",
                 "consumes": [
                     "application/json"
@@ -107,6 +117,11 @@
         },
         "/notifications/options": {
             "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Get filter options for listing notifications",
                 "produces": [
                     "application/json"
@@ -524,6 +539,13 @@
                 "DirectionAscending",
                 "NoDirection"
             ]
+        }
+    },
+    "securityDefinitions": {
+        "KeycloakAuth": {
+            "type": "oauth2",
+            "flow": "implicit",
+            "authorizationUrl": "{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth"
         }
     },
     "externalDocs": {

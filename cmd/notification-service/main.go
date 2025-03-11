@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"net/http"
 	"os"
 	"os/signal"
@@ -62,6 +63,23 @@ func run(config config.Config) error {
 	if err != nil {
 		return err
 	}
+
+	// auth
+	realmInfo := auth.KeycloakRealmInfo{
+		RealmId:               config.KeycloakConfig.Realm,
+		AuthServerInternalUrl: config.KeycloakConfig.AuthServerUrl,
+	}
+
+	authorizer, err := auth.NewKeycloakAuthorizer(realmInfo)
+	if err != nil {
+		return fmt.Errorf("error creating keycloak token authorizer: %w", err)
+	}
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(authorizer.ParseRequest)
+	if err != nil {
+		return fmt.Errorf("error creating keycloak auth middleware: %w", err)
+	}
+
 	notificationRepository, err := notificationrepository.NewNotificationRepository(pgClient)
 	if err != nil {
 		return err
@@ -76,11 +94,11 @@ func run(config config.Config) error {
 	docsRouter := gin.Group("/docs/notification-service")
 
 	// rest api docs
-	web.RegisterSwaggerDocsRoute(docsRouter)
+	web.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 	healthcontroller.RegisterSwaggerDocsRoute(docsRouter)
 
 	//instantiate controllers
-	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService)
+	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{
