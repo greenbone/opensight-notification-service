@@ -19,10 +19,11 @@ type Config struct {
 }
 
 type Http struct {
-	Port         int           `validate:"required,min=1,max=65535" envconfig:"PORT" default:"8085"`
-	ReadTimeout  time.Duration `envconfig:"READ_TIMEOUT" default:"10s"`
-	WriteTimeout time.Duration `envconfig:"WRITE_TIMEOUT" default:"60s"`
-	IdleTimeout  time.Duration `envconfig:"IDLE_TIMEOUT" default:"60s"`
+	Port           int           `validate:"required,min=1,max=65535" envconfig:"PORT" default:"8085"`
+	ReadTimeout    time.Duration `envconfig:"READ_TIMEOUT" default:"10s"`
+	WriteTimeout   time.Duration `envconfig:"WRITE_TIMEOUT" default:"60s"`
+	IdleTimeout    time.Duration `envconfig:"IDLE_TIMEOUT" default:"60s"`
+	AllowedOrigins []string      `envconfig:"ALLOWED_ORIGINS" default:"https://opensight-lookout.greenbone.io"`
 }
 
 type Database struct {
