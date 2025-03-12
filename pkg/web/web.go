@@ -7,10 +7,15 @@ package web
 import (
 	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-notification-service/pkg/config"
 )
 
-func NewWebEngine() *gin.Engine {
+func NewWebEngine(httpConfig config.Http) *gin.Engine {
 	ginWebEngine := gin.New()
-	ginWebEngine.Use(logger.SetLogger(), gin.Recovery(), getCors())
+	ginWebEngine.Use(
+		logger.SetLogger(),
+		gin.Recovery(),
+		CORS(httpConfig.AllowedOrigins),
+	)
 	return ginWebEngine
 }
