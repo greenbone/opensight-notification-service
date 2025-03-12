@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Greenbone Networks GmbH <https://greenbone.net>
+// SPDX-FileCopyrightText: 2025 Greenbone Networks GmbH <https://greenbone.net>
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 

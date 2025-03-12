@@ -22,7 +22,7 @@ func AuthorizeRoles(authFunc gin.HandlerFunc, roles ...string) []gin.HandlerFunc
 			}
 
 			// TODO: handle authorize user role
-			// uncomment role check as soon as we can authenticate roles with
+			// uncomment role check as soon as we can authenticate roles with notification-service-client account on keycloak
 
 			//userContext, err := auth.GetUserContext(c)
 			//if err != nil {

@@ -27,7 +27,7 @@ type Http struct {
 
 type Database struct {
 	Host     string `envconfig:"HOST" default:"localhost"`
-	Port     int    `validate:"required,min=1,max=65535" envconfig:"PORT" default:"5435"`
+	Port     int    `validate:"required,min=1,max=65535" envconfig:"PORT" default:"5432"`
 	User     string `validate:"required" envconfig:"USERNAME"`
 	Password string `validate:"required" envconfig:"PASSWORD"`
 	DBName   string `validate:"required" envconfig:"NAME"`
