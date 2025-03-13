@@ -41,7 +41,7 @@ func NewNotificationController(router gin.IRouter, notificationService port.Noti
 }
 
 func (c *NotificationController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
-	group := router.Group("/notifications").Use(middleware.AuthorizeRoles(auth, middleware.UserRole)...)
+	group := router.Group("/notifications").Use(middleware.AuthorizeRoles(auth, middleware.UserRole, middleware.NotificationRole)...)
 	group.POST("", c.CreateNotification)
 	group.PUT("", c.ListNotifications)
 	group.GET("/options", c.GetOptions)

@@ -6,9 +6,13 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/samber/lo"
+	"net/http"
 )
 
 const UserRole = "user"
+const NotificationRole = "opensight_notification_role"
 
 // AuthorizeRoles adds role-based authorization middleware to the provided handler.
 // It first executes the provided authentication function, then checks if the user has one of the required roles.
@@ -21,19 +25,16 @@ func AuthorizeRoles(authFunc gin.HandlerFunc, roles ...string) []gin.HandlerFunc
 				return
 			}
 
-			// TODO: handle authorize user role
-			// uncomment role check as soon as we can authenticate roles with notification-service-client account on keycloak
+			userContext, err := auth.GetUserContext(c)
+			if err != nil {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
 
-			//userContext, err := auth.GetUserContext(c)
-			//if err != nil {
-			//	_ = c.AbortWithError(http.StatusInternalServerError, err)
-			//	return
-			//}
-
-			//if lo.None(roles, userContext.Roles) {
-			//	c.AbortWithStatus(http.StatusForbidden)
-			//	return
-			//}
+			if lo.None(roles, userContext.Roles) {
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
 
 			c.Next()
 		})
