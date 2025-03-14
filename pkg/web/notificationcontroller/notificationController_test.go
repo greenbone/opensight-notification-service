@@ -114,7 +114,7 @@ func TestListNotifications(t *testing.T) {
 			// Create a new engine for testing
 			engine := gin.Default()
 			// constructor registers the routes
-			_ = NewNotificationController(&engine.RouterGroup, mockNotificationService)
+			_ = NewNotificationController(&engine.RouterGroup, mockNotificationService, testhelper.MockAuthMiddleware)
 
 			if tt.want.serviceCall {
 				mockNotificationService.EXPECT().ListNotifications(mock.Anything, tt.want.serviceArg).
@@ -199,7 +199,7 @@ func TestCreateNotification(t *testing.T) {
 			// Create a new engine for testing
 			engine := gin.Default()
 			// constructor registers the routes
-			_ = NewNotificationController(&engine.RouterGroup, mockNotificationService)
+			_ = NewNotificationController(&engine.RouterGroup, mockNotificationService, testhelper.MockAuthMiddleware)
 
 			if tt.want.notificationServiceArg != nil {
 				mockNotificationService.EXPECT().CreateNotification(mock.Anything, *tt.want.notificationServiceArg).

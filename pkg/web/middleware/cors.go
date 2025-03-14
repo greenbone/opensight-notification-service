@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package web
+package middleware
 
 import (
 	"time"
@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getCors() gin.HandlerFunc {
+func GetCors() gin.HandlerFunc {
 	CORSHandler := cors.New(cors.Config{
 		AllowAllOrigins:  true, // TODO: should be more restrictive
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"},

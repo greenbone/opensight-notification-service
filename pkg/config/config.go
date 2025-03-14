@@ -12,9 +12,10 @@ import (
 // I.e. the env var in {INNER1:{INNER2:{FIELD1:"foo"}}} for FIELD1 is `INNER1_INNER2_FIELD1`
 
 type Config struct {
-	Http     Http     `envconfig:"HTTP"`
-	Database Database `envconfig:"DB"`
-	LogLevel string   `envconfig:"LOG_LEVEL" default:"info"`
+	Http           Http           `envconfig:"HTTP"`
+	Database       Database       `envconfig:"DB"`
+	LogLevel       string         `envconfig:"LOG_LEVEL" default:"info"`
+	KeycloakConfig KeycloakConfig `envconfig:"KEYCLOAK"`
 }
 
 type Http struct {
@@ -31,4 +32,11 @@ type Database struct {
 	Password string `validate:"required" envconfig:"PASSWORD"`
 	DBName   string `validate:"required" envconfig:"NAME"`
 	SSLMode  string `envconfig:"SSL_MODE" default:"require"`
+}
+
+type KeycloakConfig struct {
+	Realm         string `validate:"required" envconfig:"REALM" default:"opensight"`
+	AuthServerUrl string `validate:"required" envconfig:"URL" default:"http://localhost:8082/auth"`
+	WebClientName string `validate:"required" envconfig:"WEBCLIENT_NAME" default:"local-web"`
+	PublicUrl     string `validate:"required" envconfig:"PUBLIC_URL" default:"http://localhost:8082/auth"`
 }

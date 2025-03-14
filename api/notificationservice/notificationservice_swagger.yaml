@@ -10,6 +10,7 @@ definitions:
     - isEqualTo
     - isIpEqualTo
     - isStringEqualTo
+    - isStringCaseInsensitiveEqualTo
     - isNotEqualTo
     - isNumberNotEqualTo
     - isIpNotEqualTo
@@ -21,6 +22,13 @@ definitions:
     - beforeDate
     - afterDate
     - exists
+    - isEqualToRating
+    - isNotEqualToRating
+    - isGreaterThanRating
+    - isLessThanRating
+    - isGreaterThanOrEqualToRating
+    - isLessThanOrEqualToRating
+    - betweenDates
     type: string
     x-enum-varnames:
     - CompareOperatorBeginsWith
@@ -31,6 +39,7 @@ definitions:
     - CompareOperatorIsEqualTo
     - CompareOperatorIsIpEqualTo
     - CompareOperatorIsStringEqualTo
+    - CompareOperatorIsStringCaseInsensitiveEqualTo
     - CompareOperatorIsNotEqualTo
     - CompareOperatorIsNumberNotEqualTo
     - CompareOperatorIsIpNotEqualTo
@@ -42,6 +51,13 @@ definitions:
     - CompareOperatorBeforeDate
     - CompareOperatorAfterDate
     - CompareOperatorExists
+    - CompareOperatorIsEqualToRating
+    - CompareOperatorIsNotEqualToRating
+    - CompareOperatorIsGreaterThanRating
+    - CompareOperatorIsLessThanRating
+    - CompareOperatorIsGreaterThanOrEqualToRating
+    - CompareOperatorIsLessThanOrEqualToRating
+    - CompareOperatorBetweenDates
   filter.ControlType:
     enum:
     - bool
@@ -292,12 +308,6 @@ paths:
       - application/json
       description: Create a new notification
       parameters:
-      - description: Authentication header
-        example: Bearer eyJhbGciOiJSUzI1NiIs
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: notification to add
         in: body
         name: Notification
@@ -315,6 +325,8 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/query.ResponseWithMetadata-models_Notification'
+      security:
+      - KeycloakAuth: []
       summary: Create Notification
       tags:
       - notification
@@ -323,12 +335,6 @@ paths:
       - application/json
       description: Returns a list of notifications matching the provided filters
       parameters:
-      - description: Authentication header
-        example: Bearer eyJhbGciOiJSUzI1NiIs
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: filters, paging and sorting
         in: body
         name: MatchCriterias
@@ -346,19 +352,14 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/query.ResponseListWithMetadata-models_Notification'
+      security:
+      - KeycloakAuth: []
       summary: List Notifications
       tags:
       - notification
   /notifications/options:
     get:
       description: Get filter options for listing notifications
-      parameters:
-      - description: Authentication header
-        example: Bearer eyJhbGciOiJSUzI1NiIs
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -370,7 +371,14 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/query.ResponseWithMetadata-array_query_FilterOption'
+      security:
+      - KeycloakAuth: []
       summary: Notification filter options
       tags:
       - notification
+securityDefinitions:
+  KeycloakAuth:
+    authorizationUrl: '{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth'
+    flow: implicit
+    type: oauth2
 swagger: "2.0"

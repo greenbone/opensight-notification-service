@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -45,4 +47,23 @@ func NewJSONRequest(method, url string, bodyAsStruct any) (*http.Request, error)
 		return nil, fmt.Errorf("could not parse struct to json: %w", err)
 	}
 	return http.NewRequest(method, url, bytes.NewReader(body))
+}
+
+// MockAuthMiddleware mocks authentication by setting a default user context in the Gin context for testing purposes.
+func MockAuthMiddleware(ctx *gin.Context) {
+	const userContextKey = "USER_CONTEXT_DATA"
+	const iamRoleUser = "user"
+
+	userContext := auth.UserContext{
+		Realm:          "",
+		UserID:         "",
+		UserName:       "",
+		EmailAddress:   "",
+		Roles:          []string{iamRoleUser},
+		Groups:         nil,
+		AllowedOrigins: nil,
+	}
+
+	ctx.Set(userContextKey, userContext)
+	ctx.Next()
 }

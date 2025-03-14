@@ -7,6 +7,7 @@ package notificationcontroller
 import (
 	"errors"
 	"fmt"
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller/dtos"
 	"github.com/samber/lo"
 	"io"
@@ -29,18 +30,18 @@ type NotificationController struct {
 	notificationService port.NotificationService
 }
 
-func NewNotificationController(router gin.IRouter, notificationService port.NotificationService) *NotificationController {
+func NewNotificationController(router gin.IRouter, notificationService port.NotificationService, auth gin.HandlerFunc) *NotificationController {
 	ctrl := &NotificationController{
 		notificationService: notificationService,
 	}
 
-	ctrl.registerRoutes(router)
+	ctrl.registerRoutes(router, auth)
 
 	return ctrl
 }
 
-func (c *NotificationController) registerRoutes(router gin.IRouter) {
-	group := router.Group("/notifications")
+func (c *NotificationController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
+	group := router.Group("/notifications").Use(middleware.AuthorizeRoles(auth, middleware.UserRole, middleware.NotificationRole)...)
 	group.POST("", c.CreateNotification)
 	group.PUT("", c.ListNotifications)
 	group.GET("/options", c.GetOptions)
@@ -53,7 +54,7 @@ func (c *NotificationController) registerRoutes(router gin.IRouter) {
 //	@Tags			notification
 //	@Accept			json
 //	@Produce		json
-//	@Param			Authorization	header		string				true	"Authentication header"	example(Bearer eyJhbGciOiJSUzI1NiIs)
+//	@Security		KeycloakAuth
 //	@Param			Notification	body		models.Notification	true	"notification to add"
 //	@Success		201				{object}	query.ResponseWithMetadata[models.Notification]
 //	@Header			all				{string}	api-version	"API version"
@@ -83,7 +84,7 @@ func (c *NotificationController) CreateNotification(gc *gin.Context) {
 //	@Tags			notification
 //	@Accept			json
 //	@Produce		json
-//	@Param			Authorization	header		string					true	"Authentication header"	example(Bearer eyJhbGciOiJSUzI1NiIs)
+//	@Security		KeycloakAuth
 //	@Param			MatchCriterias	body		query.ResultSelector	true	"filters, paging and sorting"
 //	@Success		200				{object}	query.ResponseListWithMetadata[models.Notification]
 //	@Header			all				{string}	api-version	"API version"
@@ -115,7 +116,7 @@ func (c *NotificationController) ListNotifications(gc *gin.Context) {
 //	@Description	Get filter options for listing notifications
 //	@Tags			notification
 //	@Produce		json
-//	@Param			Authorization	header		string	true	"Authentication header"	example(Bearer eyJhbGciOiJSUzI1NiIs)
+//	@Security		KeycloakAuth
 //	@Success		200				{object}	query.ResponseWithMetadata[[]query.FilterOption]
 //	@Header			all				{string}	api-version	"API version"
 //	@Router			/notifications/options [get]

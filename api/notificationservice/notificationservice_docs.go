@@ -20,6 +20,11 @@ const docTemplatenotificationservice = `{
     "paths": {
         "/notifications": {
             "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Returns a list of notifications matching the provided filters",
                 "consumes": [
                     "application/json"
@@ -32,14 +37,6 @@ const docTemplatenotificationservice = `{
                 ],
                 "summary": "List Notifications",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "example": "Bearer eyJhbGciOiJSUzI1NiIs",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "filters, paging and sorting",
                         "name": "MatchCriterias",
@@ -66,6 +63,11 @@ const docTemplatenotificationservice = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Create a new notification",
                 "consumes": [
                     "application/json"
@@ -78,14 +80,6 @@ const docTemplatenotificationservice = `{
                 ],
                 "summary": "Create Notification",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "example": "Bearer eyJhbGciOiJSUzI1NiIs",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "notification to add",
                         "name": "Notification",
@@ -114,6 +108,11 @@ const docTemplatenotificationservice = `{
         },
         "/notifications/options": {
             "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
                 "description": "Get filter options for listing notifications",
                 "produces": [
                     "application/json"
@@ -122,16 +121,6 @@ const docTemplatenotificationservice = `{
                     "notification"
                 ],
                 "summary": "Notification filter options",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "example": "Bearer eyJhbGciOiJSUzI1NiIs",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -161,6 +150,7 @@ const docTemplatenotificationservice = `{
                 "isEqualTo",
                 "isIpEqualTo",
                 "isStringEqualTo",
+                "isStringCaseInsensitiveEqualTo",
                 "isNotEqualTo",
                 "isNumberNotEqualTo",
                 "isIpNotEqualTo",
@@ -171,7 +161,14 @@ const docTemplatenotificationservice = `{
                 "isLessThanOrEqualTo",
                 "beforeDate",
                 "afterDate",
-                "exists"
+                "exists",
+                "isEqualToRating",
+                "isNotEqualToRating",
+                "isGreaterThanRating",
+                "isLessThanRating",
+                "isGreaterThanOrEqualToRating",
+                "isLessThanOrEqualToRating",
+                "betweenDates"
             ],
             "x-enum-varnames": [
                 "CompareOperatorBeginsWith",
@@ -182,6 +179,7 @@ const docTemplatenotificationservice = `{
                 "CompareOperatorIsEqualTo",
                 "CompareOperatorIsIpEqualTo",
                 "CompareOperatorIsStringEqualTo",
+                "CompareOperatorIsStringCaseInsensitiveEqualTo",
                 "CompareOperatorIsNotEqualTo",
                 "CompareOperatorIsNumberNotEqualTo",
                 "CompareOperatorIsIpNotEqualTo",
@@ -192,7 +190,14 @@ const docTemplatenotificationservice = `{
                 "CompareOperatorIsLessThanOrEqualTo",
                 "CompareOperatorBeforeDate",
                 "CompareOperatorAfterDate",
-                "CompareOperatorExists"
+                "CompareOperatorExists",
+                "CompareOperatorIsEqualToRating",
+                "CompareOperatorIsNotEqualToRating",
+                "CompareOperatorIsGreaterThanRating",
+                "CompareOperatorIsLessThanRating",
+                "CompareOperatorIsGreaterThanOrEqualToRating",
+                "CompareOperatorIsLessThanOrEqualToRating",
+                "CompareOperatorBetweenDates"
             ]
         },
         "filter.ControlType": {
@@ -531,6 +536,13 @@ const docTemplatenotificationservice = `{
                 "DirectionAscending",
                 "NoDirection"
             ]
+        }
+    },
+    "securityDefinitions": {
+        "KeycloakAuth": {
+            "type": "oauth2",
+            "flow": "implicit",
+            "authorizationUrl": "{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth"
         }
     },
     "externalDocs": {
