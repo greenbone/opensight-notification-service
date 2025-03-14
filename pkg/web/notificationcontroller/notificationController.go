@@ -55,7 +55,6 @@ func (c *NotificationController) registerRoutes(router gin.IRouter, auth gin.Han
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			Authorization	header		string				true	"Authentication header"	example(Bearer eyJhbGciOiJSUzI1NiIs)
 //	@Param			Notification	body		models.Notification	true	"notification to add"
 //	@Success		201				{object}	query.ResponseWithMetadata[models.Notification]
 //	@Header			all				{string}	api-version	"API version"
@@ -86,7 +85,6 @@ func (c *NotificationController) CreateNotification(gc *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			Authorization	header		string					true	"Authentication header"	example(Bearer eyJhbGciOiJSUzI1NiIs)
 //	@Param			MatchCriterias	body		query.ResultSelector	true	"filters, paging and sorting"
 //	@Success		200				{object}	query.ResponseListWithMetadata[models.Notification]
 //	@Header			all				{string}	api-version	"API version"
@@ -119,7 +117,6 @@ func (c *NotificationController) ListNotifications(gc *gin.Context) {
 //	@Tags			notification
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			Authorization	header		string	true	"Authentication header"	example(Bearer eyJhbGciOiJSUzI1NiIs)
 //	@Success		200				{object}	query.ResponseWithMetadata[[]query.FilterOption]
 //	@Header			all				{string}	api-version	"API version"
 //	@Router			/notifications/options [get]

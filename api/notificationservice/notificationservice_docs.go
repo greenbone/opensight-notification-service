@@ -38,14 +38,6 @@ const docTemplatenotificationservice = `{
                 "summary": "List Notifications",
                 "parameters": [
                     {
-                        "type": "string",
-                        "example": "Bearer eyJhbGciOiJSUzI1NiIs",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "description": "filters, paging and sorting",
                         "name": "MatchCriterias",
                         "in": "body",
@@ -89,14 +81,6 @@ const docTemplatenotificationservice = `{
                 "summary": "Create Notification",
                 "parameters": [
                     {
-                        "type": "string",
-                        "example": "Bearer eyJhbGciOiJSUzI1NiIs",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "description": "notification to add",
                         "name": "Notification",
                         "in": "body",
@@ -137,16 +121,6 @@ const docTemplatenotificationservice = `{
                     "notification"
                 ],
                 "summary": "Notification filter options",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "example": "Bearer eyJhbGciOiJSUzI1NiIs",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",

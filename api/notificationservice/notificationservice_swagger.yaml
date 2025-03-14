@@ -308,12 +308,6 @@ paths:
       - application/json
       description: Create a new notification
       parameters:
-      - description: Authentication header
-        example: Bearer eyJhbGciOiJSUzI1NiIs
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: notification to add
         in: body
         name: Notification
@@ -341,12 +335,6 @@ paths:
       - application/json
       description: Returns a list of notifications matching the provided filters
       parameters:
-      - description: Authentication header
-        example: Bearer eyJhbGciOiJSUzI1NiIs
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: filters, paging and sorting
         in: body
         name: MatchCriterias
@@ -372,13 +360,6 @@ paths:
   /notifications/options:
     get:
       description: Get filter options for listing notifications
-      parameters:
-      - description: Authentication header
-        example: Bearer eyJhbGciOiJSUzI1NiIs
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
