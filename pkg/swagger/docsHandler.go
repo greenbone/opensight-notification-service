@@ -6,17 +6,20 @@ package swagger
 
 import (
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	ginSwagger "github.com/greenbone/opensight-golang-libraries/pkg/swagger"
+	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/swaggo/swag"
 )
 
-func GetApiDocsHandler(specs *swag.Spec) gin.HandlerFunc {
-	apiDocsHandler := ginSwagger.WrapHandler(
-		swaggerFiles.Handler,
-		func(config *ginSwagger.Config) {
-			config.InstanceName = specs.InstanceName() // use default config except for instance name
-		},
+func GetApiDocsHandler(specs *swag.Spec, config config.KeycloakConfig) gin.HandlerFunc {
+	authConfig := &ginSwagger.OAuthConfig{
+		ClientId: config.WebClientName,
+		// other config values are ignored for now and are already set by the caller beforehand
+	}
+
+	apiDocsHandler := ginSwagger.GinWrapHandler(
+		ginSwagger.InstanceName(specs.InstanceName()),
+		ginSwagger.OAuth(authConfig),
 	)
 	return apiDocsHandler
 }

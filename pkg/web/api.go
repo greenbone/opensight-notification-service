@@ -40,6 +40,6 @@ func RegisterSwaggerDocsRoute(docsRouter gin.IRouter, kc config.KeycloakConfig) 
 		"{{.KeycloakAuthUrl}}", kc.PublicUrl)
 	docs.SwaggerInfonotificationservice.SwaggerTemplate = strings.ReplaceAll(docs.SwaggerInfonotificationservice.SwaggerTemplate,
 		"{{.KeycloakRealm}}", kc.Realm)
-	apiDocsHandler := swagger.GetApiDocsHandler(docs.SwaggerInfonotificationservice)
+	apiDocsHandler := swagger.GetApiDocsHandler(docs.SwaggerInfonotificationservice, kc)
 	docsRouter.GET("/notification-service/*any", apiDocsHandler)
 }

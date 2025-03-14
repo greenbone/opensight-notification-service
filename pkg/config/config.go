@@ -35,9 +35,8 @@ type Database struct {
 }
 
 type KeycloakConfig struct {
-	Realm                string `validate:"required" envconfig:"REALM" default:"opensight"`
-	AuthServerUrl        string `validate:"required" envconfig:"URL" default:"http://localhost:8082/auth"`
-	WebClientName        string `validate:"required" envconfig:"WEBCLIENT_NAME" default:"local-web"`
-	PublicUrl            string `validate:"required" envconfig:"PUBLIC_URL" default:"http://localhost:8082/auth"`
-	OpenSearchClientName string `validate:"required" envconfig:"OPENSEARCH_CLIENT_NAME" default:"opensearch-client"`
+	Realm         string `validate:"required" envconfig:"REALM" default:"opensight"`
+	AuthServerUrl string `validate:"required" envconfig:"URL" default:"http://localhost:8082/auth"`
+	WebClientName string `validate:"required" envconfig:"WEBCLIENT_NAME" default:"local-web"`
+	PublicUrl     string `validate:"required" envconfig:"PUBLIC_URL" default:"http://localhost:8082/auth"`
 }

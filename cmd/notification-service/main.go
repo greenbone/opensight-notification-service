@@ -95,7 +95,7 @@ func run(config config.Config) error {
 
 	// rest api docs
 	web.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
-	healthcontroller.RegisterSwaggerDocsRoute(docsRouter)
+	healthcontroller.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 
 	//instantiate controllers
 	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)

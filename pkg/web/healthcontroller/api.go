@@ -7,6 +7,7 @@ package healthcontroller
 import (
 	"github.com/gin-gonic/gin"
 	docs "github.com/greenbone/opensight-notification-service/api/health"
+	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/swagger"
 )
 
@@ -21,7 +22,7 @@ import (
 //	@externalDocs.description	OpenAPI
 //	@externalDocs.url			https://swagger.io/resources/open-api/
 
-func RegisterSwaggerDocsRoute(docsRouter gin.IRouter) {
-	apiDocsHandler := swagger.GetApiDocsHandler(docs.SwaggerInfohealth)
+func RegisterSwaggerDocsRoute(docsRouter gin.IRouter, kc config.KeycloakConfig) {
+	apiDocsHandler := swagger.GetApiDocsHandler(docs.SwaggerInfohealth, kc)
 	docsRouter.GET("/health/*any", apiDocsHandler)
 }
