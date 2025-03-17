@@ -11,12 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetCors() gin.HandlerFunc {
+func CORS(allowedOrigins []string) gin.HandlerFunc {
 	CORSHandler := cors.New(cors.Config{
-		AllowAllOrigins:  true, // TODO: should be more restrictive
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
-		AllowCredentials: false,
+		AllowCredentials: false, // setting does not cover use of JWT tokens in Authorization header -> not applicable
 		MaxAge:           12 * time.Hour,
 	})
 

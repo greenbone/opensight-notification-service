@@ -88,7 +88,7 @@ func run(config config.Config) error {
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	healthService := healthservice.NewHealthService(pgClient)
 
-	gin := web.NewWebEngine()
+	gin := web.NewWebEngine(config.Http)
 	rootRouter := gin.Group("/")
 	notificationServiceRouter := gin.Group("/api/notification-service")
 	docsRouter := gin.Group("/docs/notification-service")
