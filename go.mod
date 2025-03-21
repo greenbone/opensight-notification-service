@@ -1,6 +1,7 @@
 module github.com/greenbone/opensight-notification-service
 
 go 1.24.0
+
 require (
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-contrib/logger v1.2.3
@@ -35,7 +36,7 @@ require (
 	github.com/go-playground/validator/v10 v10.25.0 // indirect
 	github.com/go-resty/resty/v2 v2.16.5 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
