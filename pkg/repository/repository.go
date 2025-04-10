@@ -9,6 +9,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -22,8 +23,11 @@ import (
 var migrations embed.FS
 
 func NewClient(postgres config.Database) (*sqlx.DB, error) {
-	connectionString := fmt.Sprint("postgres://", postgres.User, ":", postgres.Password, "@", postgres.Host, ":", postgres.Port, "/", postgres.DBName,
-		"?sslmode=", postgres.SSLMode, "&connect_timeout=10")
+	// note: even though some parameters are part of the url path, [url.PathEscape] does not fit as it does not escape `:`
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s&connect_timeout=10",
+		url.QueryEscape(postgres.User), url.QueryEscape(postgres.Password),
+		url.QueryEscape(postgres.Host), postgres.Port, url.QueryEscape(postgres.DBName),
+		url.QueryEscape(postgres.SSLMode))
 	//connect to the db
 	db, err := sqlx.Connect("postgres", connectionString)
 	if err != nil {
