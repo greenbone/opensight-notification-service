@@ -1,0 +1,19 @@
+name: govulncheck
+
+# check for vulnerabilities using `govulncheck`, compared to dependabot it only alerts if the affected code is actually called
+
+on:
+  pull_request: # make sure there is no vulnerability added with a new feature
+  schedule: # check if used code of existing dependencies is vulnerable
+    - cron: '37 4 * * *' # daily 4:37h
+  workflow_dispatch: # on demand
+
+jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    name: Run govulncheck
+    steps:
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: ./go.mod
