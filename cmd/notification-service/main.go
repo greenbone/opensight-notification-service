@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"net/http"
@@ -13,9 +14,9 @@ import (
 	"os/signal"
 
 	"github.com/go-playground/validator"
+	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
-	"github.com/greenbone/opensight-notification-service/pkg/logging"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
@@ -44,8 +45,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("invalid config")
 	}
-
-	err = logging.SetupLogger(cfg.LogLevel)
+	err = logs.SetupLogger(cfg.LogLevel)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to set up logger")
 	}
@@ -110,7 +110,7 @@ func run(config config.Config) error {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			check(err)
 		}
 	}()

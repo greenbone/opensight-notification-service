@@ -6,6 +6,7 @@ definitions:
     - doesNotBeginWith
     - contains
     - doesNotContain
+    - textContains
     - isNumberEqualTo
     - isEqualTo
     - isIpEqualTo
@@ -35,6 +36,7 @@ definitions:
     - CompareOperatorDoesNotBeginWith
     - CompareOperatorContains
     - CompareOperatorDoesNotContain
+    - CompareOperatorTextContains
     - CompareOperatorIsNumberEqualTo
     - CompareOperatorIsEqualTo
     - CompareOperatorIsIpEqualTo
