@@ -7,12 +7,13 @@ package notificationcontroller
 import (
 	"errors"
 	"fmt"
-	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
-	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller/dtos"
-	"github.com/samber/lo"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
+	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller/dtos"
+	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
@@ -45,16 +46,16 @@ func (c *NotificationController) registerRoutes(router gin.IRouter, auth gin.Han
 	group.GET("/options", c.GetOptions)
 }
 
-// CreateNotification
+// CreateEvent
 //
-//	@Summary		Create Notification
-//	@Description	Create a new notification
+//	@Summary		Create Event
+//	@Description	Create a new event. It will always result in a notification and will possibly also trigger actions like sending mails, depending on the cofigured rules.
 //	@Tags			notification
 //	@Accept			json
 //	@Produce		json
-//	@Security		KeycloakAuth
-//	@Param			Notification	body		models.Notification	true	"notification to add"
-//	@Success		201				{object}	query.ResponseWithMetadata[models.Notification]
+//	@Security		KeycloakAuth[eventprovider]
+//	@Param			Notification	body		models.Event	true	"event to add"
+//	@Success		201				{object}	query.ResponseWithMetadata[models.Event]
 //	@Header			all				{string}	api-version	"API version"
 //	@Router			/notifications [post]
 func (c *NotificationController) CreateNotification(gc *gin.Context) {
@@ -115,8 +116,8 @@ func (c *NotificationController) ListNotifications(gc *gin.Context) {
 //	@Tags			notification
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Success		200				{object}	query.ResponseWithMetadata[[]query.FilterOption]
-//	@Header			all				{string}	api-version	"API version"
+//	@Success		200	{object}	query.ResponseWithMetadata[[]query.FilterOption]
+//	@Header			all	{string}	api-version	"API version"
 //	@Router			/notifications/options [get]
 func (c *NotificationController) GetOptions(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
