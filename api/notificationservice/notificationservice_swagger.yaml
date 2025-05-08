@@ -1,5 +1,18 @@
 basePath: /api/notification-service
 definitions:
+  errorResponses.ErrorResponse:
+    properties:
+      details:
+        type: string
+      errors:
+        additionalProperties:
+          type: string
+        type: object
+      title:
+        type: string
+      type:
+        type: string
+    type: object
   filter.CompareOperator:
     enum:
     - beginsWith
@@ -137,6 +150,58 @@ definitions:
         - enum
         - bool
     type: object
+  models.Action:
+    properties:
+      recipient:
+        description: specific recipient if supported/required by the sink, e.g. for
+          mail a comma separated list of mail adresses
+        type: string
+      sink:
+        $ref: '#/definitions/models.SinkReference'
+    required:
+    - sink
+    type: object
+  models.Event:
+    properties:
+      customFields:
+        additionalProperties: {}
+        description: can contain arbitrary structured information about the event
+        type: object
+      detail:
+        type: string
+      id:
+        readOnly: true
+        type: string
+      level:
+        enum:
+        - info
+        - warning
+        - error
+        - urgent
+        type: string
+      origin:
+        description: name of the origin, e.g. `SBOM - React`
+        type: string
+      originClass:
+        description: unique identifier for the class of origins, e.g. `/vi/SBOM`
+        type: string
+      originInstanceID:
+        description: together with class it can be used to provide a link to the origin,
+          e.g. `<id of react sbom object>`
+        type: string
+      timestamp:
+        format: date-time
+        type: string
+      title:
+        type: string
+    required:
+    - detail
+    - level
+    - origin
+    - originClass
+    - timestamp
+    - title
+    type: object
   models.Notification:
     properties:
       customFields:
@@ -163,7 +228,6 @@ definitions:
         format: date-time
         type: string
       title:
-        description: can also be seen as the 'type'
         type: string
     required:
     - detail
@@ -171,6 +235,149 @@ definitions:
     - origin
     - timestamp
     - title
+    type: object
+  models.Origin:
+    properties:
+      class:
+        type: string
+      name:
+        type: string
+      namespace:
+        readOnly: true
+        type: string
+    required:
+    - class
+    - name
+    type: object
+  models.OriginReference:
+    properties:
+      class:
+        type: string
+      name:
+        readOnly: true
+        type: string
+      namespace:
+        type: string
+    required:
+    - class
+    - namespace
+    type: object
+  models.Rule:
+    properties:
+      action:
+        $ref: '#/definitions/models.Action'
+      active:
+        type: boolean
+      id:
+        readOnly: true
+        type: string
+      trigger:
+        $ref: '#/definitions/models.Trigger'
+    required:
+    - action
+    - trigger
+    type: object
+  models.RuleOptions:
+    properties:
+      eventLevels:
+        items:
+          type: string
+        type: array
+      eventOrigins:
+        items:
+          $ref: '#/definitions/models.OriginReference'
+        type: array
+      sinks:
+        items:
+          $ref: '#/definitions/models.SinkReference'
+        type: array
+    type: object
+  models.SMTP:
+    properties:
+      authentication_method:
+        enum:
+        - Plain
+        - Encrypted
+        - GSSAPI
+        - Kerberos
+        type: string
+      connection_security:
+        enum:
+        - STARTTLS
+        - SSL
+        - NONE
+        type: string
+      host:
+        type: string
+      password:
+        type: string
+      port:
+        type: integer
+      sender:
+        type: string
+      username:
+        type: string
+    required:
+    - authentication_method
+    - connection_security
+    - host
+    - password
+    - port
+    - sender
+    - username
+    type: object
+  models.Sink:
+    properties:
+      id:
+        readOnly: true
+        type: string
+      name:
+        type: string
+      smtp:
+        $ref: '#/definitions/models.SMTP'
+      type:
+        description: only populate `webhook` or `smtp` depending on type
+        enum:
+        - smtp
+        - ' mattermost'
+        - teams
+        type: string
+      webhook:
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  models.SinkReference:
+    properties:
+      hasRecipient:
+        description: indicates if the sink supports/requires specifying a specific
+          recipient
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        readOnly: true
+        type: string
+    required:
+    - id
+    - name
+    type: object
+  models.Trigger:
+    properties:
+      level:
+        items:
+          type: string
+        type: array
+      origins:
+        items:
+          $ref: '#/definitions/models.OriginReference'
+        type: array
+    required:
+    - level
+    - origins
     type: object
   paging.Request:
     properties:
@@ -245,6 +452,30 @@ definitions:
     - data
     - metadata
     type: object
+  query.ResponseListWithMetadata-models_Rule:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Rule'
+        type: array
+      metadata:
+        $ref: '#/definitions/query.Metadata'
+    required:
+    - data
+    - metadata
+    type: object
+  query.ResponseListWithMetadata-models_Sink:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Sink'
+        type: array
+      metadata:
+        $ref: '#/definitions/query.Metadata'
+    required:
+    - data
+    - metadata
+    type: object
   query.ResponseWithMetadata-array_query_FilterOption:
     properties:
       data:
@@ -257,10 +488,40 @@ definitions:
     - data
     - metadata
     type: object
-  query.ResponseWithMetadata-models_Notification:
+  query.ResponseWithMetadata-models_Event:
     properties:
       data:
-        $ref: '#/definitions/models.Notification'
+        $ref: '#/definitions/models.Event'
+      metadata:
+        $ref: '#/definitions/query.Metadata'
+    required:
+    - data
+    - metadata
+    type: object
+  query.ResponseWithMetadata-models_Rule:
+    properties:
+      data:
+        $ref: '#/definitions/models.Rule'
+      metadata:
+        $ref: '#/definitions/query.Metadata'
+    required:
+    - data
+    - metadata
+    type: object
+  query.ResponseWithMetadata-models_RuleOptions:
+    properties:
+      data:
+        $ref: '#/definitions/models.RuleOptions'
+      metadata:
+        $ref: '#/definitions/query.Metadata'
+    required:
+    - data
+    - metadata
+    type: object
+  query.ResponseWithMetadata-models_Sink:
+    properties:
+      data:
+        $ref: '#/definitions/models.Sink'
       metadata:
         $ref: '#/definitions/query.Metadata'
     required:
@@ -308,14 +569,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new notification
+      description: Create a new event. It will always result in a notification and
+        will possibly also trigger actions like sending mails, depending on the cofigured
+        rules.
       parameters:
-      - description: notification to add
+      - description: event to add
         in: body
         name: Notification
         required: true
         schema:
-          $ref: '#/definitions/models.Notification'
+          $ref: '#/definitions/models.Event'
       produces:
       - application/json
       responses:
@@ -326,10 +589,11 @@ paths:
               description: API version
               type: string
           schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-models_Notification'
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Event'
       security:
-      - KeycloakAuth: []
-      summary: Create Notification
+      - KeycloakAuth:
+        - eventprovider
+      summary: Create Event
       tags:
       - notification
     put:
@@ -378,9 +642,410 @@ paths:
       summary: Notification filter options
       tags:
       - notification
+  /origins/{namespace}:
+    put:
+      consumes:
+      - application/json
+      description: Registers a set of origins in the given namespace. Replaces the
+        content of the namespace if it already existed. The origins can be ulitized
+        to set trigger conditions for actions.
+      parameters:
+      - description: namespace of the calling service, need to be unique among all
+          services registering origins
+        in: path
+        name: namespace
+        required: true
+        type: string
+      - description: origins provided by the calling service
+        in: body
+        name: origins
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Origin'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Rule'
+      security:
+      - KeycloakAuth:
+        - eventprovider
+      summary: Register Origins
+      tags:
+      - origin
+  /rules:
+    post:
+      consumes:
+      - application/json
+      description: Create a new rule. A rule determines on which conditions which
+        action is triggered.
+      parameters:
+      - description: new rule
+        in: body
+        name: rule
+        required: true
+        schema:
+          $ref: '#/definitions/models.Rule'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Rule'
+      security:
+      - KeycloakAuth: []
+      summary: Create Rule
+      tags:
+      - rule
+    put:
+      consumes:
+      - application/json
+      description: Returns a list of rules matching the provided filters.
+      parameters:
+      - description: filters, paging and sorting
+        in: body
+        name: MatchCriterias
+        required: true
+        schema:
+          $ref: '#/definitions/query.ResultSelector'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseListWithMetadata-models_Rule'
+      security:
+      - KeycloakAuth: []
+      summary: List Rules
+      tags:
+      - rule
+  /rules/{id}:
+    delete:
+      description: Delete a rule.
+      parameters:
+      - description: unique ID of the rule
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: deleted
+          headers:
+            api-version:
+              description: API version
+              type: string
+      security:
+      - KeycloakAuth: []
+      summary: Delete Rule
+      tags:
+      - rule
+    put:
+      consumes:
+      - application/json
+      description: Update/replace a rule.
+      parameters:
+      - description: unique ID of the rule
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: updated rule
+        in: body
+        name: rule
+        required: true
+        schema:
+          $ref: '#/definitions/models.Rule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Rule'
+      security:
+      - KeycloakAuth: []
+      summary: Update Rule
+      tags:
+      - rule
+  /rules/options:
+    get:
+      description: Get filter options for listing rules.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-array_query_FilterOption'
+      security:
+      - KeycloakAuth: []
+      summary: ListRules filter options
+      tags:
+      - rule
+  /rules/ruleoptions:
+    get:
+      description: This gives information about the possible rules. Returns a list
+        of all available event levels, event origins for the trigger condition as
+        well as a list of possbible sinke.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_RuleOptions'
+      security:
+      - KeycloakAuth: []
+      summary: List available settings for rules.
+      tags:
+      - rule
+  /rulse/{id}:
+    get:
+      description: Returns the rule
+      parameters:
+      - description: unique id of the rule
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Rule'
+        "404":
+          description: Not Found
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth: []
+      summary: Get a rule by id
+      tags:
+      - rule
+  /sink/{id}:
+    delete:
+      description: Deletes an sink.
+      parameters:
+      - description: unique ID of sink
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: deleted
+          headers:
+            api-version:
+              type: string
+      security:
+      - KeycloakAuth:
+        - admin
+      summary: Delete Sink
+      tags:
+      - sink
+  /sinks:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new sink. E.g. sending a mail or a message to a mattermost
+        channel etc.
+      parameters:
+      - description: sink to create
+        in: body
+        name: sink
+        required: true
+        schema:
+          $ref: '#/definitions/models.Sink'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Sink'
+        "409":
+          description: duplicate
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth:
+        - admin
+      summary: Create Sink
+      tags:
+      - sink
+    put:
+      description: Returns a list of sinks matching the provided filters.
+      parameters:
+      - description: filters, paging and sorting
+        in: body
+        name: MatchCriterias
+        required: true
+        schema:
+          $ref: '#/definitions/query.ResultSelector'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseListWithMetadata-models_Sink'
+      security:
+      - KeycloakAuth: []
+      summary: List Sinks
+      tags:
+      - sink
+  /sinks/{id}:
+    get:
+      description: Returns the sink
+      parameters:
+      - description: unique id of the sink
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Sink'
+        "404":
+          description: Not Found
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth: []
+      summary: Get a sink by id
+      tags:
+      - sink
+    put:
+      consumes:
+      - application/json
+      description: Updates an sink.
+      parameters:
+      - description: unique ID of sink
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: update/replace sink with given one
+        in: body
+        name: sink
+        required: true
+        schema:
+          $ref: '#/definitions/models.Sink'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Sink'
+        "409":
+          description: duplicate
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth:
+        - admin
+      summary: Update Sink
+      tags:
+      - sink
+  /sinks/options:
+    get:
+      description: Get filter options for listing sinks.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-array_query_FilterOption'
+      security:
+      - KeycloakAuth: []
+      summary: ListSinks filter options
+      tags:
+      - sink
 securityDefinitions:
   KeycloakAuth:
     authorizationUrl: '{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth'
     flow: implicit
+    scopes:
+      admin: admin access, permit writing and reading global settings
+      eventprovider: write access to endpoints used by the client backend services
     type: oauth2
 swagger: "2.0"

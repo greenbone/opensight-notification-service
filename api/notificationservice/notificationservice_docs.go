@@ -65,10 +65,12 @@ const docTemplatenotificationservice = `{
             "post": {
                 "security": [
                     {
-                        "KeycloakAuth": []
+                        "KeycloakAuth": [
+                            "eventprovider"
+                        ]
                     }
                 ],
-                "description": "Create a new notification",
+                "description": "Create a new event. It will always result in a notification and will possibly also trigger actions like sending mails, depending on the cofigured rules.",
                 "consumes": [
                     "application/json"
                 ],
@@ -78,15 +80,15 @@ const docTemplatenotificationservice = `{
                 "tags": [
                     "notification"
                 ],
-                "summary": "Create Notification",
+                "summary": "Create Event",
                 "parameters": [
                     {
-                        "description": "notification to add",
+                        "description": "event to add",
                         "name": "Notification",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Notification"
+                            "$ref": "#/definitions/models.Event"
                         }
                     }
                 ],
@@ -94,7 +96,7 @@ const docTemplatenotificationservice = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Notification"
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Event"
                         },
                         "headers": {
                             "api-version": {
@@ -136,9 +138,653 @@ const docTemplatenotificationservice = `{
                     }
                 }
             }
+        },
+        "/origins/{namespace}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": [
+                            "eventprovider"
+                        ]
+                    }
+                ],
+                "description": "Registers a set of origins in the given namespace. Replaces the content of the namespace if it already existed. The origins can be ulitized to set trigger conditions for actions.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "origin"
+                ],
+                "summary": "Register Origins",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "namespace of the calling service, need to be unique among all services registering origins",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "origins provided by the calling service",
+                        "name": "origins",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Origin"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rules": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns a list of rules matching the provided filters.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "List Rules",
+                "parameters": [
+                    {
+                        "description": "filters, paging and sorting",
+                        "name": "MatchCriterias",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/query.ResultSelector"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseListWithMetadata-models_Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new rule. A rule determines on which conditions which action is triggered.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Create Rule",
+                "parameters": [
+                    {
+                        "description": "new rule",
+                        "name": "rule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Rule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rules/options": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Get filter options for listing rules.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "ListRules filter options",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-array_query_FilterOption"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rules/ruleoptions": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "This gives information about the possible rules. Returns a list of all available event levels, event origins for the trigger condition as well as a list of possbible sinke.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "List available settings for rules.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_RuleOptions"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rules/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Update/replace a rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Update Rule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique ID of the rule",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "updated rule",
+                        "name": "rule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Rule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Delete a rule.",
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Delete Rule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique ID of the rule",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "deleted",
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rulse/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns the rule",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Get a rule by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique id of the rule",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sink/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": [
+                            "admin"
+                        ]
+                    }
+                ],
+                "description": "Deletes an sink.",
+                "tags": [
+                    "sink"
+                ],
+                "summary": "Delete Sink",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique ID of sink",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "deleted",
+                        "headers": {
+                            "api-version": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sinks": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns a list of sinks matching the provided filters.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sink"
+                ],
+                "summary": "List Sinks",
+                "parameters": [
+                    {
+                        "description": "filters, paging and sorting",
+                        "name": "MatchCriterias",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/query.ResultSelector"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseListWithMetadata-models_Sink"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": [
+                            "admin"
+                        ]
+                    }
+                ],
+                "description": "Creates a new sink. E.g. sending a mail or a message to a mattermost channel etc.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sink"
+                ],
+                "summary": "Create Sink",
+                "parameters": [
+                    {
+                        "description": "sink to create",
+                        "name": "sink",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Sink"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Sink"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "duplicate",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sinks/options": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Get filter options for listing sinks.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sink"
+                ],
+                "summary": "ListSinks filter options",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-array_query_FilterOption"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sinks/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns the sink",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sink"
+                ],
+                "summary": "Get a sink by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique id of the sink",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Sink"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": [
+                            "admin"
+                        ]
+                    }
+                ],
+                "description": "Updates an sink.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sink"
+                ],
+                "summary": "Update Sink",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique ID of sink",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "update/replace sink with given one",
+                        "name": "sink",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Sink"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Sink"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "duplicate",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "errorResponses.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "filter.CompareOperator": {
             "type": "string",
             "enum": [
@@ -310,6 +956,74 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "models.Action": {
+            "type": "object",
+            "required": [
+                "sink"
+            ],
+            "properties": {
+                "recipient": {
+                    "description": "specific recipient if supported/required by the sink, e.g. for mail a comma separated list of mail adresses",
+                    "type": "string"
+                },
+                "sink": {
+                    "$ref": "#/definitions/models.SinkReference"
+                }
+            }
+        },
+        "models.Event": {
+            "type": "object",
+            "required": [
+                "detail",
+                "level",
+                "origin",
+                "originClass",
+                "timestamp",
+                "title"
+            ],
+            "properties": {
+                "customFields": {
+                    "description": "can contain arbitrary structured information about the event",
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "level": {
+                    "type": "string",
+                    "enum": [
+                        "info",
+                        "warning",
+                        "error",
+                        "urgent"
+                    ]
+                },
+                "origin": {
+                    "description": "name of the origin, e.g. ` + "`" + `SBOM - React` + "`" + `",
+                    "type": "string"
+                },
+                "originClass": {
+                    "description": "unique identifier for the class of origins, e.g. ` + "`" + `/vi/SBOM` + "`" + `",
+                    "type": "string"
+                },
+                "originInstanceID": {
+                    "description": "together with class it can be used to provide a link to the origin, e.g. ` + "`" + `\u003cid of react sbom object\u003e` + "`" + `",
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Notification": {
             "type": "object",
             "required": [
@@ -352,8 +1066,211 @@ const docTemplatenotificationservice = `{
                     "format": "date-time"
                 },
                 "title": {
-                    "description": "can also be seen as the 'type'",
                     "type": "string"
+                }
+            }
+        },
+        "models.Origin": {
+            "type": "object",
+            "required": [
+                "class",
+                "name"
+            ],
+            "properties": {
+                "class": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string",
+                    "readOnly": true
+                }
+            }
+        },
+        "models.OriginReference": {
+            "type": "object",
+            "required": [
+                "class",
+                "namespace"
+            ],
+            "properties": {
+                "class": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "namespace": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Rule": {
+            "type": "object",
+            "required": [
+                "action",
+                "trigger"
+            ],
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/models.Action"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "trigger": {
+                    "$ref": "#/definitions/models.Trigger"
+                }
+            }
+        },
+        "models.RuleOptions": {
+            "type": "object",
+            "properties": {
+                "eventLevels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "eventOrigins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OriginReference"
+                    }
+                },
+                "sinks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SinkReference"
+                    }
+                }
+            }
+        },
+        "models.SMTP": {
+            "type": "object",
+            "required": [
+                "authentication_method",
+                "connection_security",
+                "host",
+                "password",
+                "port",
+                "sender",
+                "username"
+            ],
+            "properties": {
+                "authentication_method": {
+                    "type": "string",
+                    "enum": [
+                        "Plain",
+                        "Encrypted",
+                        "GSSAPI",
+                        "Kerberos"
+                    ]
+                },
+                "connection_security": {
+                    "type": "string",
+                    "enum": [
+                        "STARTTLS",
+                        "SSL",
+                        "NONE"
+                    ]
+                },
+                "host": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "sender": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Sink": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "name": {
+                    "type": "string"
+                },
+                "smtp": {
+                    "$ref": "#/definitions/models.SMTP"
+                },
+                "type": {
+                    "description": "only populate ` + "`" + `webhook` + "`" + ` or ` + "`" + `smtp` + "`" + ` depending on type",
+                    "type": "string",
+                    "enum": [
+                        "smtp",
+                        " mattermost",
+                        "teams"
+                    ]
+                },
+                "webhook": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SinkReference": {
+            "type": "object",
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "hasRecipient": {
+                    "description": "indicates if the sink supports/requires specifying a specific recipient",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "readOnly": true
+                }
+            }
+        },
+        "models.Trigger": {
+            "type": "object",
+            "required": [
+                "level",
+                "origins"
+            ],
+            "properties": {
+                "level": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "origins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OriginReference"
+                    }
                 }
             }
         },
@@ -468,6 +1385,42 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "query.ResponseListWithMetadata-models_Rule": {
+            "type": "object",
+            "required": [
+                "data",
+                "metadata"
+            ],
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Rule"
+                    }
+                },
+                "metadata": {
+                    "$ref": "#/definitions/query.Metadata"
+                }
+            }
+        },
+        "query.ResponseListWithMetadata-models_Sink": {
+            "type": "object",
+            "required": [
+                "data",
+                "metadata"
+            ],
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Sink"
+                    }
+                },
+                "metadata": {
+                    "$ref": "#/definitions/query.Metadata"
+                }
+            }
+        },
         "query.ResponseWithMetadata-array_query_FilterOption": {
             "type": "object",
             "required": [
@@ -486,7 +1439,7 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "query.ResponseWithMetadata-models_Notification": {
+        "query.ResponseWithMetadata-models_Event": {
             "type": "object",
             "required": [
                 "data",
@@ -494,7 +1447,52 @@ const docTemplatenotificationservice = `{
             ],
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/models.Notification"
+                    "$ref": "#/definitions/models.Event"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/query.Metadata"
+                }
+            }
+        },
+        "query.ResponseWithMetadata-models_Rule": {
+            "type": "object",
+            "required": [
+                "data",
+                "metadata"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Rule"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/query.Metadata"
+                }
+            }
+        },
+        "query.ResponseWithMetadata-models_RuleOptions": {
+            "type": "object",
+            "required": [
+                "data",
+                "metadata"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.RuleOptions"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/query.Metadata"
+                }
+            }
+        },
+        "query.ResponseWithMetadata-models_Sink": {
+            "type": "object",
+            "required": [
+                "data",
+                "metadata"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Sink"
                 },
                 "metadata": {
                     "$ref": "#/definitions/query.Metadata"
@@ -544,7 +1542,11 @@ const docTemplatenotificationservice = `{
         "KeycloakAuth": {
             "type": "oauth2",
             "flow": "implicit",
-            "authorizationUrl": "{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth"
+            "authorizationUrl": "{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth",
+            "scopes": {
+                "admin": "admin access, permit writing and reading global settings",
+                "eventprovider": "write access to endpoints used by the client backend services"
+            }
         }
     },
     "externalDocs": {
