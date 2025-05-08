@@ -1018,6 +1018,222 @@ const docTemplatenotificationservice = `{
                     }
                 }
             }
+        },
+        "/rules": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns a list of rules matching the provided filters.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "List Rules",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Rule"
+                            }
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new rule. A rule determines on which conditions which action is triggered.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Create Rule",
+                "parameters": [
+                    {
+                        "description": "new rule",
+                        "name": "rule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Rule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rules/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Update/replace a rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Update Rule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique ID of the rule",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "updated rule",
+                        "name": "rule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Rule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Delete a rule.",
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Delete Rule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique ID of the rule",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "deleted",
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rulse/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns the rule",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Get a rule by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "unique id of the rule",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1318,6 +1534,45 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "models.Action": {
+            "type": "object",
+            "required": [
+                "channel"
+            ],
+            "properties": {
+                "channel": {
+                    "$ref": "#/definitions/models.ChannelReference"
+                },
+                "recipient": {
+                    "description": "specific recipient if supported/required by the channel, e.g. for mail a comma separated list of mail adresses",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ChannelReference": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "hasRecipient": {
+                    "description": "indicates if the channel supports/requires specifying a specific recipient",
+                    "type": "boolean",
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "type": {
+                    "type": "string",
+                    "readOnly": true
+                }
+            }
+        },
         "models.Notification": {
             "type": "object",
             "required": [
@@ -1389,6 +1644,72 @@ const docTemplatenotificationservice = `{
                     "description": "service in which this origin is defined",
                     "type": "string",
                     "readOnly": true
+                }
+            }
+        },
+        "models.OriginReference": {
+            "type": "object",
+            "required": [
+                "class",
+                "serviceID"
+            ],
+            "properties": {
+                "class": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "serviceID": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Rule": {
+            "type": "object",
+            "required": [
+                "action",
+                "name",
+                "trigger"
+            ],
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/models.Action"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "name": {
+                    "type": "string"
+                },
+                "trigger": {
+                    "$ref": "#/definitions/models.Trigger"
+                }
+            }
+        },
+        "models.Trigger": {
+            "type": "object",
+            "required": [
+                "level",
+                "origins"
+            ],
+            "properties": {
+                "level": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "origins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OriginReference"
+                    }
                 }
             }
         },

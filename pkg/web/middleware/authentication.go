@@ -5,13 +5,15 @@
 package middleware
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/samber/lo"
-	"net/http"
 )
 
 const UserRole = "user"
+const AdminRole = "admin"
 const NotificationRole = "opensight_notification_role"
 
 // AuthorizeRoles adds role-based authorization middleware to the provided handler.
