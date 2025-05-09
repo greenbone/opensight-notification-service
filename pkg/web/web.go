@@ -6,6 +6,7 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
+	logsMiddleware "github.com/greenbone/opensight-golang-libraries/pkg/logs/ginMiddleware"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -13,7 +14,7 @@ import (
 func NewWebEngine(httpConfig config.Http) *gin.Engine {
 	ginWebEngine := gin.New()
 	ginWebEngine.Use(
-		middleware.Logging(),
+		logsMiddleware.Logging(),
 		gin.Recovery(),
 		middleware.CORS(httpConfig.AllowedOrigins),
 		middleware.ErrorHandler(gin.ErrorTypeAny),
