@@ -19,8 +19,8 @@ generate-code: # create mocks
 
 .PHONY: api-docs
 api-docs:
-	go run $(SWAG) init -d pkg/web --exclude pkg/web/healthcontroller -o api/notificationservice --parseDependency --generalInfo api.go --instanceName notificationservice
-	go run $(SWAG) init -d pkg/web/healthcontroller -o api/health --parseDependency --generalInfo api.go --instanceName health
+	go run $(SWAG) init -d pkg/web --exclude pkg/web/healthcontroller -o api/notificationservice --parseDependency --generalInfo api.go --outputTypes yaml,go --instanceName notificationservice
+	go run $(SWAG) init -d pkg/web/healthcontroller -o api/health --parseDependency --generalInfo api.go --outputTypes yaml,go --instanceName health
 
 .PHONY: build
 build:
