@@ -24,7 +24,7 @@ type OriginController struct{}
 //	@Security		KeycloakAuth[eventprovider]
 //	@Param			namespace	path		string			true	"namespace of the calling service, need to be unique among all services registering origins"
 //	@Param			origins		body		[]models.Origin	true	"origins provided by the calling service"
-//	@Success		200			{object}	query.ResponseWithMetadata[models.Rule]
+//	@Success		200			{object}	query.ResponseWithMetadata[[]models.Origin]
 //	@Header			all			{string}	api-version	"API version"
 //	@Router			/origins/{namespace} [put]
 func (c *OriginController) RegisterOrigins(gc *gin.Context) {

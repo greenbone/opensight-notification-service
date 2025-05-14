@@ -5,11 +5,20 @@
 package models
 
 type Sink struct {
-	ID      string `json:"id" readonly:"true"`
-	Name    string `json:"name" binding:"required"`
-	Type    string `json:"type" binding:"required" enums:"smtp, mattermost,teams"` // only populate `webhook` or `smtp` depending on type
-	Webhook string `json:"webhook"`
-	SMTP    *SMTP  `json:"smtp"`
+	ID         string      `json:"id" readonly:"true"`
+	Name       string      `json:"name" binding:"required"`
+	Type       string      `json:"type" binding:"required" enums:"smtp, mattermost,teams"` // only populate `name` `type` and the root level poperty matching the type
+	Mattermost *Mattermost `json:"mattermost"`
+	MSTeams    *MSTeams    `json:"msteams"`
+	SMTP       *SMTP       `json:"smtp"`
+}
+
+type Mattermost struct {
+	Webhook string `json:"webhook" binding:"required"`
+}
+
+type MSTeams struct {
+	Webhook string `json:"webhook" binding:"required"`
 }
 
 type SMTP struct {
@@ -24,7 +33,7 @@ type SMTP struct {
 
 type SinkReference struct {
 	ID           string `json:"id" binding:"required"`
-	Name         string `json:"name" binding:"required"`
+	Name         string `json:"name" readonly:"true"`
 	Type         string `json:"type" readonly:"true"`
 	HasRecipient bool   `json:"hasRecipient"` // indicates if the sink supports/requires specifying a specific recipient
 }

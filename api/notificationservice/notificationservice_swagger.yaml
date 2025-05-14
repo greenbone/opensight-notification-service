@@ -161,7 +161,21 @@ definitions:
     required:
     - sink
     type: object
-  models.Event:
+  models.MSTeams:
+    properties:
+      webhook:
+        type: string
+    required:
+    - webhook
+    type: object
+  models.Mattermost:
+    properties:
+      webhook:
+        type: string
+    required:
+    - webhook
+    type: object
+  models.Notification:
     properties:
       customFields:
         additionalProperties: {}
@@ -185,7 +199,7 @@ definitions:
       originClass:
         description: unique identifier for the class of origins, e.g. `/vi/SBOM`
         type: string
-      originInstanceID:
+      originResourceID:
         description: together with class it can be used to provide a link to the origin,
           e.g. `<id of react sbom object>`
         type: string
@@ -199,40 +213,6 @@ definitions:
     - level
     - origin
     - originClass
-    - timestamp
-    - title
-    type: object
-  models.Notification:
-    properties:
-      customFields:
-        additionalProperties: {}
-        description: can contain arbitrary structured information about the notification
-        type: object
-      detail:
-        type: string
-      id:
-        readOnly: true
-        type: string
-      level:
-        enum:
-        - info
-        - warning
-        - error
-        type: string
-      origin:
-        type: string
-      originUri:
-        description: can be used to provide a link to the origin
-        type: string
-      timestamp:
-        format: date-time
-        type: string
-      title:
-        type: string
-    required:
-    - detail
-    - level
-    - origin
     - timestamp
     - title
     type: object
@@ -331,18 +311,21 @@ definitions:
       id:
         readOnly: true
         type: string
+      mattermost:
+        $ref: '#/definitions/models.Mattermost'
+      msteams:
+        $ref: '#/definitions/models.MSTeams'
       name:
         type: string
       smtp:
         $ref: '#/definitions/models.SMTP'
       type:
-        description: only populate `webhook` or `smtp` depending on type
+        description: only populate `name` `type` and the root level poperty matching
+          the type
         enum:
         - smtp
         - ' mattermost'
         - teams
-        type: string
-      webhook:
         type: string
     required:
     - name
@@ -357,13 +340,13 @@ definitions:
       id:
         type: string
       name:
+        readOnly: true
         type: string
       type:
         readOnly: true
         type: string
     required:
     - id
-    - name
     type: object
   models.Trigger:
     properties:
@@ -476,6 +459,18 @@ definitions:
     - data
     - metadata
     type: object
+  query.ResponseWithMetadata-array_models_Origin:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Origin'
+        type: array
+      metadata:
+        $ref: '#/definitions/query.Metadata'
+    required:
+    - data
+    - metadata
+    type: object
   query.ResponseWithMetadata-array_query_FilterOption:
     properties:
       data:
@@ -488,10 +483,10 @@ definitions:
     - data
     - metadata
     type: object
-  query.ResponseWithMetadata-models_Event:
+  query.ResponseWithMetadata-models_Notification:
     properties:
       data:
-        $ref: '#/definitions/models.Event'
+        $ref: '#/definitions/models.Notification'
       metadata:
         $ref: '#/definitions/query.Metadata'
     required:
@@ -569,16 +564,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new event. It will always result in a notification and
-        will possibly also trigger actions like sending mails, depending on the cofigured
-        rules.
+      description: Create a new notification. It will always be stored by the notification
+        service and it will possibly also trigger actions like sending mails, depending
+        on the cofigured rules.
       parameters:
-      - description: event to add
+      - description: notification to add
         in: body
         name: Notification
         required: true
         schema:
-          $ref: '#/definitions/models.Event'
+          $ref: '#/definitions/models.Notification'
       produces:
       - application/json
       responses:
@@ -589,11 +584,11 @@ paths:
               description: API version
               type: string
           schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-models_Event'
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Notification'
       security:
       - KeycloakAuth:
         - eventprovider
-      summary: Create Event
+      summary: Create Notification
       tags:
       - notification
     put:
@@ -674,7 +669,7 @@ paths:
               description: API version
               type: string
           schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-models_Rule'
+            $ref: '#/definitions/query.ResponseWithMetadata-array_models_Origin'
       security:
       - KeycloakAuth:
         - eventprovider

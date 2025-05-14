@@ -70,7 +70,7 @@ const docTemplatenotificationservice = `{
                         ]
                     }
                 ],
-                "description": "Create a new event. It will always result in a notification and will possibly also trigger actions like sending mails, depending on the cofigured rules.",
+                "description": "Create a new notification. It will always be stored by the notification service and it will possibly also trigger actions like sending mails, depending on the cofigured rules.",
                 "consumes": [
                     "application/json"
                 ],
@@ -80,15 +80,15 @@ const docTemplatenotificationservice = `{
                 "tags": [
                     "notification"
                 ],
-                "summary": "Create Event",
+                "summary": "Create Notification",
                 "parameters": [
                     {
-                        "description": "event to add",
+                        "description": "notification to add",
                         "name": "Notification",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Event"
+                            "$ref": "#/definitions/models.Notification"
                         }
                     }
                 ],
@@ -96,7 +96,7 @@ const docTemplatenotificationservice = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Event"
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Notification"
                         },
                         "headers": {
                             "api-version": {
@@ -184,7 +184,7 @@ const docTemplatenotificationservice = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Rule"
+                            "$ref": "#/definitions/query.ResponseWithMetadata-array_models_Origin"
                         },
                         "headers": {
                             "api-version": {
@@ -971,7 +971,29 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "models.Event": {
+        "models.MSTeams": {
+            "type": "object",
+            "required": [
+                "webhook"
+            ],
+            "properties": {
+                "webhook": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Mattermost": {
+            "type": "object",
+            "required": [
+                "webhook"
+            ],
+            "properties": {
+                "webhook": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Notification": {
             "type": "object",
             "required": [
                 "detail",
@@ -1011,54 +1033,8 @@ const docTemplatenotificationservice = `{
                     "description": "unique identifier for the class of origins, e.g. ` + "`" + `/vi/SBOM` + "`" + `",
                     "type": "string"
                 },
-                "originInstanceID": {
+                "originResourceID": {
                     "description": "together with class it can be used to provide a link to the origin, e.g. ` + "`" + `\u003cid of react sbom object\u003e` + "`" + `",
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Notification": {
-            "type": "object",
-            "required": [
-                "detail",
-                "level",
-                "origin",
-                "timestamp",
-                "title"
-            ],
-            "properties": {
-                "customFields": {
-                    "description": "can contain arbitrary structured information about the notification",
-                    "type": "object",
-                    "additionalProperties": {}
-                },
-                "detail": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string",
-                    "readOnly": true
-                },
-                "level": {
-                    "type": "string",
-                    "enum": [
-                        "info",
-                        "warning",
-                        "error"
-                    ]
-                },
-                "origin": {
-                    "type": "string"
-                },
-                "originUri": {
-                    "description": "can be used to provide a link to the origin",
                     "type": "string"
                 },
                 "timestamp": {
@@ -1210,6 +1186,12 @@ const docTemplatenotificationservice = `{
                     "type": "string",
                     "readOnly": true
                 },
+                "mattermost": {
+                    "$ref": "#/definitions/models.Mattermost"
+                },
+                "msteams": {
+                    "$ref": "#/definitions/models.MSTeams"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -1217,24 +1199,20 @@ const docTemplatenotificationservice = `{
                     "$ref": "#/definitions/models.SMTP"
                 },
                 "type": {
-                    "description": "only populate ` + "`" + `webhook` + "`" + ` or ` + "`" + `smtp` + "`" + ` depending on type",
+                    "description": "only populate ` + "`" + `name` + "`" + ` ` + "`" + `type` + "`" + ` and the root level poperty matching the type",
                     "type": "string",
                     "enum": [
                         "smtp",
                         " mattermost",
                         "teams"
                     ]
-                },
-                "webhook": {
-                    "type": "string"
                 }
             }
         },
         "models.SinkReference": {
             "type": "object",
             "required": [
-                "id",
-                "name"
+                "id"
             ],
             "properties": {
                 "hasRecipient": {
@@ -1245,7 +1223,8 @@ const docTemplatenotificationservice = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "readOnly": true
                 },
                 "type": {
                     "type": "string",
@@ -1421,6 +1400,24 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "query.ResponseWithMetadata-array_models_Origin": {
+            "type": "object",
+            "required": [
+                "data",
+                "metadata"
+            ],
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Origin"
+                    }
+                },
+                "metadata": {
+                    "$ref": "#/definitions/query.Metadata"
+                }
+            }
+        },
         "query.ResponseWithMetadata-array_query_FilterOption": {
             "type": "object",
             "required": [
@@ -1439,7 +1436,7 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "query.ResponseWithMetadata-models_Event": {
+        "query.ResponseWithMetadata-models_Notification": {
             "type": "object",
             "required": [
                 "data",
@@ -1447,7 +1444,7 @@ const docTemplatenotificationservice = `{
             ],
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/models.Event"
+                    "$ref": "#/definitions/models.Notification"
                 },
                 "metadata": {
                     "$ref": "#/definitions/query.Metadata"

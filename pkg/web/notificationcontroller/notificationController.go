@@ -46,16 +46,16 @@ func (c *NotificationController) registerRoutes(router gin.IRouter, auth gin.Han
 	group.GET("/options", c.GetOptions)
 }
 
-// CreateEvent
+// CreateNotification
 //
-//	@Summary		Create Event
-//	@Description	Create a new event. It will always result in a notification and will possibly also trigger actions like sending mails, depending on the cofigured rules.
+//	@Summary		Create Notification
+//	@Description	Create a new notification. It will always be stored by the notification service and it will possibly also trigger actions like sending mails, depending on the cofigured rules.
 //	@Tags			notification
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth[eventprovider]
-//	@Param			Notification	body		models.Event	true	"event to add"
-//	@Success		201				{object}	query.ResponseWithMetadata[models.Event]
+//	@Param			Notification	body		models.Notification	true	"notification to add"
+//	@Success		201				{object}	query.ResponseWithMetadata[models.Notification]
 //	@Header			all				{string}	api-version	"API version"
 //	@Router			/notifications [post]
 func (c *NotificationController) CreateNotification(gc *gin.Context) {

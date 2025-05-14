@@ -4,7 +4,7 @@
 
 package models
 
-// Origin of an event, uniquely identified by the combination of namespace and class.
+// Origin of an event/notification, uniquely identified by the combination of namespace and class.
 type Origin struct {
 	Name      string `json:"name" binding:"required"`
 	Class     string `json:"class" binding:"required"`
