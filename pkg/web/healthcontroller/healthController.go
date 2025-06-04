@@ -5,10 +5,13 @@
 package healthcontroller
 
 import (
+	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller/dtos"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
+
+	app "github.com/greenbone/opensight-notification-service"
 )
 
 type HealthController struct {
@@ -28,6 +31,8 @@ func (c *HealthController) registerRoutes(router gin.IRouter) {
 	group.GET("started", c.Started)
 	group.GET("alive", c.Alive)
 	group.GET("ready", c.Ready)
+
+	router.GET("/api/notification-service/version", c.readVersion)
 }
 
 //	@Summary		Service health status Started
@@ -60,4 +65,17 @@ func (c *HealthController) Ready(gc *gin.Context) {
 	} else {
 		gc.Status(http.StatusNotFound)
 	}
+}
+
+// readVersion
+//
+//	@Summary	Read API version
+//	@Tags		health
+//	@Produce	json
+//	@Success	200	{object}	dtos.VersionResponseDto
+//	@Router		/api/notification-service/version [get]
+func (*HealthController) readVersion(c *gin.Context) {
+	c.JSON(http.StatusOK, dtos.VersionResponseDto{
+		Version: app.Version,
+	})
 }
