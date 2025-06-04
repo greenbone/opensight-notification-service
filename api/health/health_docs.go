@@ -18,6 +18,25 @@ const docTemplatehealth = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/notification-service/version": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Read API version",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.VersionResponseDto"
+                        }
+                    }
+                }
+            }
+        },
         "/health/alive": {
             "get": {
                 "description": "Endpoint for 'alive' health probes",
@@ -60,6 +79,17 @@ const docTemplatehealth = `{
                     "200": {
                         "description": "Started"
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dtos.VersionResponseDto": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "string",
+                    "example": "0.0.1-alpha1-dev1"
                 }
             }
         }
