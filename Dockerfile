@@ -24,6 +24,7 @@ RUN make api-docs
 # copy rest of the source files
 COPY cmd cmd
 COPY pkg pkg
+COPY version.go .
 
 # (re)generate mocks
 COPY .mockery.yaml .mockery.yaml
