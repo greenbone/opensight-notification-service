@@ -11,10 +11,10 @@ on:
         description: What kind of release do you want to do (pontos --release-type argument)?
         options:
           - alpha
-          - patch
           - minor
           - major
           - release-candidate
+          - hotfix
       release-version:
         type: string
         description: Set an explicit version, that will overwrite release-type. Fails if version is not compliant.
