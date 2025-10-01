@@ -8,7 +8,7 @@ on:
     inputs:
       release-type:
         type: choice
-        description: What kind of release do you want to do (pontos --release-type argument)?
+        description: What kind of release do you want to do?
         options:
           - alpha
           - minor

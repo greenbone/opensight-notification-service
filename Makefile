@@ -37,3 +37,23 @@ start-services: ## start service and dependencies with docker
 .PHONY: cleanup-services
 cleanup-services: # delete service, dependencies and all persistent data
 	docker compose -f docker-compose.yml -f docker-compose.service.yml down -v
+
+.PHONY: start-postgres-test-service
+start-postgres-test-service:
+	docker compose -f ./pkg/pgtesting/compose.yml -p postgres-test up -d --wait
+
+.PHONY: stop-postgres-test-service
+stop-postgres-test-service:
+	docker compose -f ./pkg/pgtesting/compose.yml -p postgres-test down
+
+.PHONY: run-postgres-tests
+run-postgres-tests:
+	TEST_POSTGRES=1 go test ./pkg/repository/...
+
+.PHONY: test-postgres
+test-postgres:
+	$(MAKE) start-postgres-test-service
+	$(MAKE) run-postgres-tests; \
+	status=$$?; \
+	$(MAKE) stop-postgres-test-service; \
+	exit $$status
