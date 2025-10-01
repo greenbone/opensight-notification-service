@@ -11,7 +11,8 @@ The Notification Service allows to display all notifications in a central place 
 - [Configuration](#configuration)
 - [Running](#running)
   - [Running non-containerized service](#running-non-containerized-service)
-- [Build and test](#build-and-test)
+- [Build](#build)
+- [Testing](#testing)
 - [Maintainer](#maintainer)
 - [License](#license)
 
@@ -68,11 +69,24 @@ From here everything is identical to the docker compose setup.
 
 If there are errors regarding the database, verify that it is running with `docker ps` (should show a running container for postgres).
 
-## Build and test
+## Build
 
 > Refer to [Makefile](./Makefile) to get an overview of all commands
 
-To build run `make build`. To run the unit tests run `make test`. The rest API docs can be generated with `make api-docs`.
+To build run `make build`. The rest API docs can be generated with `make api-docs`.
+
+## Testing
+
+Currently implemented test suites are displayed in table below. Not all Go tests are enabled by default, see `Env filter` column for specific environment variable needed to be set to run the tests - e.g. to include Postgres Unit Tests in go tests execution, run:
+
+```shell
+TEST_POSTGRES=1 go test ./...
+```
+
+| Title                 | Description                                           | Command                   | Env filter           |
+|-----------------------|-------------------------------------------------------|---------------------------|----------------------|
+| Unit Tests            | short unit tests, no additional setup needed          | `make test`               | (run by default)     |
+| Postgres Unit Tests   | unit tests running on containerized Postgres instance | `make test-postgres`      | `TEST_POSTGRES=1`    |
 
 ## Maintainer
 

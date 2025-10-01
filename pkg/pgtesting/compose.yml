@@ -1,0 +1,23 @@
+# Use this compose file to start a local Postgres instance for running tests against.
+
+services:
+  pgtestdb:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: password
+    restart: unless-stopped
+    volumes:
+      # Uses a tmpfs volume to make tests extremely fast. The data in test
+      # databases is not persisted across restarts, nor does it need to be.
+      - type: tmpfs
+        target: /var/lib/postgresql/data/
+    command:
+      - "postgres"
+      - "-c" # turn off fsync for speed: see https://www.postgresql.org/docs/8.1/runtime-config-wal.html
+      - "fsync=off"
+      - "-c" # log everything for debugging
+      - "log_statement=all"
+      - "-c" # allow many connections for parallel tests
+      - "max_connections=1000" 
+    ports:
+      - "5632:5432" # avoid clash with the other compose deployments

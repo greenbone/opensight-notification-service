@@ -20,7 +20,10 @@ import (
 )
 
 //go:embed migrations
-var migrations embed.FS
+var MigrationsFS embed.FS
+
+// directory within [MigrationsFS] where migration files are located
+var MigrationDir = "migrations"
 
 func NewClient(postgres config.Database) (*sqlx.DB, error) {
 	// note: even though some parameters are part of the url path, [url.PathEscape] does not fit as it does not escape `:`
@@ -58,7 +61,7 @@ func autoMigrate(connectionString string) error {
 		return err
 	}
 
-	sourceDriver, err := iofs.New(migrations, "migrations")
+	sourceDriver, err := iofs.New(MigrationsFS, MigrationDir)
 	if err != nil {
 		return fmt.Errorf("could not read migration files: %w", err)
 	}
