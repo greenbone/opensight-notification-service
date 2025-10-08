@@ -10,6 +10,8 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+cov-unit-tests.txt
+cov-pg-tests.txt
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
