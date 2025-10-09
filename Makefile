@@ -28,7 +28,7 @@ build:
 
 .PHONY: test
 test: # run unit tests
-	go test ./... -cover
+	go test ./... -coverprofile=cov-unit-tests.txt
 
 .PHONY: start-services
 start-services: ## start service and dependencies with docker
@@ -48,7 +48,7 @@ stop-postgres-test-service:
 
 .PHONY: run-postgres-tests
 run-postgres-tests:
-	TEST_POSTGRES=1 go test ./pkg/repository/...
+	TEST_POSTGRES=1 go test ./pkg/repository/... -coverprofile=cov-pg-tests.txt
 
 .PHONY: test-postgres
 test-postgres:
