@@ -2,6 +2,8 @@
 
 # OpenSight Notification Service <!-- omit in toc -->
 
+[![codecov](https://codecov.io/github/greenbone/opensight-notification-service/graph/badge.svg?token=BE6ExbOYqE)](https://codecov.io/github/greenbone/opensight-notification-service)
+
 The Notification Service allows to display all notifications in a central place in the frontend. All OpenSight backend services can use it to send notifications to the user.
 
 ## Table of Contents <!-- omit in toc -->
