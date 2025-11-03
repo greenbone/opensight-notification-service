@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/greenbone/keycloak-client-golang v0.2.3
-	github.com/greenbone/opensight-golang-libraries v1.18.0
+	github.com/greenbone/opensight-golang-libraries v1.20.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.9
@@ -24,11 +24,11 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Nerzal/gocloak/v13 v13.9.0 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
-	github.com/bytedance/sonic v1.14.1 // indirect
-	github.com/bytedance/sonic/loader v0.3.0 // indirect
+	github.com/bytedance/sonic v1.14.2 // indirect
+	github.com/bytedance/sonic/loader v0.4.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.11 // indirect
 	github.com/gin-contrib/logger v1.2.6 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.22.1 // indirect
@@ -70,7 +70,7 @@ require (
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/swaggo/files/v2 v2.0.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/ugorji/go/codec v1.3.0 // indirect
+	github.com/ugorji/go/codec v1.3.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.22.0 // indirect
@@ -84,6 +84,6 @@ require (
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/gorm v1.31.0 // indirect
+	gorm.io/gorm v1.31.1 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
