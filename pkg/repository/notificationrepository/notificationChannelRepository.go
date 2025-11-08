@@ -2,8 +2,10 @@ package notificationrepository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -11,8 +13,14 @@ type NotificationChannelRepository struct {
 	client *sqlx.DB
 }
 
-func NewNotificationChannelRepository(db *sqlx.DB) *NotificationChannelRepository {
-	return &NotificationChannelRepository{client: db}
+func NewNotificationChannelRepository(db *sqlx.DB) (port.NotificationChannelRepository, error) {
+	if db == nil {
+		return nil, errors.New("nil db reference")
+	}
+	client := &NotificationChannelRepository{
+		client: db,
+	}
+	return client, nil
 }
 
 const createNotificationChannelQuery = `
