@@ -6,16 +6,16 @@ package notificationrepository
 
 import (
 	"encoding/json"
+
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
 )
 
 const (
-	notificationsTable                = "notification_service.notifications"
-	createNotificationQuery           = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
-	unfilteredListNotificationsQuery  = `SELECT * FROM ` + notificationsTable
-	unfilteredCountNotificationsQuery = `SELECT COUNT(*) FROM ` + notificationsTable
+	notificationsTable               = "notification_service.notifications"
+	createNotificationQuery          = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
+	unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable
 )
 
 type notificationRow struct {
