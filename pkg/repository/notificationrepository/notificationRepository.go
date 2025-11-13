@@ -8,6 +8,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	pgquery "github.com/greenbone/opensight-golang-libraries/pkg/postgres/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
@@ -30,26 +32,28 @@ func NewNotificationRepository(db *sqlx.DB) (port.NotificationRepository, error)
 }
 
 func (r *NotificationRepository) ListNotifications(ctx context.Context, resultSelector query.ResultSelector) (notifications []models.Notification, totalResults uint64, err error) {
-	var (
-		notificationRows          []notificationRow
-		notificationFieldMappings = notificationFieldMapping()
-	)
-
-	listQuery, queryParams, err := repository.BuildQuery(resultSelector, unfilteredListNotificationsQuery, notificationFieldMappings)
-	if err != nil {
-		return nil, 0, err
+	querySettings := pgquery.Settings{
+		FilterFieldMapping:      notificationFieldMapping(),
+		SortingTieBreakerColumn: "id",
 	}
-	err = r.client.SelectContext(ctx, &notificationRows, r.client.Rebind(listQuery), queryParams...)
+
+	listQuery, queryParams, err := repository.BuildListQuery(resultSelector, unfilteredListNotificationsQuery, querySettings)
+	if err != nil {
+		return nil, 0, fmt.Errorf("error building list query: %w", err)
+	}
+
+	var notificationRows []notificationRow
+	err = r.client.SelectContext(ctx, &notificationRows, listQuery, queryParams...)
 	if err != nil {
 		err = fmt.Errorf("error getting notifications from database: %w", err)
 		return
 	}
 
-	countQuery, queryParams, err := repository.BuildCountQuery(resultSelector.Filter, unfilteredCountNotificationsQuery, notificationFieldMappings)
+	countQuery, queryParams, err := repository.BuildCountQuery(resultSelector.Filter, unfilteredListNotificationsQuery, querySettings)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("error building count query: %w", err)
 	}
-	err = r.client.QueryRowxContext(ctx, r.client.Rebind(countQuery), queryParams...).Scan(&totalResults)
+	err = r.client.QueryRowxContext(ctx, countQuery, queryParams...).Scan(&totalResults)
 	if err != nil {
 		err = fmt.Errorf("error getting total results: %w", err)
 		return
