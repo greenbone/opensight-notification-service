@@ -13,59 +13,59 @@ import (
 
 var NotificationsRequestOptions = []filter.RequestOption{
 	{
-		Name: web.NewNameRequest(""),
+		Name: web.NameFilterRequestName,
 		Control: filter.RequestOptionType{
 			Type: filter.ControlTypeString,
 		},
-		Operators: []filter.ReadableValue[filter.CompareOperator]{
+		Operators: filter.SortedReadableValues(
 			web.OperatorEqual,
 			web.OperatorContains,
 			web.OperatorBeginsWith,
-		},
+		),
 		MultiSelect: true,
 	},
 	{
-		Name: web.NewDescriptionRequest(""),
+		Name: web.DescriptionFilterRequestName,
 		Control: filter.RequestOptionType{
 			Type: filter.ControlTypeString,
 		},
-		Operators: []filter.ReadableValue[filter.CompareOperator]{
+		Operators: filter.SortedReadableValues(
 			web.OperatorEqual,
 			web.OperatorContains,
 			web.OperatorBeginsWith,
-		},
+		),
 		MultiSelect: true,
 	},
 	{
-		Name: web.NewOriginRequest(""),
+		Name: web.OriginFilterRequestName,
 		Control: filter.RequestOptionType{
 			Type: filter.ControlTypeString,
 		},
-		Operators: []filter.ReadableValue[filter.CompareOperator]{
+		Operators: filter.SortedReadableValues(
 			web.OperatorEqual,
 			web.OperatorContains,
 			web.OperatorBeginsWith,
-		},
+		),
 		MultiSelect: true,
 	},
 	{
-		Name: web.NewOccurrenceRequest(""),
+		Name: web.OccurrenceFilterRequestName,
 		Control: filter.RequestOptionType{
 			Type: filter.ControlTypeDateTime,
 		},
-		Operators: []filter.ReadableValue[filter.CompareOperator]{
+		Operators: filter.SortedReadableValues(
 			web.OperatorBefore,
 			web.OperatorAfter,
-		},
+		),
 	},
 	{
-		Name: web.NewLevelRequest(""),
+		Name: web.LevelFilterRequestName,
 		Control: filter.RequestOptionType{
 			Type: filter.ControlTypeEnum,
 		},
-		Operators: []filter.ReadableValue[filter.CompareOperator]{
+		Operators: filter.SortedReadableValues(
 			web.OperatorEqual,
-		},
+		),
 		Values:      []string{"info", "warning", "error"},
 		MultiSelect: true,
 	},
