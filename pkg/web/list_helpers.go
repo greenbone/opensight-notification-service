@@ -56,34 +56,26 @@ var (
 	}
 )
 
-func NewNameRequest(labelOverride string) filter.ReadableValue[string] {
-	return newFilterRequestName(labelOverride, labelNameFilterField, dtos.NameField)
-}
-
-func NewDescriptionRequest(labelOverride string) filter.ReadableValue[string] {
-	return newFilterRequestName(labelOverride, labelDescriptionFilterField, dtos.DescriptionFieldName)
-}
-
-func NewOccurrenceRequest(labelOverride string) filter.ReadableValue[string] {
-	return newFilterRequestName(labelOverride, labelOccurrenceFilterField, dtos.OccurrenceFieldName)
-}
-
-func NewOriginRequest(labelOverride string) filter.ReadableValue[string] {
-	return newFilterRequestName(labelOverride, labelOriginFilterField, dtos.OriginFieldName)
-}
-
-func NewLevelRequest(labelOverride string) filter.ReadableValue[string] {
-	return newFilterRequestName(labelOverride, labelLevelFilterField, dtos.LevelFieldName)
-}
-
-func newFilterRequestName(labelOverride, labelDefault, value string) filter.ReadableValue[string] {
-	label := labelDefault
-	if labelOverride != "" {
-		label = labelOverride
+// filter names
+var (
+	NameFilterRequestName = filter.ReadableValue[string]{
+		Label: labelNameFilterField,
+		Value: dtos.NameField,
 	}
-
-	return filter.ReadableValue[string]{
-		Label: label,
-		Value: value,
+	DescriptionFilterRequestName = filter.ReadableValue[string]{
+		Label: labelDescriptionFilterField,
+		Value: dtos.DescriptionFieldName,
 	}
-}
+	OccurrenceFilterRequestName = filter.ReadableValue[string]{
+		Label: labelOccurrenceFilterField,
+		Value: dtos.OccurrenceFieldName,
+	}
+	OriginFilterRequestName = filter.ReadableValue[string]{
+		Label: labelOriginFilterField,
+		Value: dtos.OriginFieldName,
+	}
+	LevelFilterRequestName = filter.ReadableValue[string]{
+		Label: labelLevelFilterField,
+		Value: dtos.LevelFieldName,
+	}
+)
