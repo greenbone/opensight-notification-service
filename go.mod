@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/greenbone/keycloak-client-golang v0.2.3
-	github.com/greenbone/opensight-golang-libraries v1.21.0
+	github.com/greenbone/opensight-golang-libraries v1.22.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.9
@@ -31,7 +31,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.11 // indirect
 	github.com/gin-contrib/logger v1.2.6 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
-	github.com/go-openapi/jsonpointer v0.22.1 // indirect
+	github.com/go-openapi/jsonpointer v0.22.2 // indirect
 	github.com/go-openapi/jsonreference v0.21.3 // indirect
 	github.com/go-openapi/spec v0.22.1 // indirect
 	github.com/go-openapi/swag/conv v0.25.1 // indirect
