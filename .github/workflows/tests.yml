@@ -27,7 +27,6 @@ jobs:
           flags: unit-tests
           name: Unit Tests
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
 
   postgres-test:
     name: Execute postgres tests
@@ -48,4 +47,3 @@ jobs:
           flags: postgres-tests
           name: Postgres Tests
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
