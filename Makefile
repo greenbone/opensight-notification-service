@@ -48,7 +48,7 @@ stop-postgres-test-service:
 
 .PHONY: run-postgres-tests
 run-postgres-tests:
-	TEST_POSTGRES=1 go test ./pkg/repository/... ./pkg/web/... -coverprofile=cov-pg-tests.txt
+	TEST_POSTGRES=1 go test -tags=integration ./pkg/repository/... ./pkg/web/... -coverprofile=cov-pg-tests.txt
 
 .PHONY: test-postgres
 test-postgres:

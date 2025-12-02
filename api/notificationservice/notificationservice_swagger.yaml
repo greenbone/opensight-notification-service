@@ -170,7 +170,6 @@ definitions:
     - isTlsEnforced
     - maxEmailAttachmentSizeMb
     - maxEmailIncludeSizeMb
-    - password
     - port
     - senderEmailAddress
     - username

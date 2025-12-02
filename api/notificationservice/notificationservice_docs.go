@@ -520,7 +520,6 @@ const docTemplatenotificationservice = `{
                 "isTlsEnforced",
                 "maxEmailAttachmentSizeMb",
                 "maxEmailIncludeSizeMb",
-                "password",
                 "port",
                 "senderEmailAddress",
                 "username"
