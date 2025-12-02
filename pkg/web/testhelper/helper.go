@@ -10,6 +10,10 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/require"
 
 	"github.com/gin-gonic/gin"
@@ -142,4 +146,46 @@ func getMigrationsPath() string {
 	_, b, _, _ := runtime.Caller(0)
 	basePath := filepath.Dir(b)
 	return filepath.Join(basePath, "../../repository/migrations")
+}
+
+func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepository, *sqlx.DB) {
+	gormDB := NewTestDB(t)
+	sqlxdb, err := gormDB.DB()
+	if err != nil {
+		t.Fatalf("failed to get sql.DB: %v", err)
+	}
+	db := sqlx.NewDb(sqlxdb, "postgres")
+	db.Exec("DELETE FROM notification_service.notification_channel")
+
+	repo, err := notificationrepository.NewNotificationChannelRepository(db)
+	if err != nil {
+		t.Fatalf("failed to create repository: %v", err)
+	}
+
+	return repo, db
+}
+
+func GetValidMailNotificationChannel() models.MailNotificationChannel {
+	name := "mail1"
+	domain := "example.com"
+	port := 25
+	auth := true
+	tls := false
+	username := "user"
+	password := "pass"
+	maxAttach := 10
+	maxInclude := 5
+	sender := "sender@example.com"
+	return models.MailNotificationChannel{
+		ChannelName:              &name,
+		Domain:                   &domain,
+		Port:                     &port,
+		IsAuthenticationRequired: &auth,
+		IsTlsEnforced:            &tls,
+		Username:                 &username,
+		Password:                 &password,
+		MaxEmailAttachmentSizeMb: &maxAttach,
+		MaxEmailIncludeSizeMb:    &maxInclude,
+		SenderEmailAddress:       &sender,
+	}
 }

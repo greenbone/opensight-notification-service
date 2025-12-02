@@ -37,7 +37,8 @@ const createNotificationChannelQuery = `
     RETURNING *
 `
 
-const updateNotificationChannelQuery = `
+func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
+	query := `
         UPDATE notification_service.notification_channel SET
             channel_type = :channel_type,
             channel_name = :channel_name,
@@ -46,15 +47,20 @@ const updateNotificationChannelQuery = `
             port = :port,
             is_authentication_required = :is_authentication_required,
             is_tls_enforced = :is_tls_enforced,
-            username = :username,
-            password = :password,
+            username = :username,`
+	if in.Password != nil {
+		query += `
+            password = :password,`
+	}
+	query += `
             max_email_attachment_size_mb = :max_email_attachment_size_mb,
             max_email_include_size_mb = :max_email_include_size_mb,
             sender_email_address = :sender_email_address,
             updated = NOW()
         WHERE id = :id
-        RETURNING *
-    `
+        RETURNING *`
+	return query
+}
 
 func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Context, channelIn models.NotificationChannel) (models.NotificationChannel, error) {
 	insertRow, err := toNotificationChannelRow(channelIn)
@@ -110,7 +116,7 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Co
 	rowIn.Id = &id
 
 	var row notificationChannelRow
-	stmt, err := r.client.PrepareNamedContext(ctx, updateNotificationChannelQuery)
+	stmt, err := r.client.PrepareNamedContext(ctx, buildUpdateNotificationChannelQuery(in))
 	if err != nil {
 		return in, fmt.Errorf("prepare failed: %w", err)
 	}

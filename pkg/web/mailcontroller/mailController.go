@@ -55,7 +55,8 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, mapper.MapNotificationChannelToMail(created))
+	response := mapper.MapNotificationChannelToMail(created)
+	c.JSON(http.StatusCreated, response)
 }
 
 // ListMailChannelsByType
@@ -70,7 +71,6 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notifications/mail [get]
 func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
-	// TODO: validate channelType, No password in response
 	channels, err := mc.Service.ListNotificationChannelsByType(c, "mail")
 
 	if err != nil {
@@ -96,8 +96,6 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 //	@Router			/notifications/mail/{id} [put]
 func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 	id := c.Param("id")
-	// TODO: If password is empty, do not update it
-	// TODO in testing: Verify input validation with null entries.
 	var channel models.MailNotificationChannel
 	if err := c.ShouldBindJSON(&channel); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
