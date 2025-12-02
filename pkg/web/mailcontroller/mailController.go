@@ -42,7 +42,6 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notifications/mail [post]
-
 func (mc *MailController) CreateMailChannel(c *gin.Context) {
 	var channel models.MailNotificationChannel
 	if err := c.ShouldBindJSON(&channel); err != nil {
@@ -95,11 +94,10 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notifications/mail/{id} [put]
-
-// TODO in testing: Verify input validation with null entries.
 func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 	id := c.Param("id")
 	// TODO: If password is empty, do not update it
+	// TODO in testing: Verify input validation with null entries.
 	var channel models.MailNotificationChannel
 	if err := c.ShouldBindJSON(&channel); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -126,7 +124,6 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 //	@Failure		500	{object}	map[string]string
 //	@Router			/notifications/mail/{id} [delete]
 func (mc *MailController) DeleteMailChannel(c *gin.Context) {
-	// TODO: Check if id is in use before deleting
 	id := c.Param("id")
 	if err := mc.Service.DeleteNotificationChannel(c, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

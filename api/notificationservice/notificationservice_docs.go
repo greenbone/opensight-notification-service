@@ -106,6 +106,205 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/notifications/mail": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "List mail notification channels by type",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mailchannel"
+                ],
+                "summary": "List Mail Channels",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Channel type",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.MailNotificationChannel"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new mail notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mailchannel"
+                ],
+                "summary": "Create Mail Channel",
+                "parameters": [
+                    {
+                        "description": "Mail channel to add",
+                        "name": "MailChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.MailNotificationChannel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.MailNotificationChannel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/mail/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Update an existing mail notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mailchannel"
+                ],
+                "summary": "Update Mail Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mail channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Mail channel to update",
+                        "name": "MailChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.MailNotificationChannel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MailNotificationChannel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Delete a mail notification channel",
+                "tags": [
+                    "mail channel"
+                ],
+                "summary": "Delete Mail Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mail channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notifications/options": {
             "get": {
                 "security": [
@@ -148,28 +347,29 @@ const docTemplatenotificationservice = `{
                 "doesNotContain",
                 "textContains",
                 "isNumberEqualTo",
-                "isEqualTo",
-                "isIpEqualTo",
-                "isStringEqualTo",
-                "isStringCaseInsensitiveEqualTo",
-                "isNotEqualTo",
                 "isNumberNotEqualTo",
+                "isEqualTo",
+                "isNotEqualTo",
+                "isIpEqualTo",
                 "isIpNotEqualTo",
+                "isStringEqualTo",
                 "isStringNotEqualTo",
+                "isStringCaseInsensitiveEqualTo",
                 "isGreaterThan",
                 "isGreaterThanOrEqualTo",
                 "isLessThan",
                 "isLessThanOrEqualTo",
                 "beforeDate",
                 "afterDate",
+                "betweenDates",
                 "exists",
+                "doesNotExist",
                 "isEqualToRating",
                 "isNotEqualToRating",
-                "isGreaterThanRating",
                 "isLessThanRating",
-                "isGreaterThanOrEqualToRating",
                 "isLessThanOrEqualToRating",
-                "betweenDates"
+                "isGreaterThanRating",
+                "isGreaterThanOrEqualToRating"
             ],
             "x-enum-varnames": [
                 "CompareOperatorBeginsWith",
@@ -178,28 +378,29 @@ const docTemplatenotificationservice = `{
                 "CompareOperatorDoesNotContain",
                 "CompareOperatorTextContains",
                 "CompareOperatorIsNumberEqualTo",
-                "CompareOperatorIsEqualTo",
-                "CompareOperatorIsIpEqualTo",
-                "CompareOperatorIsStringEqualTo",
-                "CompareOperatorIsStringCaseInsensitiveEqualTo",
-                "CompareOperatorIsNotEqualTo",
                 "CompareOperatorIsNumberNotEqualTo",
+                "CompareOperatorIsEqualTo",
+                "CompareOperatorIsNotEqualTo",
+                "CompareOperatorIsIpEqualTo",
                 "CompareOperatorIsIpNotEqualTo",
+                "CompareOperatorIsStringEqualTo",
                 "CompareOperatorIsStringNotEqualTo",
+                "CompareOperatorIsStringCaseInsensitiveEqualTo",
                 "CompareOperatorIsGreaterThan",
                 "CompareOperatorIsGreaterThanOrEqualTo",
                 "CompareOperatorIsLessThan",
                 "CompareOperatorIsLessThanOrEqualTo",
                 "CompareOperatorBeforeDate",
                 "CompareOperatorAfterDate",
+                "CompareOperatorBetweenDates",
                 "CompareOperatorExists",
+                "CompareOperatorDoesNotExist",
                 "CompareOperatorIsEqualToRating",
                 "CompareOperatorIsNotEqualToRating",
-                "CompareOperatorIsGreaterThanRating",
                 "CompareOperatorIsLessThanRating",
-                "CompareOperatorIsGreaterThanOrEqualToRating",
                 "CompareOperatorIsLessThanOrEqualToRating",
-                "CompareOperatorBetweenDates"
+                "CompareOperatorIsGreaterThanRating",
+                "CompareOperatorIsGreaterThanOrEqualToRating"
             ]
         },
         "filter.ControlType": {
@@ -307,6 +508,56 @@ const docTemplatenotificationservice = `{
                             "$ref": "#/definitions/filter.ControlType"
                         }
                     ]
+                }
+            }
+        },
+        "models.MailNotificationChannel": {
+            "type": "object",
+            "required": [
+                "channelName",
+                "domain",
+                "isAuthenticationRequired",
+                "isTlsEnforced",
+                "maxEmailAttachmentSizeMb",
+                "maxEmailIncludeSizeMb",
+                "password",
+                "port",
+                "senderEmailAddress",
+                "username"
+            ],
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean"
+                },
+                "isTlsEnforced": {
+                    "type": "boolean"
+                },
+                "maxEmailAttachmentSizeMb": {
+                    "type": "integer"
+                },
+                "maxEmailIncludeSizeMb": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "senderEmailAddress": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
