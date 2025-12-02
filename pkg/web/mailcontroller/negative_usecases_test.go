@@ -7,6 +7,7 @@ import (
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,32 +25,37 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 
 		var mailId string
 		// --- Create ---
-		request.Post("/notification-channel/mail").
+		createBody := request.Post("/notification-channel/mail").
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusCreated).
 			JsonPath("$.id", httpassert.ExtractTo(&mailId)).
-			JsonPath("$.password", nil)
+			GetBody()
+
+		assert.NotContains(t, createBody, "password")
 		require.NotEmpty(t, mailId)
 
 		// --- List ---
-		request.Get("/notification-channel/mail").
+		listBody := request.Get("/notification-channel/mail").
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$", httpassert.HasSize(1)).
-			JsonPath("$[0].password", nil)
+			GetBody()
+		assert.NotContains(t, listBody, "password")
 
 		// --- Update ---
 		updated := valid
 		updated.Id = &mailId
 		newName := "updated"
 		updated.ChannelName = &newName
-		request.Put("/notification-channel/mail/"+mailId).
+		updateBody := request.Put("/notification-channel/mail/"+mailId).
 			JsonContentObject(updated).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$.channelName", newName).
-			JsonPath("$.password", nil)
+			GetBody()
+
+		assert.NotContains(t, updateBody, "password")
 	})
 
 	t.Run("Do not update password in Update Mail if it passed as nil", func(t *testing.T) {

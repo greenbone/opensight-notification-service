@@ -108,7 +108,8 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, mapper.MapNotificationChannelToMail(updated))
+	response := mapper.MapNotificationChannelToMail(updated)
+	c.JSON(http.StatusOK, response)
 }
 
 // DeleteMailChannel
