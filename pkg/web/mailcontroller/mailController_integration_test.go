@@ -33,14 +33,34 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusCreated).
-			JsonPath("$.id", httpassert.ExtractTo(&mailId))
+			JsonPath("$", httpassert.HasSize(10)).
+			JsonPath("$.id", httpassert.ExtractTo(&mailId)).
+			JsonPath("$.channelName", "mail1").
+			JsonPath("$.domain", "example.com").
+			JsonPath("$.port", float64(25)).JsonPath("$.isAuthenticationRequired", true).
+			JsonPath("$.isTlsEnforced", false).
+			JsonPath("$.username", "user").
+			JsonPath("$.maxEmailAttachmentSizeMb", float64(10)).
+			JsonPath("$.maxEmailIncludeSizeMb", float64(5)).
+			JsonPath("$.senderEmailAddress", "sender@example.com")
 		require.NotEmpty(t, mailId)
 
 		// --- List ---
 		request.Get("/notification-channel/mail").
 			Expect().
 			StatusCode(http.StatusOK).
-			JsonPath("$", httpassert.HasSize(1))
+			JsonPath("$", httpassert.HasSize(1)).
+			JsonPath("$[0]", httpassert.HasSize(10)).
+			JsonPath("$[0].id", httpassert.ExtractTo(&mailId)).
+			JsonPath("$[0].channelName", "mail1").
+			JsonPath("$[0].domain", "example.com").
+			JsonPath("$[0].port", float64(25)).
+			JsonPath("$[0].isAuthenticationRequired", true).
+			JsonPath("$[0].isTlsEnforced", false).
+			JsonPath("$[0].username", "user").
+			JsonPath("$[0].maxEmailAttachmentSizeMb", float64(10)).
+			JsonPath("$[0].maxEmailIncludeSizeMb", float64(5)).
+			JsonPath("$[0].senderEmailAddress", "sender@example.com")
 
 		// --- Update ---
 		updated := valid
@@ -51,7 +71,16 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonContentObject(updated).
 			Expect().
 			StatusCode(http.StatusOK).
-			JsonPath("$.channelName", newName)
+			JsonPath("$", httpassert.HasSize(10)).
+			JsonPath("$.id", mailId).
+			JsonPath("$.channelName", newName).
+			JsonPath("$.domain", "example.com").
+			JsonPath("$.port", float64(25)).JsonPath("$.isAuthenticationRequired", true).
+			JsonPath("$.isTlsEnforced", false).
+			JsonPath("$.username", "user").
+			JsonPath("$.maxEmailAttachmentSizeMb", float64(10)).
+			JsonPath("$.maxEmailIncludeSizeMb", float64(5)).
+			JsonPath("$.senderEmailAddress", "sender@example.com")
 
 		// --- Delete ---
 		request.Delete("/notification-channel/mail/" + mailId).
