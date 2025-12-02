@@ -35,6 +35,10 @@ func NewDB(t *testing.T) *sqlx.DB {
 		golangmigrator.WithFS(repository.MigrationsFS),
 	)
 	db := pgtestdb.New(t, conf, migrator)
+	_, err := db.Exec("DELETE FROM notification_service.notification_channel")
+	if err != nil {
+		return nil
+	}
 
 	return sqlx.NewDb(db, driverName) // wrap in sqlx as it is expected by the objects to test
 }

@@ -22,7 +22,7 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 
 	// Create
 	channelIn := models.NotificationChannel{
-		ChannelType:              "email",
+		ChannelType:              "mail",
 		ChannelName:              ptrString("Test Channel"),
 		WebhookUrl:               nil,
 		Domain:                   ptrString("example.com"),
@@ -43,7 +43,7 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 	assert.Equal(t, *channelIn.ChannelName, *created.ChannelName)
 
 	// List by type
-	listed, err := repo.ListNotificationChannelsByType(ctx, "email")
+	listed, err := repo.ListNotificationChannelsByType(ctx, "mail")
 	require.NoError(t, err)
 	assert.Len(t, listed, 1)
 	assert.Equal(t, created.Id, listed[0].Id)
@@ -60,7 +60,7 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 	require.NoError(t, err)
 
 	// List after delete
-	listedAfterDelete, err := repo.ListNotificationChannelsByType(ctx, "email")
+	listedAfterDelete, err := repo.ListNotificationChannelsByType(ctx, "mail")
 	require.NoError(t, err)
 	assert.Len(t, listedAfterDelete, 0)
 }
@@ -79,7 +79,7 @@ func Test_NotificationChannelRepository_NegativeAndEdgeCases(t *testing.T) {
 	// Update non-existent channel
 	nonExistentId := "00000000-0000-0000-0000-000000000000"
 	_, err = repo.UpdateNotificationChannel(ctx, nonExistentId, models.NotificationChannel{
-		ChannelType: "email",
+		ChannelType: "mail",
 	})
 	assert.Error(t, err, "expected error for updating non-existent channel")
 

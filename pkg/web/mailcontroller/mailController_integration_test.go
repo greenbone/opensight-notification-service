@@ -20,7 +20,6 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 	valid := testhelper.GetValidMailNotificationChannel()
 
 	t.Run("Perform all the CRUD operations", func(t *testing.T) {
-		t.Parallel()
 		router, db := setupTestRouter(t)
 		defer db.Close()
 		request := httpassert.New(t, router)
@@ -64,7 +63,6 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 	})
 
 	t.Run("Update password with Update Mail", func(t *testing.T) {
-		t.Parallel()
 		router, db := setupTestRouter(t)
 		defer db.Close()
 

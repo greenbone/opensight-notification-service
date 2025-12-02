@@ -6,25 +6,16 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
-	"runtime"
 	"testing"
-
-	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
-	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
-	"github.com/jmoiron/sqlx"
-	"github.com/stretchr/testify/require"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/keycloak-client-golang/auth"
-	"github.com/peterldowns/pgtestdb"
-	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
-
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
+	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
+	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -101,62 +92,8 @@ func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// NewTestDB creates a new database for integration testing
-func NewTestDB(t *testing.T) *gorm.DB {
-	t.Helper()
-
-	gm := golangmigrator.New(getMigrationsPath())
-	cfg := pgtestdb.Config{
-		DriverName: "pgx",
-		User:       "postgres",
-		Password:   "password",
-		Database:   "notification_service",
-		TestRole: &pgtestdb.Role{
-			Username: "postgres",
-			Password: "password",
-		},
-		Host:                      "localhost",
-		Port:                      "5432",
-		Options:                   "sslmode=disable",
-		ForceTerminateConnections: true,
-	}
-
-	sqlDb := pgtestdb.Custom(t, cfg, gm)
-
-	url := sqlDb.URL() + "&search_path=application"
-	pgConfig := postgres.Config{
-		DriverName: cfg.DriverName,
-		DSN:        url,
-	}
-	gormConfig := &gorm.Config{
-		TranslateError: true,
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
-		},
-	}
-
-	gormDB, err := gorm.Open(postgres.New(pgConfig), gormConfig)
-
-	require.NoError(t, err)
-
-	return gormDB
-}
-
-func getMigrationsPath() string {
-	_, b, _, _ := runtime.Caller(0)
-	basePath := filepath.Dir(b)
-	return filepath.Join(basePath, "../../repository/migrations")
-}
-
 func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepository, *sqlx.DB) {
-	gormDB := NewTestDB(t)
-	sqlxdb, err := gormDB.DB()
-	if err != nil {
-		t.Fatalf("failed to get sql.DB: %v", err)
-	}
-	db := sqlx.NewDb(sqlxdb, "postgres")
-	db.Exec("DELETE FROM notification_service.notification_channel")
-
+	db := pgtesting.NewDB(t)
 	repo, err := notificationrepository.NewNotificationChannelRepository(db)
 	if err != nil {
 		t.Fatalf("failed to create repository: %v", err)
@@ -166,26 +103,21 @@ func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepo
 }
 
 func GetValidMailNotificationChannel() models.MailNotificationChannel {
-	name := "mail1"
-	domain := "example.com"
-	port := 25
-	auth := true
-	tls := false
-	username := "user"
-	password := "pass"
-	maxAttach := 10
-	maxInclude := 5
-	sender := "sender@example.com"
 	return models.MailNotificationChannel{
-		ChannelName:              &name,
-		Domain:                   &domain,
-		Port:                     &port,
-		IsAuthenticationRequired: &auth,
-		IsTlsEnforced:            &tls,
-		Username:                 &username,
-		Password:                 &password,
-		MaxEmailAttachmentSizeMb: &maxAttach,
-		MaxEmailIncludeSizeMb:    &maxInclude,
-		SenderEmailAddress:       &sender,
+		ChannelName:              ptrString("mail1"),
+		Domain:                   ptrString("example.com"),
+		Port:                     ptrInt(25),
+		IsAuthenticationRequired: ptrBool(true),
+		IsTlsEnforced:            ptrBool(false),
+		Username:                 ptrString("user"),
+		Password:                 ptrString("pass"),
+		MaxEmailAttachmentSizeMb: ptrInt(10),
+		MaxEmailIncludeSizeMb:    ptrInt(5),
+		SenderEmailAddress:       ptrString("sender@example.com"),
 	}
 }
+
+// Helper functions for pointer values
+func ptrString(s string) *string { return &s }
+func ptrInt(i int) *int          { return &i }
+func ptrBool(b bool) *bool       { return &b }

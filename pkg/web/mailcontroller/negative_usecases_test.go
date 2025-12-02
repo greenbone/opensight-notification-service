@@ -17,7 +17,6 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 	valid := testhelper.GetValidMailNotificationChannel()
 
 	t.Run("Check if Create/List/Update Mail Notification doesnt return password", func(t *testing.T) {
-		t.Parallel()
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
@@ -59,7 +58,6 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 	})
 
 	t.Run("Do not update password in Update Mail if it passed as nil", func(t *testing.T) {
-		t.Parallel()
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
