@@ -76,7 +76,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Co
 
 	stmt, err := tx.PrepareNamedContext(ctx, createNotificationChannelQuery)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return models.NotificationChannel{}, fmt.Errorf("could not prepare sql statement: %w", err)
 	}
 	defer stmt.Close()
@@ -84,7 +84,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Co
 	var row notificationChannelRow
 	err = stmt.QueryRowxContext(ctx, insertRow).StructScan(&row)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return models.NotificationChannel{}, fmt.Errorf("could not insert into database: %w", err)
 	}
 
@@ -125,7 +125,7 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Co
 
 	stmt, err := tx.PrepareNamedContext(ctx, buildUpdateNotificationChannelQuery(in))
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return in, fmt.Errorf("prepare failed: %w", err)
 	}
 	defer stmt.Close()
@@ -133,7 +133,7 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Co
 	var row notificationChannelRow
 	err = stmt.QueryRowxContext(ctx, rowIn).StructScan(&row)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return in, fmt.Errorf("update failed: %w", err)
 	}
 
@@ -154,7 +154,7 @@ func (r *NotificationChannelRepository) DeleteNotificationChannel(ctx context.Co
 	query := `DELETE FROM notification_service.notification_channel WHERE id = $1`
 	_, err = tx.ExecContext(ctx, query, id)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return fmt.Errorf("delete failed: %w", err)
 	}
 

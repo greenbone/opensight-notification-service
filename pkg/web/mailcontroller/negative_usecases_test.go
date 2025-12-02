@@ -98,4 +98,25 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 			return err == nil && password != ""
 		}, 5*time.Second, 100*time.Millisecond)
 	})
+
+	t.Run("Creating two Mail configs with same name", func(t *testing.T) {
+		router, db := setupTestRouter(t)
+		defer db.Close()
+
+		request := httpassert.New(t, router)
+		var mailId string
+
+		// --- Create ---
+		request.Post("/notification-channel/mail").
+			JsonContentObject(valid).
+			Expect().
+			StatusCode(http.StatusCreated).
+			JsonPath("$.id", httpassert.ExtractTo(&mailId))
+		require.NotEmpty(t, mailId)
+
+		request.Post("/notification-channel/mail").
+			JsonContentObject(valid).
+			Expect().
+			StatusCode(http.StatusInternalServerError)
+	})
 }
