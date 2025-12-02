@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/jmoiron/sqlx"
@@ -106,7 +107,7 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Co
 	if err != nil {
 		return in, fmt.Errorf("convert to row failed: %w", err)
 	}
-	rowIn.Id = id
+	rowIn.Id = &id
 
 	var row notificationChannelRow
 	stmt, err := r.client.PrepareNamedContext(ctx, updateNotificationChannelQuery)

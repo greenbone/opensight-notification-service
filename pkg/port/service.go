@@ -6,6 +6,7 @@ package port
 
 import (
 	"context"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 )

@@ -8,10 +8,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/greenbone/keycloak-client-golang/auth"
 	"net/http"
 	"os"
 	"os/signal"
+
+	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
@@ -85,7 +88,13 @@ func run(config config.Config) error {
 		return err
 	}
 
+	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient)
+	if err != nil {
+		return err
+	}
+
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
+	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	gin := web.NewWebEngine(config.Http)
@@ -99,6 +108,7 @@ func run(config config.Config) error {
 
 	//instantiate controllers
 	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)
+	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

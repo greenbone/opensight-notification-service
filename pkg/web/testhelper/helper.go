@@ -4,11 +4,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/greenbone/keycloak-client-golang/auth"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
+	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/peterldowns/pgtestdb"
+	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/stretchr/testify/assert"
@@ -66,4 +76,70 @@ func MockAuthMiddleware(ctx *gin.Context) {
 
 	ctx.Set(userContextKey, userContext)
 	ctx.Next()
+}
+
+// MockAuthMiddleware mocks authentication by setting a admin user context in the Gin context for testing purposes.
+func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
+	const userContextKey = "USER_CONTEXT_DATA"
+	const iamRoleUser = "admin"
+
+	userContext := auth.UserContext{
+		Realm:          "",
+		UserID:         "",
+		UserName:       "",
+		EmailAddress:   "",
+		Roles:          []string{iamRoleUser},
+		Groups:         nil,
+		AllowedOrigins: nil,
+	}
+
+	ctx.Set(userContextKey, userContext)
+	ctx.Next()
+}
+
+// NewTestDB creates a new database for integration testing
+func NewTestDB(t *testing.T) *gorm.DB {
+	t.Helper()
+
+	gm := golangmigrator.New(getMigrationsPath())
+	cfg := pgtestdb.Config{
+		DriverName: "pgx",
+		User:       "postgres",
+		Password:   "password",
+		Database:   "notification_service",
+		TestRole: &pgtestdb.Role{
+			Username: "postgres",
+			Password: "password",
+		},
+		Host:                      "localhost",
+		Port:                      "5432",
+		Options:                   "sslmode=disable",
+		ForceTerminateConnections: true,
+	}
+
+	sqlDb := pgtestdb.Custom(t, cfg, gm)
+
+	url := sqlDb.URL() + "&search_path=application"
+	pgConfig := postgres.Config{
+		DriverName: cfg.DriverName,
+		DSN:        url,
+	}
+	gormConfig := &gorm.Config{
+		TranslateError: true,
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	}
+
+	gormDB, err := gorm.Open(postgres.New(pgConfig), gormConfig)
+
+	require.NoError(t, err)
+
+	return gormDB
+}
+
+func getMigrationsPath() string {
+	_, b, _, _ := runtime.Caller(0)
+	basePath := filepath.Dir(b)
+	return filepath.Join(basePath, "../../repository/migrations")
 }

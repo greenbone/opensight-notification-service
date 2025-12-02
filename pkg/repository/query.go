@@ -6,6 +6,7 @@ package repository
 
 import (
 	"fmt"
+
 	pgQuery "github.com/greenbone/opensight-golang-libraries/pkg/postgres/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -13,11 +14,14 @@ import (
 
 // BuildQuery builds a query for retrieving results based on the provided result selector
 func BuildQuery(resultSelector query.ResultSelector, baseQuery string, fieldMapping map[string]string) (string, []any, error) {
-	querySettings := &pgQuery.Settings{
+	querySettings := pgQuery.Settings{
 		FilterFieldMapping: fieldMapping,
 	}
 
-	qb := pgQuery.NewPostgresQueryBuilder(querySettings)
+	qb, err := pgQuery.NewPostgresQueryBuilder(querySettings)
+	if err != nil {
+		return "", nil, fmt.Errorf("error initializing query condition: %w", err)
+	}
 	queryCondition, args, err := qb.Build(resultSelector)
 	if err != nil {
 		return "", nil, fmt.Errorf("error building query condition: %w", err)
