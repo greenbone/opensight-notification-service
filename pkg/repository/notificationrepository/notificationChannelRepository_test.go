@@ -16,7 +16,8 @@ import (
 
 func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 	db := pgtesting.NewDB(t)
-	repo := NewNotificationChannelRepository(db)
+	repo, err := NewNotificationChannelRepository(db)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	// Create
@@ -50,12 +51,12 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 	// Update
 	updatedIn := created
 	updatedIn.ChannelName = ptrString("Updated Channel")
-	updated, err := repo.UpdateNotificationChannel(ctx, created.Id, updatedIn)
+	updated, err := repo.UpdateNotificationChannel(ctx, *created.Id, updatedIn)
 	require.NoError(t, err)
 	assert.Equal(t, "Updated Channel", *updated.ChannelName)
 
 	// Delete
-	err = repo.DeleteNotificationChannel(ctx, created.Id)
+	err = repo.DeleteNotificationChannel(ctx, *created.Id)
 	require.NoError(t, err)
 
 	// List after delete
@@ -66,12 +67,13 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 
 func Test_NotificationChannelRepository_NegativeAndEdgeCases(t *testing.T) {
 	db := pgtesting.NewDB(t)
-	repo := NewNotificationChannelRepository(db)
+	repo, err := NewNotificationChannelRepository(db)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	// Create with missing required fields
 	invalidChannel := models.NotificationChannel{}
-	_, err := repo.CreateNotificationChannel(ctx, invalidChannel)
+	_, err = repo.CreateNotificationChannel(ctx, invalidChannel)
 	assert.Error(t, err, "expected error for missing required fields")
 
 	// Update non-existent channel
