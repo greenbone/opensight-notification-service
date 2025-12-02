@@ -62,14 +62,21 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
 	return query
 }
 
+// CreateNotificationChannel is now transactional and supports commit/rollback.
 func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Context, channelIn models.NotificationChannel) (models.NotificationChannel, error) {
 	insertRow, err := toNotificationChannelRow(channelIn)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("invalid argument for inserting notification channel: %w", err)
 	}
 
-	stmt, err := r.client.PrepareNamedContext(ctx, createNotificationChannelQuery)
+	tx, err := r.client.BeginTxx(ctx, nil)
 	if err != nil {
+		return models.NotificationChannel{}, fmt.Errorf("could not begin transaction: %w", err)
+	}
+
+	stmt, err := tx.PrepareNamedContext(ctx, createNotificationChannelQuery)
+	if err != nil {
+		tx.Rollback()
 		return models.NotificationChannel{}, fmt.Errorf("could not prepare sql statement: %w", err)
 	}
 	defer stmt.Close()
@@ -77,7 +84,12 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Co
 	var row notificationChannelRow
 	err = stmt.QueryRowxContext(ctx, insertRow).StructScan(&row)
 	if err != nil {
+		tx.Rollback()
 		return models.NotificationChannel{}, fmt.Errorf("could not insert into database: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return models.NotificationChannel{}, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
 	channel := row.ToModel()
@@ -98,16 +110,7 @@ func (r *NotificationChannelRepository) ListNotificationChannelsByType(ctx conte
 	return result, nil
 }
 
-func (r *NotificationChannelRepository) DeleteNotificationChannel(ctx context.Context, id string) error {
-	query := `DELETE FROM notification_service.notification_channel WHERE id = $1`
-	_, err := r.client.ExecContext(ctx, query, id)
-	if err != nil {
-		return fmt.Errorf("delete failed: %w", err)
-	}
-	return nil
-}
-
-// UpdateNotificationChannel updates an existing notification channel and returns the updated model.
+// UpdateNotificationChannel is now transactional.
 func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Context, id string, in models.NotificationChannel) (models.NotificationChannel, error) {
 	rowIn, err := toNotificationChannelRow(in)
 	if err != nil {
@@ -115,17 +118,49 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Co
 	}
 	rowIn.Id = &id
 
-	var row notificationChannelRow
-	stmt, err := r.client.PrepareNamedContext(ctx, buildUpdateNotificationChannelQuery(in))
+	tx, err := r.client.BeginTxx(ctx, nil)
 	if err != nil {
+		return in, fmt.Errorf("could not begin transaction: %w", err)
+	}
+
+	stmt, err := tx.PrepareNamedContext(ctx, buildUpdateNotificationChannelQuery(in))
+	if err != nil {
+		tx.Rollback()
 		return in, fmt.Errorf("prepare failed: %w", err)
 	}
 	defer stmt.Close()
 
+	var row notificationChannelRow
 	err = stmt.QueryRowxContext(ctx, rowIn).StructScan(&row)
 	if err != nil {
+		tx.Rollback()
 		return in, fmt.Errorf("update failed: %w", err)
 	}
 
+	if err := tx.Commit(); err != nil {
+		return in, fmt.Errorf("could not commit transaction: %w", err)
+	}
+
 	return row.ToModel(), nil
+}
+
+// DeleteNotificationChannel is now transactional.
+func (r *NotificationChannelRepository) DeleteNotificationChannel(ctx context.Context, id string) error {
+	tx, err := r.client.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("could not begin transaction: %w", err)
+	}
+
+	query := `DELETE FROM notification_service.notification_channel WHERE id = $1`
+	_, err = tx.ExecContext(ctx, query, id)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("delete failed: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("could not commit transaction: %w", err)
+	}
+
+	return nil
 }

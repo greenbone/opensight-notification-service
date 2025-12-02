@@ -85,12 +85,12 @@ func run(config config.Config) error {
 
 	notificationRepository, err := notificationrepository.NewNotificationRepository(pgClient)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating Notification Repository: %w", err)
 	}
 
 	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
