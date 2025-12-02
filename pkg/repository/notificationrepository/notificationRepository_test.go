@@ -87,9 +87,9 @@ func Test_CreateNotification_ListNotification(t *testing.T) {
 				assert.Equal(t, tt.wantNotification, gotNotification)
 
 				fetchedNotifications, gotTotalResults, err := repo.ListNotifications(ctx, resultSelectorListAll)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, uint64(1), gotTotalResults, "did not get expected number of results")
-				assert.Len(t, fetchedNotifications, 1)
+				require.Len(t, fetchedNotifications, 1)
 				assert.Equal(t, tt.wantNotification, fetchedNotifications[0])
 			}
 		})
