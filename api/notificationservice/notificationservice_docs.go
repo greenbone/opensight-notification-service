@@ -518,11 +518,8 @@ const docTemplatenotificationservice = `{
                 "domain",
                 "isAuthenticationRequired",
                 "isTlsEnforced",
-                "maxEmailAttachmentSizeMb",
-                "maxEmailIncludeSizeMb",
                 "port",
-                "senderEmailAddress",
-                "username"
+                "senderEmailAddress"
             ],
             "properties": {
                 "channelName": {

@@ -168,11 +168,8 @@ definitions:
     - domain
     - isAuthenticationRequired
     - isTlsEnforced
-    - maxEmailAttachmentSizeMb
-    - maxEmailIncludeSizeMb
     - port
     - senderEmailAddress
-    - username
     type: object
   models.Notification:
     properties:

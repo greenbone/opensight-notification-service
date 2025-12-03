@@ -111,7 +111,8 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 		require.Eventually(t, func() bool {
 			var password string
-			err := db.QueryRow("SELECT password FROM notification_service.notification_channel WHERE id = $1", mailId).Scan(&password)
+			err := db.QueryRow("SELECT password FROM notification_service.notification_channel WHERE id = $1",
+				mailId).Scan(&password)
 			return err == nil && password == "pass"
 		}, 5*time.Second, 100*time.Millisecond)
 
@@ -129,7 +130,8 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 		require.Eventually(t, func() bool {
 			var password string
-			err := db.QueryRow("SELECT password FROM notification_service.notification_channel WHERE id = $1", mailId).Scan(&password)
+			err := db.QueryRow("SELECT password FROM notification_service.notification_channel WHERE id = $1",
+				mailId).Scan(&password)
 			return err == nil && password == newPassword
 		}, 5*time.Second, 100*time.Millisecond)
 	})

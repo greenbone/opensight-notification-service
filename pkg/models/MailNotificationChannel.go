@@ -7,9 +7,9 @@ type MailNotificationChannel struct {
 	Port                     *int    `json:"port" binding:"required"`
 	IsAuthenticationRequired *bool   `json:"isAuthenticationRequired" binding:"required"`
 	IsTlsEnforced            *bool   `json:"isTlsEnforced" binding:"required"`
-	Username                 *string `json:"username" binding:"required"`
+	Username                 *string `json:"username,omitempty"`
 	Password                 *string `json:"password,omitempty"`
-	MaxEmailAttachmentSizeMb *int    `json:"maxEmailAttachmentSizeMb" binding:"required"`
-	MaxEmailIncludeSizeMb    *int    `json:"maxEmailIncludeSizeMb" binding:"required"`
+	MaxEmailAttachmentSizeMb *int    `json:"maxEmailAttachmentSizeMb,omitempty"`
+	MaxEmailIncludeSizeMb    *int    `json:"maxEmailIncludeSizeMb,omitempty"`
 	SenderEmailAddress       *string `json:"senderEmailAddress" binding:"required,email"`
 }
