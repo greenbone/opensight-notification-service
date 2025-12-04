@@ -22,7 +22,9 @@ type HealthService interface {
 
 type NotificationChannelService interface {
 	CreateNotificationChannel(ctx context.Context, channelIn models.NotificationChannel) (models.NotificationChannel, error)
+	GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType string) (models.NotificationChannel, error)
 	ListNotificationChannelsByType(ctx context.Context, channelType string) ([]models.NotificationChannel, error)
 	UpdateNotificationChannel(ctx context.Context, id string, channelIn models.NotificationChannel) (models.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
+	CheckNotificationChannelConnectivity(ctx context.Context, channelIn models.NotificationChannel) error
 }
