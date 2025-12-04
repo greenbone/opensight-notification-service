@@ -11,25 +11,27 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
-	"github.com/greenbone/keycloak-client-golang/auth"
-	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
-
+	"github.com/go-co-op/gocron/v2"
 	"github.com/go-playground/validator"
+	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/rs/zerolog/log"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
+	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller"
-	"github.com/kelseyhightower/envconfig"
-
-	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -97,6 +99,20 @@ func run(config config.Config) error {
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
 	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelRepository)
 	healthService := healthservice.NewHealthService(pgClient)
+
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		return fmt.Errorf("error creating scheduler: %w", err)
+	}
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(time.Hour),
+		gocron.NewTask(checkmailconnectivity.NewJob(notificationChannelService)),
+	)
+	if err != nil {
+		return fmt.Errorf("error creating mail connectivity check job: %w", err)
+	}
+
+	scheduler.Start()
 
 	gin := web.NewWebEngine(config.Http)
 	rootRouter := gin.Group("/")

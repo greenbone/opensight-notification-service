@@ -18,6 +18,7 @@ type NotificationRepository interface {
 
 type NotificationChannelRepository interface {
 	CreateNotificationChannel(ctx context.Context, channelIn models.NotificationChannel) (models.NotificationChannel, error)
+	GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType string) (models.NotificationChannel, error)
 	ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
 	UpdateNotificationChannel(ctx context.Context, id string, in models.NotificationChannel) (models.NotificationChannel, error)
