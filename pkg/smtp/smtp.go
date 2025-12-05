@@ -14,6 +14,7 @@ type Config struct {
 	Port     string
 	Username string
 	Password string
+	Dialer   func(ctx context.Context, addr string) (net.Conn, error)
 }
 
 func (conf Config) Validate() error {
@@ -32,13 +33,20 @@ func (conf Config) Validate() error {
 	return nil
 }
 
+func dial(ctx context.Context, conf Config, addr string) (net.Conn, error) {
+	if conf.Dialer != nil {
+		return conf.Dialer(ctx, addr)
+	}
+	return (&net.Dialer{}).DialContext(ctx, "tcp", addr)
+}
+
 func newClientContext(ctx context.Context, conf Config) (*smtp.Client, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
 
 	addr := net.JoinHostPort(conf.Host, conf.Port)
-	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", addr)
+	conn, err := dial(ctx, conf, addr)
 	if err != nil {
 		return nil, fmt.Errorf("connecting to %q: %w", addr, err)
 	}
@@ -89,7 +97,10 @@ func send(client *smtp.Client, from string, to []string, msg []byte) error {
 		return err
 	}
 	_, err = w.Write(msg)
-	return err
+	if err != nil {
+		return err
+	}
+	return w.Close()
 }
 
 // SendMail sends mail to MTA server using SMTP protocol.
