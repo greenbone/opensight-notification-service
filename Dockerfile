@@ -1,4 +1,4 @@
-FROM golang:1.25.4-alpine  AS builder
+FROM golang:1.25.5-alpine  AS builder
 RUN apk add --no-cache make
 
 # swagger docs generation will fail if cgo is used
