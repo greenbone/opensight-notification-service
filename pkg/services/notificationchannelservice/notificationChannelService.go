@@ -2,6 +2,7 @@ package notificationchannelservice
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
@@ -9,9 +10,11 @@ import (
 
 type NotificationChannelServicer interface {
 	CreateNotificationChannel(ctx context.Context, req models.NotificationChannel) (models.NotificationChannel, error)
+	GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType string) (models.NotificationChannel, error)
 	ListNotificationChannelsByType(ctx context.Context, channelType string) ([]models.NotificationChannel, error)
 	UpdateNotificationChannel(ctx context.Context, id string, req models.NotificationChannel) (models.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
+	CheckNotificationChannelConnectivity(ctx context.Context, channel models.NotificationChannel) error
 }
 
 type NotificationChannelService struct {
@@ -31,6 +34,10 @@ func (s *NotificationChannelService) CreateNotificationChannel(ctx context.Conte
 	return notificationChannel, nil
 }
 
+func (s *NotificationChannelService) GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType string) (models.NotificationChannel, error) {
+	return s.store.GetNotificationChannelByIdAndType(ctx, id, channelType)
+}
+
 func (s *NotificationChannelService) ListNotificationChannelsByType(ctx context.Context, channelType string) ([]models.NotificationChannel, error) {
 	return s.store.ListNotificationChannelsByType(ctx, channelType)
 }
@@ -46,4 +53,13 @@ func (s *NotificationChannelService) UpdateNotificationChannel(ctx context.Conte
 
 func (s *NotificationChannelService) DeleteNotificationChannel(ctx context.Context, id string) error {
 	return s.store.DeleteNotificationChannel(ctx, id)
+}
+
+func (s *NotificationChannelService) CheckNotificationChannelConnectivity(ctx context.Context, channel models.NotificationChannel) error {
+	switch channel.ChannelType {
+	case "mail":
+		return connectionCheckMail(ctx, channel)
+	}
+
+	return fmt.Errorf("cannot check connectivity for notification channel of %q type", channel.ChannelType)
 }
