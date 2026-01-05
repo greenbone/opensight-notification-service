@@ -34,7 +34,7 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 //
 //	@Summary		Create Mail Channel
 //	@Description	Create a new mail notification channel
-//	@Tags			mailchannel
+//	@Tags			mail-channel
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
@@ -69,7 +69,7 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 //
 //	@Summary		List Mail Channels
 //	@Description	List mail notification channels by type
-//	@Tags			mailchannel
+//	@Tags			mail-channel
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			type	query		string	false	"Channel type"
@@ -90,7 +90,7 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 //
 //	@Summary		Update Mail Channel
 //	@Description	Update an existing mail notification channel
-//	@Tags			mailchannel
+//	@Tags			mail-channel
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
@@ -127,7 +127,7 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 //
 //	@Summary		Delete Mail Channel
 //	@Description	Delete a mail notification channel
-//	@Tags			mailchannel
+//	@Tags			mail-channel
 //	@Security		KeycloakAuth
 //	@Param			id	path	string	true	"Mail channel ID"
 //	@Success		204	"Deleted successfully"
