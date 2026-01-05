@@ -64,10 +64,7 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
 
 // CreateNotificationChannel is now transactional and supports commit/rollback.
 func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Context, channelIn models.NotificationChannel) (models.NotificationChannel, error) {
-	insertRow, err := toNotificationChannelRow(channelIn)
-	if err != nil {
-		return models.NotificationChannel{}, fmt.Errorf("invalid argument for inserting notification channel: %w", err)
-	}
+	insertRow := toNotificationChannelRow(channelIn)
 
 	tx, err := r.client.BeginTxx(ctx, nil)
 	if err != nil {
@@ -96,10 +93,10 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Co
 	return channel, nil
 }
 
-func (r *NotificationChannelRepository) ListNotificationChannelsByType(ctx context.Context, channelType string) ([]models.NotificationChannel, error) {
+func (r *NotificationChannelRepository) ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error) {
 	query := `SELECT * FROM notification_service.notification_channel WHERE channel_type = $1`
 	var rows []notificationChannelRow
-	err := r.client.SelectContext(ctx, &rows, query, channelType)
+	err := r.client.SelectContext(ctx, &rows, query, string(channelType))
 	if err != nil {
 		return nil, fmt.Errorf("select by type failed: %w", err)
 	}
@@ -112,10 +109,7 @@ func (r *NotificationChannelRepository) ListNotificationChannelsByType(ctx conte
 
 // UpdateNotificationChannel is now transactional.
 func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Context, id string, in models.NotificationChannel) (models.NotificationChannel, error) {
-	rowIn, err := toNotificationChannelRow(in)
-	if err != nil {
-		return in, fmt.Errorf("convert to row failed: %w", err)
-	}
+	rowIn := toNotificationChannelRow(in)
 	rowIn.Id = &id
 
 	tx, err := r.client.BeginTxx(ctx, nil)

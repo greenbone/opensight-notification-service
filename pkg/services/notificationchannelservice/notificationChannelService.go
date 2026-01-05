@@ -9,7 +9,7 @@ import (
 
 type NotificationChannelServicer interface {
 	CreateNotificationChannel(ctx context.Context, req models.NotificationChannel) (models.NotificationChannel, error)
-	ListNotificationChannelsByType(ctx context.Context, channelType string) ([]models.NotificationChannel, error)
+	ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error)
 	UpdateNotificationChannel(ctx context.Context, id string, req models.NotificationChannel) (models.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
 }
@@ -31,7 +31,7 @@ func (s *NotificationChannelService) CreateNotificationChannel(ctx context.Conte
 	return notificationChannel, nil
 }
 
-func (s *NotificationChannelService) ListNotificationChannelsByType(ctx context.Context, channelType string) ([]models.NotificationChannel, error) {
+func (s *NotificationChannelService) ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error) {
 	return s.store.ListNotificationChannelsByType(ctx, channelType)
 }
 

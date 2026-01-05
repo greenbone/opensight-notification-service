@@ -478,7 +478,7 @@ paths:
       - KeycloakAuth: []
       summary: Delete Mail Channel
       tags:
-      - mail channel
+      - mailchannel
     put:
       consumes:
       - application/json

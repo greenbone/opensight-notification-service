@@ -277,7 +277,7 @@ const docTemplatenotificationservice = `{
                 ],
                 "description": "Delete a mail notification channel",
                 "tags": [
-                    "mail channel"
+                    "mailchannel"
                 ],
                 "summary": "Delete Mail Channel",
                 "parameters": [

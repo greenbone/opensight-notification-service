@@ -2,7 +2,7 @@ CREATE TABLE notification_service.notification_channel
 (
     "id"                           UUID         NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     "created_at"                   TIMESTAMP    NOT NULL DEFAULT NOW(),
-    "updated"                      TIMESTAMP,
+    "updated_at"                   TIMESTAMP,
     "channel_type"                 VARCHAR(100) NOT NULL CHECK (length(trim(channel_type)) > 0),
     "channel_name"                 VARCHAR(255) UNIQUE,
     "webhook_url"                  VARCHAR(2048),

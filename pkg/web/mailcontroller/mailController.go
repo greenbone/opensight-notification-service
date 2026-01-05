@@ -116,7 +116,7 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 //
 //	@Summary		Delete Mail Channel
 //	@Description	Delete a mail notification channel
-//	@Tags			mail channel
+//	@Tags			mailchannel
 //	@Security		KeycloakAuth
 //	@Param			id	path	string	true	"Mail channel ID"
 //	@Success		204	"Deleted successfully"

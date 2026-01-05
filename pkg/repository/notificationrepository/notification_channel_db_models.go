@@ -21,7 +21,6 @@ type notificationChannelRow struct {
 }
 
 func (r notificationChannelRow) ToModel() models.NotificationChannel {
-	// Map fields to your models.NotificationChannel struct
 	return models.NotificationChannel{
 		Id:                       r.Id,
 		CreatedAt:                r.CreatedAt,
@@ -42,8 +41,7 @@ func (r notificationChannelRow) ToModel() models.NotificationChannel {
 }
 
 // Helper function to map model to DB row struct
-func toNotificationChannelRow(in models.NotificationChannel) (notificationChannelRow, error) {
-	// Add validation or transformation logic if needed
+func toNotificationChannelRow(in models.NotificationChannel) notificationChannelRow {
 	return notificationChannelRow{
 		Id:                       in.Id,
 		CreatedAt:                in.CreatedAt,
@@ -60,5 +58,5 @@ func toNotificationChannelRow(in models.NotificationChannel) (notificationChanne
 		MaxEmailAttachmentSizeMb: in.MaxEmailAttachmentSizeMb,
 		MaxEmailIncludeSizeMb:    in.MaxEmailIncludeSizeMb,
 		SenderEmailAddress:       in.SenderEmailAddress,
-	}, nil
+	}
 }

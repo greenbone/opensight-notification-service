@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
+	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
@@ -104,20 +105,15 @@ func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepo
 
 func GetValidMailNotificationChannel() models.MailNotificationChannel {
 	return models.MailNotificationChannel{
-		ChannelName:              ptrString("mail1"),
-		Domain:                   ptrString("example.com"),
-		Port:                     ptrInt(25),
-		IsAuthenticationRequired: ptrBool(true),
-		IsTlsEnforced:            ptrBool(false),
-		Username:                 ptrString("user"),
-		Password:                 ptrString("pass"),
-		MaxEmailAttachmentSizeMb: ptrInt(10),
-		MaxEmailIncludeSizeMb:    ptrInt(5),
-		SenderEmailAddress:       ptrString("sender@example.com"),
+		ChannelName:              helper.ToPtr("mail1"),
+		Domain:                   helper.ToPtr("example.com"),
+		Port:                     helper.ToPtr(25),
+		IsAuthenticationRequired: helper.ToPtr(true),
+		IsTlsEnforced:            helper.ToPtr(false),
+		Username:                 helper.ToPtr("user"),
+		Password:                 helper.ToPtr("pass"),
+		MaxEmailAttachmentSizeMb: helper.ToPtr(10),
+		MaxEmailIncludeSizeMb:    helper.ToPtr(5),
+		SenderEmailAddress:       helper.ToPtr("sender@example.com"),
 	}
 }
-
-// Helper functions for pointer values
-func ptrString(s string) *string { return &s }
-func ptrInt(i int) *int          { return &i }
-func ptrBool(b bool) *bool       { return &b }
