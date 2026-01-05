@@ -41,7 +41,7 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 //	@Success		201			{object}	models.MailNotificationChannel
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
-//	@Router			/notifications/mail [post]
+//	@Router			/notification-channel/mail [post]
 func (mc *MailController) CreateMailChannel(c *gin.Context) {
 	var channel models.MailNotificationChannel
 	if err := c.ShouldBindJSON(&channel); err != nil {
@@ -69,7 +69,7 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 //	@Param			type	query		string	false	"Channel type"
 //	@Success		200		{array}		models.MailNotificationChannel
 //	@Failure		500		{object}	map[string]string
-//	@Router			/notifications/mail [get]
+//	@Router			/notification-channel/mail [get]
 func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 	channels, err := mc.Service.ListNotificationChannelsByType(c, "mail")
 
@@ -93,7 +93,7 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 //	@Success		200			{object}	models.MailNotificationChannel
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
-//	@Router			/notifications/mail/{id} [put]
+//	@Router			/notification-channel/mail/{id} [put]
 func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 	id := c.Param("id")
 	var channel models.MailNotificationChannel
@@ -121,7 +121,7 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 //	@Param			id	path	string	true	"Mail channel ID"
 //	@Success		204	"Deleted successfully"
 //	@Failure		500	{object}	map[string]string
-//	@Router			/notifications/mail/{id} [delete]
+//	@Router			/notification-channel/mail/{id} [delete]
 func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 	id := c.Param("id")
 	if err := mc.Service.DeleteNotificationChannel(c, id); err != nil {

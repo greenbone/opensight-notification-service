@@ -338,62 +338,7 @@ info:
   title: Notification Service API
   version: "1.0"
 paths:
-  /notifications:
-    post:
-      consumes:
-      - application/json
-      description: Create a new notification
-      parameters:
-      - description: notification to add
-        in: body
-        name: Notification
-        required: true
-        schema:
-          $ref: '#/definitions/models.Notification'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-models_Notification'
-      security:
-      - KeycloakAuth: []
-      summary: Create Notification
-      tags:
-      - notification
-    put:
-      consumes:
-      - application/json
-      description: Returns a list of notifications matching the provided filters
-      parameters:
-      - description: filters, paging and sorting
-        in: body
-        name: MatchCriterias
-        required: true
-        schema:
-          $ref: '#/definitions/query.ResultSelector'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/query.ResponseListWithMetadata-models_Notification'
-      security:
-      - KeycloakAuth: []
-      summary: List Notifications
-      tags:
-      - notification
-  /notifications/mail:
+  /notification-channel/mail:
     get:
       description: List mail notification channels by type
       parameters:
@@ -456,7 +401,7 @@ paths:
       summary: Create Mail Channel
       tags:
       - mailchannel
-  /notifications/mail/{id}:
+  /notification-channel/mail/{id}:
     delete:
       description: Delete a mail notification channel
       parameters:
@@ -519,6 +464,61 @@ paths:
       summary: Update Mail Channel
       tags:
       - mailchannel
+  /notifications:
+    post:
+      consumes:
+      - application/json
+      description: Create a new notification
+      parameters:
+      - description: notification to add
+        in: body
+        name: Notification
+        required: true
+        schema:
+          $ref: '#/definitions/models.Notification'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-models_Notification'
+      security:
+      - KeycloakAuth: []
+      summary: Create Notification
+      tags:
+      - notification
+    put:
+      consumes:
+      - application/json
+      description: Returns a list of notifications matching the provided filters
+      parameters:
+      - description: filters, paging and sorting
+        in: body
+        name: MatchCriterias
+        required: true
+        schema:
+          $ref: '#/definitions/query.ResultSelector'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseListWithMetadata-models_Notification'
+      security:
+      - KeycloakAuth: []
+      summary: List Notifications
+      tags:
+      - notification
   /notifications/options:
     get:
       description: Get filter options for listing notifications

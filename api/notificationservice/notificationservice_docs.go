@@ -18,95 +18,7 @@ const docTemplatenotificationservice = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/notifications": {
-            "put": {
-                "security": [
-                    {
-                        "KeycloakAuth": []
-                    }
-                ],
-                "description": "Returns a list of notifications matching the provided filters",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "notification"
-                ],
-                "summary": "List Notifications",
-                "parameters": [
-                    {
-                        "description": "filters, paging and sorting",
-                        "name": "MatchCriterias",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/query.ResultSelector"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/query.ResponseListWithMetadata-models_Notification"
-                        },
-                        "headers": {
-                            "api-version": {
-                                "type": "string",
-                                "description": "API version"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "KeycloakAuth": []
-                    }
-                ],
-                "description": "Create a new notification",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "notification"
-                ],
-                "summary": "Create Notification",
-                "parameters": [
-                    {
-                        "description": "notification to add",
-                        "name": "Notification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Notification"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Notification"
-                        },
-                        "headers": {
-                            "api-version": {
-                                "type": "string",
-                                "description": "API version"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/notifications/mail": {
+        "/notification-channel/mail": {
             "get": {
                 "security": [
                     {
@@ -206,7 +118,7 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "/notifications/mail/{id}": {
+        "/notification-channel/mail/{id}": {
             "put": {
                 "security": [
                     {
@@ -299,6 +211,94 @@ const docTemplatenotificationservice = `{
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns a list of notifications matching the provided filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "List Notifications",
+                "parameters": [
+                    {
+                        "description": "filters, paging and sorting",
+                        "name": "MatchCriterias",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/query.ResultSelector"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseListWithMetadata-models_Notification"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new notification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Create Notification",
+                "parameters": [
+                    {
+                        "description": "notification to add",
+                        "name": "Notification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-models_Notification"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
                             }
                         }
                     }
