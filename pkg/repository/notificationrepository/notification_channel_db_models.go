@@ -5,7 +5,7 @@ import "github.com/greenbone/opensight-notification-service/pkg/models"
 type notificationChannelRow struct {
 	Id                       *string `db:"id"`
 	CreatedAt                string  `db:"created_at"`
-	Updated                  *string `db:"updated"`
+	UpdatedAt                *string `db:"updated_at"`
 	ChannelType              string  `db:"channel_type"`
 	ChannelName              *string `db:"channel_name"`
 	WebhookUrl               *string `db:"webhook_url"`
@@ -24,7 +24,7 @@ func (r notificationChannelRow) ToModel() models.NotificationChannel {
 	return models.NotificationChannel{
 		Id:                       r.Id,
 		CreatedAt:                r.CreatedAt,
-		Updated:                  r.Updated,
+		UpdatedAt:                r.UpdatedAt,
 		ChannelType:              r.ChannelType,
 		ChannelName:              r.ChannelName,
 		WebhookUrl:               r.WebhookUrl,
@@ -45,7 +45,7 @@ func toNotificationChannelRow(in models.NotificationChannel) notificationChannel
 	return notificationChannelRow{
 		Id:                       in.Id,
 		CreatedAt:                in.CreatedAt,
-		Updated:                  in.Updated,
+		UpdatedAt:                in.UpdatedAt,
 		ChannelType:              in.ChannelType,
 		ChannelName:              in.ChannelName,
 		WebhookUrl:               in.WebhookUrl,

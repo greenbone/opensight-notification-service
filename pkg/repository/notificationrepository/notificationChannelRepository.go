@@ -56,7 +56,7 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
             max_email_attachment_size_mb = :max_email_attachment_size_mb,
             max_email_include_size_mb = :max_email_include_size_mb,
             sender_email_address = :sender_email_address,
-            updated = NOW()
+            updated_at = NOW()
         WHERE id = :id
         RETURNING *`
 	return query
