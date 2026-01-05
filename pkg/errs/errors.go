@@ -23,6 +23,13 @@ type ErrConflict struct {
 	Errors  map[string]string // maps property to specific error message
 }
 
+type FieldErrors map[string]string
+type ErrorResponse struct {
+	Type   string      `json:"type"`
+	Title  string      `json:"title"`
+	Errors FieldErrors `json:"errors"`
+}
+
 func (e *ErrConflict) Error() string {
 	message := e.Message
 	if len(e.Errors) > 0 {

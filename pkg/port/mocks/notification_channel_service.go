@@ -127,7 +127,7 @@ func (_c *NotificationChannelService_DeleteNotificationChannel_Call) RunAndRetur
 }
 
 // ListNotificationChannelsByType provides a mock function with given fields: ctx, channelType
-func (_m *NotificationChannelService) ListNotificationChannelsByType(ctx context.Context, channelType string) ([]models.NotificationChannel, error) {
+func (_m *NotificationChannelService) ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error) {
 	ret := _m.Called(ctx, channelType)
 
 	if len(ret) == 0 {
@@ -136,10 +136,10 @@ func (_m *NotificationChannelService) ListNotificationChannelsByType(ctx context
 
 	var r0 []models.NotificationChannel
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) ([]models.NotificationChannel, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, models.ChannelType) ([]models.NotificationChannel, error)); ok {
 		return rf(ctx, channelType)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) []models.NotificationChannel); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, models.ChannelType) []models.NotificationChannel); ok {
 		r0 = rf(ctx, channelType)
 	} else {
 		if ret.Get(0) != nil {
@@ -147,7 +147,7 @@ func (_m *NotificationChannelService) ListNotificationChannelsByType(ctx context
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, models.ChannelType) error); ok {
 		r1 = rf(ctx, channelType)
 	} else {
 		r1 = ret.Error(1)
@@ -163,14 +163,14 @@ type NotificationChannelService_ListNotificationChannelsByType_Call struct {
 
 // ListNotificationChannelsByType is a helper method to define mock.On call
 //   - ctx context.Context
-//   - channelType string
+//   - channelType models.ChannelType
 func (_e *NotificationChannelService_Expecter) ListNotificationChannelsByType(ctx interface{}, channelType interface{}) *NotificationChannelService_ListNotificationChannelsByType_Call {
 	return &NotificationChannelService_ListNotificationChannelsByType_Call{Call: _e.mock.On("ListNotificationChannelsByType", ctx, channelType)}
 }
 
-func (_c *NotificationChannelService_ListNotificationChannelsByType_Call) Run(run func(ctx context.Context, channelType string)) *NotificationChannelService_ListNotificationChannelsByType_Call {
+func (_c *NotificationChannelService_ListNotificationChannelsByType_Call) Run(run func(ctx context.Context, channelType models.ChannelType)) *NotificationChannelService_ListNotificationChannelsByType_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(models.ChannelType))
 	})
 	return _c
 }
@@ -180,7 +180,7 @@ func (_c *NotificationChannelService_ListNotificationChannelsByType_Call) Return
 	return _c
 }
 
-func (_c *NotificationChannelService_ListNotificationChannelsByType_Call) RunAndReturn(run func(context.Context, string) ([]models.NotificationChannel, error)) *NotificationChannelService_ListNotificationChannelsByType_Call {
+func (_c *NotificationChannelService_ListNotificationChannelsByType_Call) RunAndReturn(run func(context.Context, models.ChannelType) ([]models.NotificationChannel, error)) *NotificationChannelService_ListNotificationChannelsByType_Call {
 	_c.Call.Return(run)
 	return _c
 }

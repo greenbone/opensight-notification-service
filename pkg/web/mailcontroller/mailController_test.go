@@ -114,26 +114,26 @@ func TestMailController_ListMailChannelsByType(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		queryType      string
+		queryType      models.ChannelType
 		mockReturn     []models.NotificationChannel
 		mockErr        error
 		wantStatusCode int
 	}{
 		{
 			name:           "list by type",
-			queryType:      "mail",
+			queryType:      models.ChannelTypeMail,
 			mockReturn:     channels,
 			wantStatusCode: http.StatusOK,
 		},
 		{
 			name:           "internal error",
-			queryType:      "mail",
+			queryType:      models.ChannelTypeMail,
 			mockErr:        errors.New("db error"),
 			wantStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name:           "empty result",
-			queryType:      "mail",
+			queryType:      models.ChannelTypeMail,
 			mockReturn:     []models.NotificationChannel{},
 			wantStatusCode: http.StatusOK,
 		},
