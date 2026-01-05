@@ -148,8 +148,10 @@ definitions:
       id:
         type: string
       isAuthenticationRequired:
+        default: false
         type: boolean
       isTlsEnforced:
+        default: false
         type: boolean
       maxEmailAttachmentSizeMb:
         type: integer

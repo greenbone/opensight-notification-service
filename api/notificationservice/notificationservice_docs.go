@@ -532,10 +532,12 @@ const docTemplatenotificationservice = `{
                     "type": "string"
                 },
                 "isAuthenticationRequired": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 },
                 "isTlsEnforced": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 },
                 "maxEmailAttachmentSizeMb": {
                     "type": "integer"
