@@ -18,6 +18,7 @@ cov-pg-tests.txt
 
 # common editors config files
 .vscode
+.idea/
 
 # docker compose env file, might be used to store secrets -> must not be comitted
 .env
