@@ -35,5 +35,5 @@ type SinkReference struct {
 	ID           string `json:"id" binding:"required"`
 	Name         string `json:"name" readonly:"true"`
 	Type         string `json:"type" readonly:"true"`
-	HasRecipient bool   `json:"hasRecipient"` // indicates if the sink supports/requires specifying a specific recipient
+	HasRecipient bool   `json:"hasRecipient" readonly:"true"` // indicates if the sink supports/requires specifying a specific recipient
 }

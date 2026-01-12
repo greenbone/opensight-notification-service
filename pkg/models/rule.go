@@ -9,6 +9,7 @@ package models
 // If the condition is fulfilled, the provided action is triggered.
 type Rule struct {
 	ID      string  `json:"id" readonly:"true"`
+	Name    string  `json:"name" binding:"required"`
 	Trigger Trigger `json:"trigger" binding:"required"`
 	Action  Action  `json:"action" binding:"required"`
 	Active  bool    `json:"active"`

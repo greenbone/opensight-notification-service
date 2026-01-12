@@ -251,10 +251,13 @@ definitions:
       id:
         readOnly: true
         type: string
+      name:
+        type: string
       trigger:
         $ref: '#/definitions/models.Trigger'
     required:
     - action
+    - name
     - trigger
     type: object
   models.RuleOptions:
@@ -336,6 +339,7 @@ definitions:
       hasRecipient:
         description: indicates if the sink supports/requires specifying a specific
           recipient
+        readOnly: true
         type: boolean
       id:
         type: string

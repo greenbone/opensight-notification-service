@@ -1088,6 +1088,7 @@ const docTemplatenotificationservice = `{
             "type": "object",
             "required": [
                 "action",
+                "name",
                 "trigger"
             ],
             "properties": {
@@ -1100,6 +1101,9 @@ const docTemplatenotificationservice = `{
                 "id": {
                     "type": "string",
                     "readOnly": true
+                },
+                "name": {
+                    "type": "string"
                 },
                 "trigger": {
                     "$ref": "#/definitions/models.Trigger"
@@ -1217,7 +1221,8 @@ const docTemplatenotificationservice = `{
             "properties": {
                 "hasRecipient": {
                     "description": "indicates if the sink supports/requires specifying a specific recipient",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "readOnly": true
                 },
                 "id": {
                     "type": "string"
