@@ -163,20 +163,6 @@ definitions:
     required:
     - sink
     type: object
-  models.MSTeams:
-    properties:
-      webhook:
-        type: string
-    required:
-    - webhook
-    type: object
-  models.Mattermost:
-    properties:
-      webhook:
-        type: string
-    required:
-    - webhook
-    type: object
   models.Notification:
     properties:
       customFields:
@@ -276,65 +262,6 @@ definitions:
         items:
           $ref: '#/definitions/models.SinkReference'
         type: array
-    type: object
-  models.SMTP:
-    properties:
-      authentication_method:
-        enum:
-        - Plain
-        - Encrypted
-        - GSSAPI
-        - Kerberos
-        type: string
-      connection_security:
-        enum:
-        - STARTTLS
-        - SSL
-        - NONE
-        type: string
-      host:
-        type: string
-      password:
-        type: string
-      port:
-        type: integer
-      sender:
-        type: string
-      username:
-        type: string
-    required:
-    - authentication_method
-    - connection_security
-    - host
-    - password
-    - port
-    - sender
-    - username
-    type: object
-  models.Sink:
-    properties:
-      id:
-        readOnly: true
-        type: string
-      mattermost:
-        $ref: '#/definitions/models.Mattermost'
-      msteams:
-        $ref: '#/definitions/models.MSTeams'
-      name:
-        type: string
-      smtp:
-        $ref: '#/definitions/models.SMTP'
-      type:
-        description: only populate `name` `type` and the root level poperty matching
-          the type
-        enum:
-        - smtp
-        - ' mattermost'
-        - teams
-        type: string
-    required:
-    - name
-    - type
     type: object
   models.SinkReference:
     properties:
@@ -453,18 +380,6 @@ definitions:
     - data
     - metadata
     type: object
-  query.ResponseListWithMetadata-models_Sink:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/models.Sink'
-        type: array
-      metadata:
-        $ref: '#/definitions/query.Metadata'
-    required:
-    - data
-    - metadata
-    type: object
   query.ResponseWithMetadata-array_models_Origin:
     properties:
       data:
@@ -513,16 +428,6 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/models.RuleOptions'
-      metadata:
-        $ref: '#/definitions/query.Metadata'
-    required:
-    - data
-    - metadata
-    type: object
-  query.ResponseWithMetadata-models_Sink:
-    properties:
-      data:
-        $ref: '#/definitions/models.Sink'
       metadata:
         $ref: '#/definitions/query.Metadata'
     required:
@@ -864,183 +769,6 @@ paths:
       summary: Get a rule by id
       tags:
       - rule
-  /sink/{id}:
-    delete:
-      description: Deletes an sink.
-      parameters:
-      - description: unique ID of sink
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: deleted
-          headers:
-            api-version:
-              type: string
-      security:
-      - KeycloakAuth:
-        - admin
-      summary: Delete Sink
-      tags:
-      - sink
-  /sinks:
-    post:
-      consumes:
-      - application/json
-      description: Creates a new sink. E.g. sending a mail or a message to a mattermost
-        channel etc.
-      parameters:
-      - description: sink to create
-        in: body
-        name: sink
-        required: true
-        schema:
-          $ref: '#/definitions/models.Sink'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-models_Sink'
-        "409":
-          description: duplicate
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/errorResponses.ErrorResponse'
-      security:
-      - KeycloakAuth:
-        - admin
-      summary: Create Sink
-      tags:
-      - sink
-    put:
-      description: Returns a list of sinks matching the provided filters.
-      parameters:
-      - description: filters, paging and sorting
-        in: body
-        name: MatchCriterias
-        required: true
-        schema:
-          $ref: '#/definitions/query.ResultSelector'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/query.ResponseListWithMetadata-models_Sink'
-      security:
-      - KeycloakAuth: []
-      summary: List Sinks
-      tags:
-      - sink
-  /sinks/{id}:
-    get:
-      description: Returns the sink
-      parameters:
-      - description: unique id of the sink
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-models_Sink'
-        "404":
-          description: Not Found
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/errorResponses.ErrorResponse'
-      security:
-      - KeycloakAuth: []
-      summary: Get a sink by id
-      tags:
-      - sink
-    put:
-      consumes:
-      - application/json
-      description: Updates an sink.
-      parameters:
-      - description: unique ID of sink
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: update/replace sink with given one
-        in: body
-        name: sink
-        required: true
-        schema:
-          $ref: '#/definitions/models.Sink'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-models_Sink'
-        "409":
-          description: duplicate
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/errorResponses.ErrorResponse'
-      security:
-      - KeycloakAuth:
-        - admin
-      summary: Update Sink
-      tags:
-      - sink
-  /sinks/options:
-    get:
-      description: Get filter options for listing sinks.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            api-version:
-              description: API version
-              type: string
-          schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-array_query_FilterOption'
-      security:
-      - KeycloakAuth: []
-      summary: ListSinks filter options
-      tags:
-      - sink
 securityDefinitions:
   KeycloakAuth:
     authorizationUrl: '{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth'
