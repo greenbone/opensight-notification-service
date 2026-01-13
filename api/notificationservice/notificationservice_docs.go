@@ -66,7 +66,7 @@ const docTemplatenotificationservice = `{
                 "security": [
                     {
                         "KeycloakAuth": [
-                            "eventprovider"
+                            "opensight_notification_role"
                         ]
                     }
                 ],
@@ -144,7 +144,7 @@ const docTemplatenotificationservice = `{
                 "security": [
                     {
                         "KeycloakAuth": [
-                            "eventprovider"
+                            "opensight_notification_role"
                         ]
                     }
                 ],
@@ -794,28 +794,29 @@ const docTemplatenotificationservice = `{
                 "doesNotContain",
                 "textContains",
                 "isNumberEqualTo",
-                "isEqualTo",
-                "isIpEqualTo",
-                "isStringEqualTo",
-                "isStringCaseInsensitiveEqualTo",
-                "isNotEqualTo",
                 "isNumberNotEqualTo",
+                "isEqualTo",
+                "isNotEqualTo",
+                "isIpEqualTo",
                 "isIpNotEqualTo",
+                "isStringEqualTo",
                 "isStringNotEqualTo",
+                "isStringCaseInsensitiveEqualTo",
                 "isGreaterThan",
                 "isGreaterThanOrEqualTo",
                 "isLessThan",
                 "isLessThanOrEqualTo",
                 "beforeDate",
                 "afterDate",
+                "betweenDates",
                 "exists",
+                "doesNotExist",
                 "isEqualToRating",
                 "isNotEqualToRating",
-                "isGreaterThanRating",
                 "isLessThanRating",
-                "isGreaterThanOrEqualToRating",
                 "isLessThanOrEqualToRating",
-                "betweenDates"
+                "isGreaterThanRating",
+                "isGreaterThanOrEqualToRating"
             ],
             "x-enum-varnames": [
                 "CompareOperatorBeginsWith",
@@ -824,28 +825,29 @@ const docTemplatenotificationservice = `{
                 "CompareOperatorDoesNotContain",
                 "CompareOperatorTextContains",
                 "CompareOperatorIsNumberEqualTo",
-                "CompareOperatorIsEqualTo",
-                "CompareOperatorIsIpEqualTo",
-                "CompareOperatorIsStringEqualTo",
-                "CompareOperatorIsStringCaseInsensitiveEqualTo",
-                "CompareOperatorIsNotEqualTo",
                 "CompareOperatorIsNumberNotEqualTo",
+                "CompareOperatorIsEqualTo",
+                "CompareOperatorIsNotEqualTo",
+                "CompareOperatorIsIpEqualTo",
                 "CompareOperatorIsIpNotEqualTo",
+                "CompareOperatorIsStringEqualTo",
                 "CompareOperatorIsStringNotEqualTo",
+                "CompareOperatorIsStringCaseInsensitiveEqualTo",
                 "CompareOperatorIsGreaterThan",
                 "CompareOperatorIsGreaterThanOrEqualTo",
                 "CompareOperatorIsLessThan",
                 "CompareOperatorIsLessThanOrEqualTo",
                 "CompareOperatorBeforeDate",
                 "CompareOperatorAfterDate",
+                "CompareOperatorBetweenDates",
                 "CompareOperatorExists",
+                "CompareOperatorDoesNotExist",
                 "CompareOperatorIsEqualToRating",
                 "CompareOperatorIsNotEqualToRating",
-                "CompareOperatorIsGreaterThanRating",
                 "CompareOperatorIsLessThanRating",
-                "CompareOperatorIsGreaterThanOrEqualToRating",
                 "CompareOperatorIsLessThanOrEqualToRating",
-                "CompareOperatorBetweenDates"
+                "CompareOperatorIsGreaterThanRating",
+                "CompareOperatorIsGreaterThanOrEqualToRating"
             ]
         },
         "filter.ControlType": {
@@ -1547,7 +1549,7 @@ const docTemplatenotificationservice = `{
             "authorizationUrl": "{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth",
             "scopes": {
                 "admin": "admin access, permit writing and reading global settings",
-                "eventprovider": "write access to endpoints used by the client backend services"
+                "opensight_notification_role": "write access to endpoints used by the client backend services"
             }
         }
     },

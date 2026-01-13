@@ -53,7 +53,7 @@ func (c *NotificationController) registerRoutes(router gin.IRouter, auth gin.Han
 //	@Tags			notification
 //	@Accept			json
 //	@Produce		json
-//	@Security		KeycloakAuth[eventprovider]
+//	@Security		KeycloakAuth[opensight_notification_role]
 //	@Param			Notification	body		models.Notification	true	"notification to add"
 //	@Success		201				{object}	query.ResponseWithMetadata[models.Notification]
 //	@Header			all				{string}	api-version	"API version"

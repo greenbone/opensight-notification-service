@@ -21,7 +21,7 @@ type OriginController struct{}
 //	@Tags			origin
 //	@Accept			json
 //	@Produce		json
-//	@Security		KeycloakAuth[eventprovider]
+//	@Security		KeycloakAuth[opensight_notification_role]
 //	@Param			namespace	path		string			true	"namespace of the calling service, need to be unique among all services registering origins"
 //	@Param			origins		body		[]models.Origin	true	"origins provided by the calling service"
 //	@Success		200			{object}	query.ResponseWithMetadata[[]models.Origin]

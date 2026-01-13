@@ -21,28 +21,29 @@ definitions:
     - doesNotContain
     - textContains
     - isNumberEqualTo
-    - isEqualTo
-    - isIpEqualTo
-    - isStringEqualTo
-    - isStringCaseInsensitiveEqualTo
-    - isNotEqualTo
     - isNumberNotEqualTo
+    - isEqualTo
+    - isNotEqualTo
+    - isIpEqualTo
     - isIpNotEqualTo
+    - isStringEqualTo
     - isStringNotEqualTo
+    - isStringCaseInsensitiveEqualTo
     - isGreaterThan
     - isGreaterThanOrEqualTo
     - isLessThan
     - isLessThanOrEqualTo
     - beforeDate
     - afterDate
+    - betweenDates
     - exists
+    - doesNotExist
     - isEqualToRating
     - isNotEqualToRating
-    - isGreaterThanRating
     - isLessThanRating
-    - isGreaterThanOrEqualToRating
     - isLessThanOrEqualToRating
-    - betweenDates
+    - isGreaterThanRating
+    - isGreaterThanOrEqualToRating
     type: string
     x-enum-varnames:
     - CompareOperatorBeginsWith
@@ -51,28 +52,29 @@ definitions:
     - CompareOperatorDoesNotContain
     - CompareOperatorTextContains
     - CompareOperatorIsNumberEqualTo
-    - CompareOperatorIsEqualTo
-    - CompareOperatorIsIpEqualTo
-    - CompareOperatorIsStringEqualTo
-    - CompareOperatorIsStringCaseInsensitiveEqualTo
-    - CompareOperatorIsNotEqualTo
     - CompareOperatorIsNumberNotEqualTo
+    - CompareOperatorIsEqualTo
+    - CompareOperatorIsNotEqualTo
+    - CompareOperatorIsIpEqualTo
     - CompareOperatorIsIpNotEqualTo
+    - CompareOperatorIsStringEqualTo
     - CompareOperatorIsStringNotEqualTo
+    - CompareOperatorIsStringCaseInsensitiveEqualTo
     - CompareOperatorIsGreaterThan
     - CompareOperatorIsGreaterThanOrEqualTo
     - CompareOperatorIsLessThan
     - CompareOperatorIsLessThanOrEqualTo
     - CompareOperatorBeforeDate
     - CompareOperatorAfterDate
+    - CompareOperatorBetweenDates
     - CompareOperatorExists
+    - CompareOperatorDoesNotExist
     - CompareOperatorIsEqualToRating
     - CompareOperatorIsNotEqualToRating
-    - CompareOperatorIsGreaterThanRating
     - CompareOperatorIsLessThanRating
-    - CompareOperatorIsGreaterThanOrEqualToRating
     - CompareOperatorIsLessThanOrEqualToRating
-    - CompareOperatorBetweenDates
+    - CompareOperatorIsGreaterThanRating
+    - CompareOperatorIsGreaterThanOrEqualToRating
   filter.ControlType:
     enum:
     - bool
@@ -591,7 +593,7 @@ paths:
             $ref: '#/definitions/query.ResponseWithMetadata-models_Notification'
       security:
       - KeycloakAuth:
-        - eventprovider
+        - opensight_notification_role
       summary: Create Notification
       tags:
       - notification
@@ -676,7 +678,7 @@ paths:
             $ref: '#/definitions/query.ResponseWithMetadata-array_models_Origin'
       security:
       - KeycloakAuth:
-        - eventprovider
+        - opensight_notification_role
       summary: Register Origins
       tags:
       - origin
@@ -1045,6 +1047,7 @@ securityDefinitions:
     flow: implicit
     scopes:
       admin: admin access, permit writing and reading global settings
-      eventprovider: write access to endpoints used by the client backend services
+      opensight_notification_role: write access to endpoints used by the client backend
+        services
     type: oauth2
 swagger: "2.0"

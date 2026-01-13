@@ -18,7 +18,7 @@ import (
 //	@securitydefinitions.oauth2.implicit	KeycloakAuth
 //	@authorizationUrl						{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth
 //  @scope.admin admin access, permit writing and reading global settings
-//  @scope.eventprovider write access to endpoints used by the client backend services
+//  @scope.opensight_notification_role write access to endpoints used by the client backend services
 
 //	@title			Notification Service API
 //	@version		1.0
