@@ -33,13 +33,14 @@ func Test_CreateNotification_ListNotification(t *testing.T) {
 	}{
 		"create notification": {
 			notificationIn: models.Notification{
-				Id:        "read only, to be ignored",
-				Origin:    "test",
-				OriginUri: "vi/test",
-				Timestamp: "2024-10-10T10:00:00Z",
-				Title:     "Test Notification",
-				Detail:    "This is a test notification",
-				Level:     "info",
+				Id:               "read only, to be ignored",
+				Origin:           "test",
+				OriginClass:      "vi/test",
+				OriginResourceID: "1",
+				Timestamp:        "2024-10-10T10:00:00Z",
+				Title:            "Test Notification",
+				Detail:           "This is a test notification",
+				Level:            "info",
 				CustomFields: map[string]any{
 					"key1": "value1",
 					"key2": int(2),
@@ -47,18 +48,39 @@ func Test_CreateNotification_ListNotification(t *testing.T) {
 				},
 			},
 			wantNotification: models.Notification{
-				Id:        "", // will be set after creation by db
-				Origin:    "test",
-				OriginUri: "vi/test",
-				Timestamp: "2024-10-10T10:00:00Z",
-				Title:     "Test Notification",
-				Detail:    "This is a test notification",
-				Level:     "info",
+				Id:               "", // will be set after creation by db
+				Origin:           "test",
+				OriginClass:      "vi/test",
+				OriginResourceID: "1",
+				Timestamp:        "2024-10-10T10:00:00Z",
+				Title:            "Test Notification",
+				Detail:           "This is a test notification",
+				Level:            "info",
 				CustomFields: map[string]any{
 					"key1": "value1",
 					"key2": float64(2), // not all types are preserved by json marshal/unmarshal
 					"key3": []any{"a", "b", "c"},
 				},
+			},
+		},
+		"create notification with only required fields": {
+			notificationIn: models.Notification{
+				Id:          "read only, to be ignored",
+				Origin:      "test",
+				OriginClass: "vi/test",
+				Timestamp:   "2024-10-10T10:00:00Z",
+				Title:       "Test Notification",
+				Detail:      "This is a test notification",
+				Level:       "info",
+			},
+			wantNotification: models.Notification{
+				Id:          "", // will be set after creation by db
+				Origin:      "test",
+				OriginClass: "vi/test",
+				Timestamp:   "2024-10-10T10:00:00Z",
+				Title:       "Test Notification",
+				Detail:      "This is a test notification",
+				Level:       "info",
 			},
 		},
 		"fail on inserting invalid notification": {
@@ -103,12 +125,13 @@ func Test_ListNotifications(t *testing.T) {
 	require.NoError(t, err)
 
 	notification1 := models.Notification{
-		Origin:    "test",
-		OriginUri: "vi/test",
-		Timestamp: "2024-10-10T10:00:00Z",
-		Title:     "Test Notification",
-		Detail:    "This is a test notification",
-		Level:     "info",
+		Origin:           "test",
+		OriginClass:      "vi/test",
+		OriginResourceID: "1",
+		Timestamp:        "2024-10-10T10:00:00Z",
+		Title:            "Test Notification",
+		Detail:           "This is a test notification",
+		Level:            "info",
 		CustomFields: map[string]any{
 			"key1": "value1",
 			"key2": int(2),
@@ -116,20 +139,21 @@ func Test_ListNotifications(t *testing.T) {
 		},
 	}
 	notification2 := models.Notification{
-		Origin:    "test",
-		OriginUri: "vi/test",
-		Timestamp: "2024-11-10T10:00:00Z",
-		Title:     "Test Notification 2",
-		Detail:    "This is a second test notification",
-		Level:     "error",
+		Origin:      "test",
+		OriginClass: "vi/test",
+		Timestamp:   "2024-11-10T10:00:00Z",
+		Title:       "Test Notification 2",
+		Detail:      "This is a second test notification",
+		Level:       "error",
 	}
 	notification3 := models.Notification{
-		Origin:    "test2",
-		OriginUri: "vi/test2",
-		Timestamp: "2024-12-10T10:00:00Z",
-		Title:     "Test Notification 3",
-		Detail:    "This is a third test notification",
-		Level:     "warning",
+		Origin:           "test2",
+		OriginClass:      "vi/test",
+		OriginResourceID: "1",
+		Timestamp:        "2024-12-10T10:00:00Z",
+		Title:            "Test Notification 3",
+		Detail:           "This is a third test notification",
+		Level:            "warning",
 	}
 
 	wantNotification1 := notification1

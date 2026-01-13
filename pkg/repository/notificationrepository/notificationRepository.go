@@ -12,7 +12,6 @@ import (
 	pgquery "github.com/greenbone/opensight-golang-libraries/pkg/postgres/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/jmoiron/sqlx"
 )
@@ -21,7 +20,7 @@ type NotificationRepository struct {
 	client *sqlx.DB
 }
 
-func NewNotificationRepository(db *sqlx.DB) (port.NotificationRepository, error) {
+func NewNotificationRepository(db *sqlx.DB) (*NotificationRepository, error) {
 	if db == nil {
 		return nil, errors.New("nil db reference")
 	}
