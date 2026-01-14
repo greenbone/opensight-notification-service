@@ -15,3 +15,4 @@ SET
 
 ALTER TABLE notification_service.notifications
     DROP COLUMN origin_uri;
+
