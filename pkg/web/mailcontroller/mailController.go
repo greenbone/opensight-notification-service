@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
@@ -12,11 +11,13 @@ import (
 )
 
 type MailController struct {
-	Service notificationchannelservice.NotificationChannelServicer
+	Service            notificationchannelservice.NotificationChannelServicer
+	mailChannelService notificationchannelservice.MailChannelServicer
 }
 
 func NewMailController(router gin.IRouter, service notificationchannelservice.NotificationChannelServicer, auth gin.HandlerFunc) *MailController {
-	ctrl := &MailController{Service: service}
+	validator := notificationchannelservice.NewMailChannelService(service)
+	ctrl := &MailController{Service: service, mailChannelService: validator}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
 }
@@ -50,19 +51,7 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 		return
 	}
 
-	if resp := mc.validateMailChannelFields(channel); resp != nil {
-		c.JSON(http.StatusBadRequest, resp)
-		return
-	}
-
-	notificationChannel := mapper.MapMailToNotificationChannel(channel)
-	created, err := mc.Service.CreateNotificationChannel(c, notificationChannel)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	response := mapper.MapNotificationChannelToMail(created)
-	c.JSON(http.StatusCreated, response)
+	mc.mailChannelService.CreateMailChannel(c, channel)
 }
 
 // ListMailChannelsByType
@@ -108,11 +97,6 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 		return
 	}
 
-	if resp := mc.validateMailChannelFields(channel); resp != nil {
-		c.JSON(http.StatusBadRequest, resp)
-		return
-	}
-
 	notificationChannel := mapper.MapMailToNotificationChannel(channel)
 	updated, err := mc.Service.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
@@ -141,29 +125,4 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
-}
-
-func (mc *MailController) validateMailChannelFields(channel models.MailNotificationChannel) *errs.ErrorResponse {
-	errors := make(errs.FieldErrors)
-	if channel.Domain == nil || *channel.Domain == "" {
-		errors["domain"] = "Domain cannot be empty."
-	}
-	if channel.Port == nil {
-		errors["port"] = "Port cannot be empty."
-	}
-	if channel.SenderEmailAddress == nil || *channel.SenderEmailAddress == "" {
-		errors["sender_email_address"] = "Sender email address cannot be empty."
-	}
-	if channel.ChannelName == nil || *channel.ChannelName == "" {
-		errors["channel_name"] = "Channel Name cannot be empty."
-	}
-
-	if len(errors) > 0 {
-		return &errs.ErrorResponse{
-			Type:   "greenbone/generic-error",
-			Title:  "Mandatory fields of mail configuration cannot be empty",
-			Errors: errors,
-		}
-	}
-	return nil
 }
