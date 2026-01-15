@@ -8,28 +8,29 @@ definitions:
     - doesNotContain
     - textContains
     - isNumberEqualTo
-    - isEqualTo
-    - isIpEqualTo
-    - isStringEqualTo
-    - isStringCaseInsensitiveEqualTo
-    - isNotEqualTo
     - isNumberNotEqualTo
+    - isEqualTo
+    - isNotEqualTo
+    - isIpEqualTo
     - isIpNotEqualTo
+    - isStringEqualTo
     - isStringNotEqualTo
+    - isStringCaseInsensitiveEqualTo
     - isGreaterThan
     - isGreaterThanOrEqualTo
     - isLessThan
     - isLessThanOrEqualTo
     - beforeDate
     - afterDate
+    - betweenDates
     - exists
+    - doesNotExist
     - isEqualToRating
     - isNotEqualToRating
-    - isGreaterThanRating
     - isLessThanRating
-    - isGreaterThanOrEqualToRating
     - isLessThanOrEqualToRating
-    - betweenDates
+    - isGreaterThanRating
+    - isGreaterThanOrEqualToRating
     type: string
     x-enum-varnames:
     - CompareOperatorBeginsWith
@@ -38,28 +39,29 @@ definitions:
     - CompareOperatorDoesNotContain
     - CompareOperatorTextContains
     - CompareOperatorIsNumberEqualTo
-    - CompareOperatorIsEqualTo
-    - CompareOperatorIsIpEqualTo
-    - CompareOperatorIsStringEqualTo
-    - CompareOperatorIsStringCaseInsensitiveEqualTo
-    - CompareOperatorIsNotEqualTo
     - CompareOperatorIsNumberNotEqualTo
+    - CompareOperatorIsEqualTo
+    - CompareOperatorIsNotEqualTo
+    - CompareOperatorIsIpEqualTo
     - CompareOperatorIsIpNotEqualTo
+    - CompareOperatorIsStringEqualTo
     - CompareOperatorIsStringNotEqualTo
+    - CompareOperatorIsStringCaseInsensitiveEqualTo
     - CompareOperatorIsGreaterThan
     - CompareOperatorIsGreaterThanOrEqualTo
     - CompareOperatorIsLessThan
     - CompareOperatorIsLessThanOrEqualTo
     - CompareOperatorBeforeDate
     - CompareOperatorAfterDate
+    - CompareOperatorBetweenDates
     - CompareOperatorExists
+    - CompareOperatorDoesNotExist
     - CompareOperatorIsEqualToRating
     - CompareOperatorIsNotEqualToRating
-    - CompareOperatorIsGreaterThanRating
     - CompareOperatorIsLessThanRating
-    - CompareOperatorIsGreaterThanOrEqualToRating
     - CompareOperatorIsLessThanOrEqualToRating
-    - CompareOperatorBetweenDates
+    - CompareOperatorIsGreaterThanRating
+    - CompareOperatorIsGreaterThanOrEqualToRating
   filter.ControlType:
     enum:
     - bool
@@ -136,6 +138,40 @@ definitions:
         - integer
         - enum
         - bool
+    type: object
+  models.MailNotificationChannel:
+    properties:
+      channelName:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      maxEmailAttachmentSizeMb:
+        type: integer
+      maxEmailIncludeSizeMb:
+        type: integer
+      password:
+        type: string
+      port:
+        type: integer
+      senderEmailAddress:
+        type: string
+      username:
+        type: string
+    required:
+    - channelName
+    - domain
+    - isAuthenticationRequired
+    - isTlsEnforced
+    - port
+    - senderEmailAddress
     type: object
   models.Notification:
     properties:
@@ -304,6 +340,132 @@ info:
   title: Notification Service API
   version: "1.0"
 paths:
+  /notification-channel/mail:
+    get:
+      description: List mail notification channels by type
+      parameters:
+      - description: Channel type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.MailNotificationChannel'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: List Mail Channels
+      tags:
+      - mail-channel
+    post:
+      consumes:
+      - application/json
+      description: Create a new mail notification channel
+      parameters:
+      - description: Mail channel to add
+        in: body
+        name: MailChannel
+        required: true
+        schema:
+          $ref: '#/definitions/models.MailNotificationChannel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.MailNotificationChannel'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Create Mail Channel
+      tags:
+      - mail-channel
+  /notification-channel/mail/{id}:
+    delete:
+      description: Delete a mail notification channel
+      parameters:
+      - description: Mail channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Delete Mail Channel
+      tags:
+      - mail-channel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing mail notification channel
+      parameters:
+      - description: Mail channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mail channel to update
+        in: body
+        name: MailChannel
+        required: true
+        schema:
+          $ref: '#/definitions/models.MailNotificationChannel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MailNotificationChannel'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Update Mail Channel
+      tags:
+      - mail-channel
   /notifications:
     post:
       consumes:

@@ -35,6 +35,5 @@ func NewDB(t *testing.T) *sqlx.DB {
 		golangmigrator.WithFS(repository.MigrationsFS),
 	)
 	db := pgtestdb.New(t, conf, migrator)
-
 	return sqlx.NewDb(db, driverName) // wrap in sqlx as it is expected by the objects to test
 }
