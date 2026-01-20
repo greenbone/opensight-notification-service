@@ -26,3 +26,7 @@ type NotificationChannelService interface {
 	UpdateNotificationChannel(ctx context.Context, id string, channelIn models.NotificationChannel) (models.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
 }
+
+type MailChannelService interface {
+	CreateMailChannel(ctx context.Context, channel models.MailNotificationChannel) (models.MailNotificationChannel, error)
+}

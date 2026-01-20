@@ -9,3 +9,5 @@ packages:
     interfaces:
       NotificationService:
       NotificationChannelService:
+      MailChannelService:
+      NotificationChannelServicer:

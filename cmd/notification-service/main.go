@@ -95,6 +95,7 @@ func run(config config.Config) error {
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelRepository)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	gin := web.NewWebEngine(config.Http)
@@ -108,7 +109,7 @@ func run(config config.Config) error {
 
 	//instantiate controllers
 	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)
-	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, authMiddleware)
+	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

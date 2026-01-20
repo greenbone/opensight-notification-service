@@ -6,18 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
 type MailController struct {
-	Service            notificationchannelservice.NotificationChannelServicer
-	mailChannelService notificationchannelservice.MailChannelServicer
+	Service            port.NotificationChannelService
+	MailChannelService port.MailChannelService
 }
 
-func NewMailController(router gin.IRouter, service notificationchannelservice.NotificationChannelServicer, auth gin.HandlerFunc) *MailController {
-	validator := notificationchannelservice.NewMailChannelService(service)
-	ctrl := &MailController{Service: service, mailChannelService: validator}
+func NewMailController(router gin.IRouter, service port.NotificationChannelService, mailChannelService port.MailChannelService, auth gin.HandlerFunc) *MailController {
+	ctrl := &MailController{Service: service, MailChannelService: mailChannelService}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
 }
@@ -51,7 +51,20 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 		return
 	}
 
-	mc.mailChannelService.CreateMailChannel(c, channel)
+	if err := mc.validateFields(channel); err != nil {
+		restErrorHandler.NotificationChannelErrorHandler(c, "Mandatory fields of mail configuration cannot be empty",
+			err, nil)
+		return
+	}
+
+	mailChannel, err := mc.MailChannelService.CreateMailChannel(c, channel)
+	if err != nil {
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, mailChannel)
+	return
 }
 
 // ListMailChannelsByType
@@ -125,4 +138,25 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (v *MailController) validateFields(channel models.MailNotificationChannel) map[string]string {
+	errors := make(map[string]string)
+	if channel.Domain == nil || *channel.Domain == "" {
+		errors["domain"] = "Domain cannot be empty."
+	}
+	if channel.Port == nil {
+		errors["port"] = "Port cannot be empty."
+	}
+	if channel.SenderEmailAddress == nil || *channel.SenderEmailAddress == "" {
+		errors["senderEmailAddress"] = "Sender email address cannot be empty."
+	}
+	if channel.ChannelName == nil || *channel.ChannelName == "" {
+		errors["channelName"] = "Channel Name cannot be empty."
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+	return nil
 }

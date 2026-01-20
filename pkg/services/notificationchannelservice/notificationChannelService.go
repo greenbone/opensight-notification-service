@@ -7,13 +7,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 )
 
-type NotificationChannelServicer interface {
-	CreateNotificationChannel(ctx context.Context, req models.NotificationChannel) (models.NotificationChannel, error)
-	ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error)
-	UpdateNotificationChannel(ctx context.Context, id string, req models.NotificationChannel) (models.NotificationChannel, error)
-	DeleteNotificationChannel(ctx context.Context, id string) error
-}
-
 type NotificationChannelService struct {
 	store port.NotificationChannelRepository
 }
