@@ -64,7 +64,6 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, mailChannel)
-	return
 }
 
 // ListMailChannelsByType
