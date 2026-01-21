@@ -33,7 +33,7 @@ func NewJob(
 			// TODO: 21.01.2026 stolksdorf - fix asd
 			asd := dtos.NewCheckMailServerRequest(channel)
 			if err := checkChannelConnectivity(service, asd); err != nil {
-				_, err := notificationService.CreateNotification(ctx, models.Notification{
+				_, err := notificationService.CreateNotification(context.Background(), models.Notification{
 					Origin:    "notification-service",
 					Timestamp: time.Now().UTC().Format(time.RFC3339),
 					Title:     "Mail server not reachable",

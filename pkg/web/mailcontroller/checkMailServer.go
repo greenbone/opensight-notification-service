@@ -60,7 +60,7 @@ func validationErrorHandler(errorType gin.ErrorType) gin.HandlerFunc {
 //	@Success		204 "Mail server reachable"
 //	@Failure		400			{object}	map[string]string
 //	@Failure		422 "Mail server error"
-//	@Router			/notifications/mail [post]
+//	@Router			/notifications/mail/check [post]
 func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
 	var mailServer dtos.CheckMailServerRequest
 	if err := c.ShouldBindJSON(&mailServer); err != nil {
