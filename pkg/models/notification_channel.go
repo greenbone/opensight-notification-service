@@ -7,6 +7,7 @@ type NotificationChannel struct {
 	ChannelType              string  `json:"channelType" binding:"required"`
 	ChannelName              *string `json:"channelName,omitempty"`
 	WebhookUrl               *string `json:"webhookUrl,omitempty"`
+	Description              *string `json:"description,omitempty"`
 	Domain                   *string `json:"domain,omitempty"`
 	Port                     *int    `json:"port,omitempty"`
 	IsAuthenticationRequired *bool   `json:"isAuthenticationRequired,omitempty"`

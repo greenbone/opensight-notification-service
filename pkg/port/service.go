@@ -57,3 +57,10 @@ type MailChannelService interface {
 		channel request.MailNotificationChannelRequest,
 	) (request.MailNotificationChannelRequest, error)
 }
+
+type MattermostChannelService interface {
+	CreateMattermostChannel(
+		ctx context.Context,
+		channel request.MattermostNotificationChannelRequest,
+	) (request.MattermostNotificationChannelRequest, error)
+}
