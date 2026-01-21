@@ -12,6 +12,7 @@ func MapNotificationChannelToMail(channel models.NotificationChannel) models.Mai
 		IsAuthenticationRequired: *channel.IsAuthenticationRequired,
 		IsTlsEnforced:            *channel.IsTlsEnforced,
 		Username:                 channel.Username,
+		Password:                 channel.Password,
 		MaxEmailAttachmentSizeMb: channel.MaxEmailAttachmentSizeMb,
 		MaxEmailIncludeSizeMb:    channel.MaxEmailIncludeSizeMb,
 		SenderEmailAddress:       *channel.SenderEmailAddress,
