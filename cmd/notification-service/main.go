@@ -16,13 +16,13 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"github.com/go-playground/validator"
 	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
-	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
@@ -105,13 +105,12 @@ func run(config config.Config) error {
 		return fmt.Errorf("error creating scheduler: %w", err)
 	}
 	_, err = scheduler.NewJob(
-		gocron.DurationJob(time.Hour),
-		gocron.NewTask(checkmailconnectivity.NewJob(notificationChannelService)),
+		gocron.DurationJob(1*time.Hour),
+		gocron.NewTask(checkmailconnectivity.NewJob(notificationService, notificationChannelService)),
 	)
 	if err != nil {
 		return fmt.Errorf("error creating mail connectivity check job: %w", err)
 	}
-
 	scheduler.Start()
 
 	gin := web.NewWebEngine(config.Http)
