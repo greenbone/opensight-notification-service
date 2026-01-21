@@ -1,32 +1,32 @@
-# version: '3' # uncomment for compatibility with old docker compose versions
+x-images:
+  postgres: &postgres-image
+    image: packages.greenbone.net/opensight/opensight-postgres:17.5.1
+
+networks:
+  opensight-notification-net:
+    driver: bridge
+
+volumes:
+  opensight-notification-data:
+    name: opensight-notification-postgres-data
 
 services:
   postgres:
-    image: postgres:16
-    secrets:
-      - PostgresPassword
+    <<: *postgres-image
+    pull_policy: missing
+    ports:
+      - "55432:5432"
+    networks:
+      - opensight-notification-net
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD_FILE: /run/secrets/PostgresPassword
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: notification_service
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
-    networks:
-      - notification-service-net
+      - opensight-notification-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 1s
-      timeout: 5s
-      retries: 10
-
-volumes:
-  postgres-data:
-
-networks:
-  notification-service-net:
-
-secrets:
-  PostgresPassword:
-    environment: DB_PASSWORD
+      test: "pg_isready --username=application-user --dbname=asset-management-backend"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
