@@ -69,7 +69,7 @@ func (sm *EncryptManager) Encrypt(plaintext string) ([]byte, int, error) {
 		PasswordSalt: activeKey.PasswordSalt,
 	})
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("unable to create a new cipher instance: %w", err)
 	}
 
 	encryptedBytes, err := cipher.Encrypt([]byte(plaintext))
