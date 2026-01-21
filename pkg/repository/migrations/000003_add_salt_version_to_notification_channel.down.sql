@@ -1,2 +1,2 @@
 ALTER TABLE notification_service.notification_channel
-ADD COLUMN salt_version INT DEFAULT 0;
+DROP COLUMN salt_version;
