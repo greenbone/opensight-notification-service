@@ -7,6 +7,7 @@ import (
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
 )
 
 const (
@@ -14,17 +15,36 @@ const (
 	channelCheckTimeout = 30 * time.Second
 )
 
-func NewJob(service port.NotificationChannelService) func() error {
+func NewJob(
+	notificationService *notificationservice.NotificationService,
+	service port.NotificationChannelService,
+) func() error {
 	return func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), channelListTimeout)
 		defer cancel()
-		li, err := service.ListNotificationChannelsByType(ctx, "mail")
+
+		mailChannels, err := service.ListNotificationChannelsByType(ctx, "mail")
 		if err != nil {
 			return err
 		}
-		for _, channel := range li {
+
+		for _, channel := range mailChannels {
 			if err := checkChannelConnectivity(service, channel); err != nil {
-				return fmt.Errorf("channel %q: %w", *channel.Id, err)
+				_, err := notificationService.CreateNotification(ctx, models.Notification{
+					Origin:    "notification-service",
+					Timestamp: time.Now().UTC().Format(time.RFC3339),
+					Title:     "Mail server not reachable",
+					Detail:    fmt.Sprintf("Mail server:%s not reachable: %s", *channel.Domain, err),
+					Level:     "info",
+					CustomFields: map[string]any{
+						"Domain":   *channel.Domain,
+						"Port":     *channel.Port,
+						"Username": *channel.Username,
+					},
+				})
+				if err != nil {
+					return err
+				}
 			}
 		}
 		return nil
@@ -34,8 +54,9 @@ func NewJob(service port.NotificationChannelService) func() error {
 func checkChannelConnectivity(service port.NotificationChannelService, channel models.NotificationChannel) error {
 	ctx, cancel := context.WithTimeout(context.Background(), channelCheckTimeout)
 	defer cancel()
+
 	if err := service.CheckNotificationChannelConnectivity(ctx, channel); err != nil {
-		return err // TODO: notify about failed check instead of returning error
+		return err
 	}
 	return nil
 }
