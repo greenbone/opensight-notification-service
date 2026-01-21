@@ -13,6 +13,7 @@ import (
 	"os/signal"
 
 	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 
@@ -88,7 +89,11 @@ func run(config config.Config) error {
 		return fmt.Errorf("error creating Notification Repository: %w", err)
 	}
 
-	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient)
+	// Encrypt
+	manager := security.NewEncryptManager()
+	manager.UpdateKeys(config.DatabaseKeyringConfig)
+
+	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
 	if err != nil {
 		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}
