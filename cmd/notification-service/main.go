@@ -125,6 +125,7 @@ func run(config config.Config) error {
 	//instantiate controllers
 	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)
 	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
+	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

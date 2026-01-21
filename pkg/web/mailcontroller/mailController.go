@@ -19,7 +19,11 @@ type MailController struct {
 	MailChannelService port.MailChannelService
 }
 
-func NewMailController(router gin.IRouter, service port.NotificationChannelService, mailChannelService port.MailChannelService, auth gin.HandlerFunc) *MailController {
+func NewMailController(
+	router gin.IRouter,
+	service port.NotificationChannelService, mailChannelService port.MailChannelService,
+	auth gin.HandlerFunc,
+) *MailController {
 	ctrl := &MailController{Service: service, MailChannelService: mailChannelService}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
