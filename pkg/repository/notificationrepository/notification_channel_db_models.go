@@ -13,7 +13,7 @@ type notificationChannelRow struct {
 	Port                     *string `db:"port"`
 	IsAuthenticationRequired *bool   `db:"is_authentication_required"`
 	IsTlsEnforced            *bool   `db:"is_tls_enforced"`
-	Username                 *string `db:"username"`
+	Username                 *string `db:"username"` // TODO confirm if the Username encryption is required
 	Password                 *string `db:"password"`
 	SaltVersion              int     `db:"salt_version"`
 	MaxEmailAttachmentSizeMb *int    `db:"max_email_attachment_size_mb"`
