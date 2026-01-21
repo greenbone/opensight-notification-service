@@ -6,8 +6,10 @@ package restErrorHandler
 
 import (
 	"errors"
-	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
 	"net/http"
+
+	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 
@@ -44,5 +46,30 @@ func ErrConflictToResponse(err errs.ErrConflict) errorResponses.ErrorResponse {
 		Type:   errorResponses.ErrorTypeGeneric,
 		Title:  err.Message,
 		Errors: err.Errors,
+	}
+}
+
+func NotificationChannelErrorHandler(gc *gin.Context, title string, errs map[string]string, err error) {
+	if len(errs) > 0 && title != "" {
+		gc.JSON(http.StatusBadRequest, ErrValidationToCustomResponse(title, errs))
+		return
+	}
+
+	switch {
+	case errors.Is(err, notificationchannelservice.ErrListMailChannels):
+		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
+	case errors.Is(err, notificationchannelservice.ErrMailChannelAlreadyExists):
+		gc.JSON(http.StatusConflict, ErrValidationToCustomResponse("Mail channel already exists.",
+			map[string]string{"channelName": "Mail channel already exists."}))
+	default:
+		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
+	}
+}
+
+func ErrValidationToCustomResponse(title string, error map[string]string) errorResponses.ErrorResponse {
+	return errorResponses.ErrorResponse{
+		Type:   errorResponses.ErrorTypeValidation,
+		Title:  title,
+		Errors: error,
 	}
 }
