@@ -78,10 +78,10 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/mail [get]
 func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
-	channels, err := mc.Service.ListNotificationChannelsByType(c, "mail")
+	channels, err := mc.Service.ListNotificationChannelsByType(c, models.ChannelTypeMail)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
 	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMail(channels))
@@ -112,7 +112,7 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 	notificationChannel := mapper.MapMailToNotificationChannel(channel)
 	updated, err := mc.Service.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
 	response := mapper.MapNotificationChannelToMail(updated)
@@ -141,17 +141,17 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 
 func (v *MailController) validateFields(channel models.MailNotificationChannel) map[string]string {
 	errors := make(map[string]string)
-	if channel.Domain == nil || *channel.Domain == "" {
-		errors["domain"] = "Domain cannot be empty."
+	if channel.Domain == "" {
+		errors["domain"] = "A Mailhub is required."
 	}
-	if channel.Port == nil {
-		errors["port"] = "Port cannot be empty."
+	if channel.Port == "" {
+		errors["port"] = "A port is required."
 	}
-	if channel.SenderEmailAddress == nil || *channel.SenderEmailAddress == "" {
-		errors["senderEmailAddress"] = "Sender email address cannot be empty."
+	if channel.SenderEmailAddress == "" {
+		errors["senderEmailAddress"] = "A sender is required."
 	}
-	if channel.ChannelName == nil || *channel.ChannelName == "" {
-		errors["channelName"] = "Channel Name cannot be empty."
+	if channel.ChannelName == "" {
+		errors["channelName"] = "A Channel Name is required."
 	}
 
 	if len(errors) > 0 {

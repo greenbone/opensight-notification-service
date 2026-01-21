@@ -6,15 +6,15 @@ import "github.com/greenbone/opensight-notification-service/pkg/models"
 func MapNotificationChannelToMail(channel models.NotificationChannel) models.MailNotificationChannel {
 	return models.MailNotificationChannel{
 		Id:                       channel.Id,
-		ChannelName:              channel.ChannelName,
-		Domain:                   channel.Domain,
-		Port:                     channel.Port,
-		IsAuthenticationRequired: channel.IsAuthenticationRequired,
-		IsTlsEnforced:            channel.IsTlsEnforced,
+		ChannelName:              *channel.ChannelName,
+		Domain:                   *channel.Domain,
+		Port:                     *channel.Port,
+		IsAuthenticationRequired: *channel.IsAuthenticationRequired,
+		IsTlsEnforced:            *channel.IsTlsEnforced,
 		Username:                 channel.Username,
 		MaxEmailAttachmentSizeMb: channel.MaxEmailAttachmentSizeMb,
 		MaxEmailIncludeSizeMb:    channel.MaxEmailIncludeSizeMb,
-		SenderEmailAddress:       channel.SenderEmailAddress,
+		SenderEmailAddress:       *channel.SenderEmailAddress,
 	}
 }
 
@@ -22,16 +22,16 @@ func MapMailToNotificationChannel(mail models.MailNotificationChannel) models.No
 	return models.NotificationChannel{
 		ChannelType:              string(models.ChannelTypeMail),
 		Id:                       mail.Id,
-		ChannelName:              mail.ChannelName,
-		Domain:                   mail.Domain,
-		Port:                     mail.Port,
-		IsAuthenticationRequired: mail.IsAuthenticationRequired,
-		IsTlsEnforced:            mail.IsTlsEnforced,
+		ChannelName:              &mail.ChannelName,
+		Domain:                   &mail.Domain,
+		Port:                     &mail.Port,
+		IsAuthenticationRequired: &mail.IsAuthenticationRequired,
+		IsTlsEnforced:            &mail.IsTlsEnforced,
 		Username:                 mail.Username,
 		Password:                 mail.Password,
 		MaxEmailAttachmentSizeMb: mail.MaxEmailAttachmentSizeMb,
 		MaxEmailIncludeSizeMb:    mail.MaxEmailIncludeSizeMb,
-		SenderEmailAddress:       mail.SenderEmailAddress,
+		SenderEmailAddress:       &mail.SenderEmailAddress,
 	}
 }
 

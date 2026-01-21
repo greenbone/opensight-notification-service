@@ -18,7 +18,7 @@ import (
 func getValidNotificationChannel() models.NotificationChannel {
 	name := "mail1"
 	domain := "example.com"
-	port := 25
+	port := "25"
 	auth := true
 	tls := false
 	username := "user"
@@ -102,7 +102,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 			resp := req.Expect()
 			resp.StatusCode(tt.wantStatusCode)
 			if tt.wantStatusCode == http.StatusCreated {
-				resp.JsonPath("$.channelName", *mailValid.ChannelName)
+				resp.JsonPath("$.channelName", mailValid.ChannelName)
 			}
 			if tt.name == "internal error" {
 				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))

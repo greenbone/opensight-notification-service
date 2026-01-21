@@ -13,7 +13,7 @@ func TestMapNotificationChannelToMail(t *testing.T) {
 		Id:                       helper.ToPtr("id1"),
 		ChannelName:              helper.ToPtr("TestChannel"),
 		Domain:                   helper.ToPtr("example.com"),
-		Port:                     helper.ToPtr(587),
+		Port:                     helper.ToPtr("587"),
 		IsAuthenticationRequired: helper.ToPtr(true),
 		IsTlsEnforced:            helper.ToPtr(true),
 		Username:                 helper.ToPtr("user"),
@@ -26,31 +26,31 @@ func TestMapNotificationChannelToMail(t *testing.T) {
 
 	t.Run("assert all fields", func(t *testing.T) {
 		assert.Equal(t, channel.Id, mail.Id)
-		assert.Equal(t, channel.ChannelName, mail.ChannelName)
-		assert.Equal(t, channel.Domain, mail.Domain)
-		assert.Equal(t, channel.Port, mail.Port)
-		assert.Equal(t, channel.IsAuthenticationRequired, mail.IsAuthenticationRequired)
-		assert.Equal(t, channel.IsTlsEnforced, mail.IsTlsEnforced)
+		assert.Equal(t, channel.ChannelName, &mail.ChannelName)
+		assert.Equal(t, channel.Domain, &mail.Domain)
+		assert.Equal(t, channel.Port, &mail.Port)
+		assert.Equal(t, channel.IsAuthenticationRequired, &mail.IsAuthenticationRequired)
+		assert.Equal(t, channel.IsTlsEnforced, &mail.IsTlsEnforced)
 		assert.Equal(t, channel.Username, mail.Username)
 		assert.Equal(t, channel.MaxEmailAttachmentSizeMb, mail.MaxEmailAttachmentSizeMb)
 		assert.Equal(t, channel.MaxEmailIncludeSizeMb, mail.MaxEmailIncludeSizeMb)
-		assert.Equal(t, channel.SenderEmailAddress, mail.SenderEmailAddress)
+		assert.Equal(t, channel.SenderEmailAddress, &mail.SenderEmailAddress)
 	})
 }
 
 func TestMapMailToNotificationChannel(t *testing.T) {
 	mail := models.MailNotificationChannel{
 		Id:                       helper.ToPtr("id2"),
-		ChannelName:              helper.ToPtr("MailChannel"),
-		Domain:                   helper.ToPtr("mail.com"),
-		Port:                     helper.ToPtr(465),
-		IsAuthenticationRequired: helper.ToPtr(false),
-		IsTlsEnforced:            helper.ToPtr(false),
+		ChannelName:              "MailChannel",
+		Domain:                   "mail.com",
+		Port:                     "465",
+		IsAuthenticationRequired: false,
+		IsTlsEnforced:            false,
 		Username:                 helper.ToPtr("mailuser"),
 		Password:                 helper.ToPtr("secret"),
 		MaxEmailAttachmentSizeMb: helper.ToPtr(20),
 		MaxEmailIncludeSizeMb:    helper.ToPtr(15),
-		SenderEmailAddress:       helper.ToPtr("mail@domain.com"),
+		SenderEmailAddress:       "mail@domain.com",
 	}
 
 	channel := MapMailToNotificationChannel(mail)
@@ -58,15 +58,15 @@ func TestMapMailToNotificationChannel(t *testing.T) {
 	t.Run("assert all fields", func(t *testing.T) {
 		assert.Equal(t, "mail", channel.ChannelType)
 		assert.Equal(t, mail.Id, channel.Id)
-		assert.Equal(t, mail.ChannelName, channel.ChannelName)
-		assert.Equal(t, mail.Domain, channel.Domain)
-		assert.Equal(t, mail.Port, channel.Port)
-		assert.Equal(t, mail.IsAuthenticationRequired, channel.IsAuthenticationRequired)
-		assert.Equal(t, mail.IsTlsEnforced, channel.IsTlsEnforced)
+		assert.Equal(t, mail.ChannelName, *channel.ChannelName)
+		assert.Equal(t, mail.Domain, *channel.Domain)
+		assert.Equal(t, mail.Port, *channel.Port)
+		assert.Equal(t, mail.IsAuthenticationRequired, *channel.IsAuthenticationRequired)
+		assert.Equal(t, mail.IsTlsEnforced, *channel.IsTlsEnforced)
 		assert.Equal(t, mail.Username, channel.Username)
 		assert.Equal(t, mail.Password, channel.Password)
 		assert.Equal(t, mail.MaxEmailAttachmentSizeMb, channel.MaxEmailAttachmentSizeMb)
 		assert.Equal(t, mail.MaxEmailIncludeSizeMb, channel.MaxEmailIncludeSizeMb)
-		assert.Equal(t, mail.SenderEmailAddress, channel.SenderEmailAddress)
+		assert.Equal(t, mail.SenderEmailAddress, *channel.SenderEmailAddress)
 	})
 }

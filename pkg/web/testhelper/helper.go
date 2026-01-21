@@ -105,15 +105,15 @@ func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepo
 
 func GetValidMailNotificationChannel() models.MailNotificationChannel {
 	return models.MailNotificationChannel{
-		ChannelName:              helper.ToPtr("mail1"),
-		Domain:                   helper.ToPtr("example.com"),
-		Port:                     helper.ToPtr(25),
-		IsAuthenticationRequired: helper.ToPtr(true),
-		IsTlsEnforced:            helper.ToPtr(false),
+		ChannelName:              "mail1",
+		Domain:                   "example.com",
+		Port:                     "25",
+		IsAuthenticationRequired: true,
+		IsTlsEnforced:            false,
 		Username:                 helper.ToPtr("user"),
 		Password:                 helper.ToPtr("pass"),
 		MaxEmailAttachmentSizeMb: helper.ToPtr(10),
 		MaxEmailIncludeSizeMb:    helper.ToPtr(5),
-		SenderEmailAddress:       helper.ToPtr("sender@example.com"),
+		SenderEmailAddress:       "sender@example.com",
 	}
 }

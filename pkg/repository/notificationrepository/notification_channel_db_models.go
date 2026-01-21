@@ -10,7 +10,7 @@ type notificationChannelRow struct {
 	ChannelName              *string `db:"channel_name"`
 	WebhookUrl               *string `db:"webhook_url"`
 	Domain                   *string `db:"domain"`
-	Port                     *int    `db:"port"`
+	Port                     *string `db:"port"`
 	IsAuthenticationRequired *bool   `db:"is_authentication_required"`
 	IsTlsEnforced            *bool   `db:"is_tls_enforced"`
 	Username                 *string `db:"username"`

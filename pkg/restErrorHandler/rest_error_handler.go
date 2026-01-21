@@ -59,7 +59,7 @@ func NotificationChannelErrorHandler(gc *gin.Context, title string, errs map[str
 	case errors.Is(err, notificationchannelservice.ErrListMailChannels):
 		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
 	case errors.Is(err, notificationchannelservice.ErrMailChannelAlreadyExists):
-		gc.JSON(http.StatusBadRequest, ErrValidationToCustomResponse("Mail channel already exists.",
+		gc.JSON(http.StatusConflict, ErrValidationToCustomResponse("Mail channel already exists.",
 			map[string]string{"channelName": "Mail channel already exists."}))
 	default:
 		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
