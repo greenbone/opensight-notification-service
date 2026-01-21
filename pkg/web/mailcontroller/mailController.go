@@ -14,7 +14,11 @@ type MailController struct {
 	Service notificationchannelservice.NotificationChannelServicer
 }
 
-func NewMailController(router gin.IRouter, service notificationchannelservice.NotificationChannelServicer, auth gin.HandlerFunc) *MailController {
+func NewMailController(
+	router gin.IRouter,
+	service notificationchannelservice.NotificationChannelServicer,
+	auth gin.HandlerFunc,
+) *MailController {
 	ctrl := &MailController{Service: service}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
@@ -130,28 +134,4 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
-}
-
-// CheckMailChannelConnectivity
-//
-//	@Summary		Check Mail Channel Connectivity
-//	@Description	Check that a mail notification channel has connectivity to mail servers
-//	@Tags			mail channel
-//	@Security		KeycloakAuth
-//	@Param			id	path	string	true	"Mail channel ID"
-//	@Success		200	"Connectivity check successful"
-//	@Failure		500	{object}	map[string]string
-//	@Router			/notifications/mail/{id}/check-connection [get]
-func (mc *MailController) CheckMailChannelConnectivity(c *gin.Context) {
-	id := c.Param("id")
-	channel, err := mc.Service.GetNotificationChannelByIdAndType(c, id, "mail")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if err := mc.Service.CheckNotificationChannelConnectivity(c, channel); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.Status(http.StatusOK)
 }
