@@ -1,5 +1,22 @@
 basePath: /api/notification-service
 definitions:
+  dtos.CheckMailServerRequest:
+    properties:
+      domain:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    type: object
   filter.CompareOperator:
     enum:
     - beginsWith
@@ -138,40 +155,6 @@ definitions:
         - integer
         - enum
         - bool
-    type: object
-  models.MailNotificationChannel:
-    properties:
-      channelName:
-        type: string
-      domain:
-        type: string
-      id:
-        type: string
-      isAuthenticationRequired:
-        default: false
-        type: boolean
-      isTlsEnforced:
-        default: false
-        type: boolean
-      maxEmailAttachmentSizeMb:
-        type: integer
-      maxEmailIncludeSizeMb:
-        type: integer
-      password:
-        type: string
-      port:
-        type: integer
-      senderEmailAddress:
-        type: string
-      username:
-        type: string
-    required:
-    - channelName
-    - domain
-    - isAuthenticationRequired
-    - isTlsEnforced
-    - port
-    - senderEmailAddress
     type: object
   models.Notification:
     properties:
@@ -312,6 +295,33 @@ definitions:
       sorting:
         $ref: '#/definitions/sorting.Request'
     type: object
+  request.MailNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      maxEmailAttachmentSizeMb:
+        type: integer
+      maxEmailIncludeSizeMb:
+        type: integer
+      password:
+        type: string
+      port:
+        type: integer
+      senderEmailAddress:
+        type: string
+      username:
+        type: string
+    type: object
   sorting.Request:
     properties:
       column:
@@ -355,7 +365,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.MailNotificationChannel'
+              $ref: '#/definitions/request.MailNotificationChannelRequest'
             type: array
         "500":
           description: Internal Server Error
@@ -378,14 +388,14 @@ paths:
         name: MailChannel
         required: true
         schema:
-          $ref: '#/definitions/models.MailNotificationChannel'
+          $ref: '#/definitions/request.MailNotificationChannelRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.MailNotificationChannel'
+            $ref: '#/definitions/request.MailNotificationChannelRequest'
         "400":
           description: Bad Request
           schema:
@@ -441,14 +451,14 @@ paths:
         name: MailChannel
         required: true
         schema:
-          $ref: '#/definitions/models.MailNotificationChannel'
+          $ref: '#/definitions/request.MailNotificationChannelRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MailNotificationChannel'
+            $ref: '#/definitions/request.MailNotificationChannelRequest'
         "400":
           description: Bad Request
           schema:
@@ -521,6 +531,36 @@ paths:
       summary: List Notifications
       tags:
       - notification
+  /notifications/mail:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mail server is reachable
+      parameters:
+      - description: Mail server to check
+        in: body
+        name: MailServerConfig
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CheckMailServerRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mail server reachable
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Mail server error
+      security:
+      - KeycloakAuth: []
+      summary: Check mail server
+      tags:
+      - mailserver
   /notifications/options:
     get:
       description: Get filter options for listing notifications

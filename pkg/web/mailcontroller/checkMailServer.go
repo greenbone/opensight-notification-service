@@ -56,7 +56,7 @@ func validationErrorHandler(errorType gin.ErrorType) gin.HandlerFunc {
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			MailServerConfig	body		models.MailNotificationChannel	true	"Mail server to check"
+//	@Param			MailServerConfig	body		dtos.CheckMailServerRequest	true	"Mail server to check"
 //	@Success		204 "Mail server reachable"
 //	@Failure		400			{object}	map[string]string
 //	@Failure		422 "Mail server error"

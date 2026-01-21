@@ -46,8 +46,8 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			MailChannel	body		models.MailNotificationChannelRequest	true	"Mail channel to add"
-//	@Success		201			{object}	models.MailNotificationChannelRequest
+//	@Param			MailChannel	body		request.MailNotificationChannelRequest	true	"Mail channel to add"
+//	@Success		201			{object}	request.MailNotificationChannelRequest
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/mail [post]
@@ -81,7 +81,7 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			type	query		string	false	"Channel type"
-//	@Success		200		{array}		models.MailNotificationChannelRequest
+//	@Success		200		{array}		request.MailNotificationChannelRequest
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/mail [get]
 func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
@@ -103,8 +103,8 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			id			path		string						true	"Mail channel ID"
-//	@Param			MailChannel	body		models.MailNotificationChannelRequest	true	"Mail channel to update"
-//	@Success		200			{object}	models.MailNotificationChannelRequest
+//	@Param			MailChannel	body		request.MailNotificationChannelRequest	true	"Mail channel to update"
+//	@Success		200			{object}	request.MailNotificationChannelRequest
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/mail/{id} [put]

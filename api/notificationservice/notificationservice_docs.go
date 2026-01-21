@@ -47,7 +47,7 @@ const docTemplatenotificationservice = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.MailNotificationChannel"
+                                "$ref": "#/definitions/request.MailNotificationChannelRequest"
                             }
                         }
                     },
@@ -86,7 +86,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.MailNotificationChannel"
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
                         }
                     }
                 ],
@@ -94,7 +94,7 @@ const docTemplatenotificationservice = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.MailNotificationChannel"
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
                         }
                     },
                     "400": {
@@ -150,7 +150,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.MailNotificationChannel"
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
                         }
                     }
                 ],
@@ -158,7 +158,7 @@ const docTemplatenotificationservice = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MailNotificationChannel"
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
                         }
                     },
                     "400": {
@@ -305,6 +305,54 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/notifications/mail": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mail server is reachable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mailserver"
+                ],
+                "summary": "Check mail server",
+                "parameters": [
+                    {
+                        "description": "Mail server to check",
+                        "name": "MailServerConfig",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CheckMailServerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Mail server reachable"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Mail server error"
+                    }
+                }
+            }
+        },
         "/notifications/options": {
             "get": {
                 "security": [
@@ -338,6 +386,31 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
+        "dtos.CheckMailServerRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "filter.CompareOperator": {
             "type": "string",
             "enum": [
@@ -508,54 +581,6 @@ const docTemplatenotificationservice = `{
                             "$ref": "#/definitions/filter.ControlType"
                         }
                     ]
-                }
-            }
-        },
-        "models.MailNotificationChannel": {
-            "type": "object",
-            "required": [
-                "channelName",
-                "domain",
-                "isAuthenticationRequired",
-                "isTlsEnforced",
-                "port",
-                "senderEmailAddress"
-            ],
-            "properties": {
-                "channelName": {
-                    "type": "string"
-                },
-                "domain": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isAuthenticationRequired": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "isTlsEnforced": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "maxEmailAttachmentSizeMb": {
-                    "type": "integer"
-                },
-                "maxEmailIncludeSizeMb": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "senderEmailAddress": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -761,6 +786,46 @@ const docTemplatenotificationservice = `{
                 },
                 "sorting": {
                     "$ref": "#/definitions/sorting.Request"
+                }
+            }
+        },
+        "request.MailNotificationChannelRequest": {
+            "type": "object",
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "maxEmailAttachmentSizeMb": {
+                    "type": "integer"
+                },
+                "maxEmailIncludeSizeMb": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "senderEmailAddress": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
