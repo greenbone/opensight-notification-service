@@ -19,6 +19,7 @@ RUN make install-code-generation-tools
 # copy api related source files and generate api docs
 COPY pkg/web pkg/web
 COPY pkg/models pkg/models
+COPY pkg/request pkg/request
 RUN make api-docs
 
 # copy rest of the source files

@@ -51,25 +51,20 @@ func ErrConflictToResponse(err errs.ErrConflict) errorResponses.ErrorResponse {
 
 func NotificationChannelErrorHandler(gc *gin.Context, title string, errs map[string]string, err error) {
 	if len(errs) > 0 && title != "" {
-		gc.JSON(http.StatusBadRequest, ErrValidationToCustomResponse(title, errs))
+		gc.JSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse(title, "", errs))
 		return
 	}
 
 	switch {
+	case errors.Is(err, notificationchannelservice.ErrMailChannelBadRequest):
+		gc.JSON(http.StatusBadRequest,
+			errorResponses.NewErrorValidationResponse("Invalid mail channel data.", "", nil))
 	case errors.Is(err, notificationchannelservice.ErrListMailChannels):
 		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
 	case errors.Is(err, notificationchannelservice.ErrMailChannelAlreadyExists):
-		gc.JSON(http.StatusConflict, ErrValidationToCustomResponse("Mail channel already exists.",
+		gc.JSON(http.StatusConflict, errorResponses.NewErrorValidationResponse("Mail channel already exists.", "",
 			map[string]string{"channelName": "Mail channel already exists."}))
 	default:
 		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
-	}
-}
-
-func ErrValidationToCustomResponse(title string, error map[string]string) errorResponses.ErrorResponse {
-	return errorResponses.ErrorResponse{
-		Type:   errorResponses.ErrorTypeValidation,
-		Title:  title,
-		Errors: error,
 	}
 }

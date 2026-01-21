@@ -5,6 +5,7 @@ import (
 
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +14,7 @@ func TestMapNotificationChannelToMail(t *testing.T) {
 		Id:                       helper.ToPtr("id1"),
 		ChannelName:              helper.ToPtr("TestChannel"),
 		Domain:                   helper.ToPtr("example.com"),
-		Port:                     helper.ToPtr("587"),
+		Port:                     helper.ToPtr(587),
 		IsAuthenticationRequired: helper.ToPtr(true),
 		IsTlsEnforced:            helper.ToPtr(true),
 		Username:                 helper.ToPtr("user"),
@@ -39,11 +40,11 @@ func TestMapNotificationChannelToMail(t *testing.T) {
 }
 
 func TestMapMailToNotificationChannel(t *testing.T) {
-	mail := models.MailNotificationChannel{
+	mail := request.MailNotificationChannelRequest{
 		Id:                       helper.ToPtr("id2"),
 		ChannelName:              "MailChannel",
 		Domain:                   "mail.com",
-		Port:                     "465",
+		Port:                     465,
 		IsAuthenticationRequired: false,
 		IsTlsEnforced:            false,
 		Username:                 helper.ToPtr("mailuser"),

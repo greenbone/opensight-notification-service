@@ -1,10 +1,13 @@
 package mapper
 
-import "github.com/greenbone/opensight-notification-service/pkg/models"
+import (
+	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/request"
+)
 
-// MapNotificationChannelToMail maps NotificationChannel to MailNotificationChannel.
-func MapNotificationChannelToMail(channel models.NotificationChannel) models.MailNotificationChannel {
-	return models.MailNotificationChannel{
+// MapNotificationChannelToMail maps NotificationChannel to MailNotificationChannelRequest.
+func MapNotificationChannelToMail(channel models.NotificationChannel) request.MailNotificationChannelRequest {
+	return request.MailNotificationChannelRequest{
 		Id:                       channel.Id,
 		ChannelName:              *channel.ChannelName,
 		Domain:                   *channel.Domain,
@@ -19,7 +22,7 @@ func MapNotificationChannelToMail(channel models.NotificationChannel) models.Mai
 	}
 }
 
-func MapMailToNotificationChannel(mail models.MailNotificationChannel) models.NotificationChannel {
+func MapMailToNotificationChannel(mail request.MailNotificationChannelRequest) models.NotificationChannel {
 	return models.NotificationChannel{
 		ChannelType:              string(models.ChannelTypeMail),
 		Id:                       mail.Id,
@@ -36,9 +39,9 @@ func MapMailToNotificationChannel(mail models.MailNotificationChannel) models.No
 	}
 }
 
-// MapNotificationChannelsToMail maps a slice of NotificationChannel to MailNotificationChannel.
-func MapNotificationChannelsToMail(channels []models.NotificationChannel) []models.MailNotificationChannel {
-	mailChannels := make([]models.MailNotificationChannel, 0, len(channels))
+// MapNotificationChannelsToMail maps a slice of NotificationChannel to MailNotificationChannelRequest.
+func MapNotificationChannelsToMail(channels []models.NotificationChannel) []request.MailNotificationChannelRequest {
+	mailChannels := make([]request.MailNotificationChannelRequest, 0, len(channels))
 	for _, ch := range channels {
 		mailChannels = append(mailChannels, MapNotificationChannelToMail(ch))
 	}

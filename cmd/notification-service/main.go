@@ -13,12 +13,17 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-co-op/gocron/v2"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 
 	"github.com/go-playground/validator"
+	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/rs/zerolog/log"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
@@ -29,9 +34,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller"
-	"github.com/kelseyhightower/envconfig"
-
-	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -103,8 +105,22 @@ func run(config config.Config) error {
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
-	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelRepository)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService)
 	healthService := healthservice.NewHealthService(pgClient)
+
+	// scheduler
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		return fmt.Errorf("error creating scheduler: %w", err)
+	}
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(1*time.Hour),
+		gocron.NewTask(checkmailconnectivity.NewJob(notificationService, notificationChannelService)),
+	)
+	if err != nil {
+		return fmt.Errorf("error creating mail connectivity check job: %w", err)
+	}
+	scheduler.Start()
 
 	gin := web.NewWebEngine(config.Http)
 	rootRouter := gin.Group("/")
@@ -118,6 +134,7 @@ func run(config config.Config) error {
 	//instantiate controllers
 	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)
 	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
+	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

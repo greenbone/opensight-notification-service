@@ -49,7 +49,7 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 		updated := valid
 		updated.Id = &mailId
 		newName := "updated"
-		updated.ChannelName = &newName
+		updated.ChannelName = newName
 		updateBody := request.Put("/notification-channel/mail/"+mailId).
 			JsonContentObject(updated).
 			Expect().
@@ -85,7 +85,7 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 		updated := valid
 		updated.Password = nil
 		newName := "updated"
-		updated.ChannelName = &newName
+		updated.ChannelName = newName
 		request.Put("/notification-channel/mail/"+mailId).
 			JsonContentObject(updated).
 			Expect().
@@ -117,6 +117,6 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 		request.Post("/notification-channel/mail").
 			JsonContentObject(valid).
 			Expect().
-			StatusCode(http.StatusBadRequest)
+			StatusCode(http.StatusConflict)
 	})
 }

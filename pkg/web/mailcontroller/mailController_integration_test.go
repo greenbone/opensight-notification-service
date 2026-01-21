@@ -37,7 +37,8 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonPath("$.id", httpassert.ExtractTo(&mailId)).
 			JsonPath("$.channelName", "mail1").
 			JsonPath("$.domain", "example.com").
-			JsonPath("$.port", float64(25)).JsonPath("$.isAuthenticationRequired", true).
+			JsonPath("$.port", float64(25)).
+			JsonPath("$.isAuthenticationRequired", true).
 			JsonPath("$.isTlsEnforced", false).
 			JsonPath("$.username", "user").
 			JsonPath("$.maxEmailAttachmentSizeMb", float64(10)).
@@ -66,7 +67,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 		updated := valid
 		updated.Id = &mailId
 		newName := "updated"
-		updated.ChannelName = &newName
+		updated.ChannelName = newName
 		request.Put("/notification-channel/mail/"+mailId).
 			JsonContentObject(updated).
 			Expect().
@@ -75,7 +76,8 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonPath("$.id", mailId).
 			JsonPath("$.channelName", newName).
 			JsonPath("$.domain", "example.com").
-			JsonPath("$.port", float64(25)).JsonPath("$.isAuthenticationRequired", true).
+			JsonPath("$.port", float64(25)).
+			JsonPath("$.isAuthenticationRequired", true).
 			JsonPath("$.isTlsEnforced", false).
 			JsonPath("$.username", "user").
 			JsonPath("$.maxEmailAttachmentSizeMb", float64(10)).
@@ -121,7 +123,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 		newPassword := "newPassword"
 		updated.Password = &newPassword
 		newName := "updated"
-		updated.ChannelName = &newName
+		updated.ChannelName = newName
 		request.Put("/notification-channel/mail/"+mailId).
 			JsonContentObject(updated).
 			Expect().

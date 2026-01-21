@@ -20,10 +20,16 @@ func NewNotificationService(store port.NotificationRepository) *NotificationServ
 	return &NotificationService{store: store}
 }
 
-func (s *NotificationService) ListNotifications(ctx context.Context, resultSelector query.ResultSelector) (notifications []models.Notification, totalResult uint64, err error) {
+func (s *NotificationService) ListNotifications(
+	ctx context.Context,
+	resultSelector query.ResultSelector,
+) (notifications []models.Notification, totalResult uint64, err error) {
 	return s.store.ListNotifications(ctx, resultSelector)
 }
 
-func (s *NotificationService) CreateNotification(ctx context.Context, notificationIn models.Notification) (notification models.Notification, err error) {
+func (s *NotificationService) CreateNotification(
+	ctx context.Context,
+	notificationIn models.Notification,
+) (notification models.Notification, err error) {
 	return s.store.CreateNotification(ctx, notificationIn)
 }

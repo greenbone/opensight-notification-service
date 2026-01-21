@@ -8,7 +8,7 @@ type NotificationChannel struct {
 	ChannelName              *string `json:"channelName,omitempty"`
 	WebhookUrl               *string `json:"webhookUrl,omitempty"`
 	Domain                   *string `json:"domain,omitempty"`
-	Port                     *string `json:"port,omitempty"`
+	Port                     *int    `json:"port,omitempty"`
 	IsAuthenticationRequired *bool   `json:"isAuthenticationRequired,omitempty"`
 	IsTlsEnforced            *bool   `json:"isTlsEnforced,omitempty"`
 	Username                 *string `json:"username,omitempty"`
