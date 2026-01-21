@@ -20,7 +20,7 @@ func getValidNotificationChannel() models.NotificationChannel {
 	domain := "example.com"
 	port := "25"
 	auth := true
-	tls := false
+	tls := true
 	username := "user"
 	password := "pass"
 	maxAttach := 10
@@ -161,7 +161,11 @@ func TestMailController_ListMailChannelsByType(t *testing.T) {
 				resp.JsonPath("$", httpassert.HasSize(len(tt.mockReturn)))
 			}
 			if tt.wantStatusCode == http.StatusInternalServerError {
-				resp.JsonPath("$.error", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$.title", httpassert.Matcher(
+					func(t *testing.T, actual any) bool {
+						return actual == "internal error"
+					},
+				))
 			}
 			mockService.AssertExpectations(t)
 		})
@@ -230,9 +234,14 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 			if tt.wantStatusCode == http.StatusOK {
 				resp.JsonPath("$.channelName", *valid.ChannelName)
 			}
-			if tt.wantStatusCode == http.StatusBadRequest || tt.wantStatusCode == http.StatusInternalServerError {
+			if tt.wantStatusCode == http.StatusBadRequest {
 				resp.JsonPath("$.error", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
 			}
+
+			if tt.wantStatusCode == http.StatusInternalServerError {
+				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual == "internal error" }))
+			}
+
 			mockService.AssertExpectations(t)
 		})
 	}
