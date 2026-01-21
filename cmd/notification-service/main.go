@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
@@ -92,6 +93,8 @@ func run(config config.Config) error {
 	// Encrypt
 	manager := security.NewEncryptManager()
 	manager.UpdateKeys(config.DatabaseKeyringConfig)
+
+	go manager.StartRefresher(ctx, config.DatabaseKeyringConfig, 10*time.Minute)
 
 	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
 	if err != nil {
