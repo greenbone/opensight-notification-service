@@ -15,7 +15,7 @@ services:
     <<: *postgres-image
     pull_policy: missing
     ports:
-      - "55432:5432"
+      - "5432:5432"
     networks:
       - opensight-notification-net
     environment:

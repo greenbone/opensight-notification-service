@@ -26,7 +26,7 @@ func NewDB(t *testing.T) *sqlx.DB {
 		User:       "postgres",
 		Password:   "password",
 		Host:       "localhost",
-		Port:       "55432",
+		Port:       "5432",
 		Options:    "sslmode=disable",
 	}
 
