@@ -22,6 +22,7 @@ func NewCheckMailServerRequest(channel models.NotificationChannel) CheckMailServ
 	}
 }
 
+// TODO: 21.01.2026 stolksdorf - move ValidateErrors
 type ValidateErrors map[string]string
 
 func (v ValidateErrors) Error() string {

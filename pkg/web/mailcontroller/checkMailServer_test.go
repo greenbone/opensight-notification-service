@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 )
 
 func TestCheckMailServer(t *testing.T) {
@@ -14,7 +15,7 @@ func TestCheckMailServer(t *testing.T) {
 
 	notificationChannelServicer := mocks.NewNotificationChannelService(t)
 
-	AddCheckMailServerController(engine, notificationChannelServicer, nil)
+	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
 
 	t.Run("username and password are required if isAuthenticationRequired is true", func(t *testing.T) {
 

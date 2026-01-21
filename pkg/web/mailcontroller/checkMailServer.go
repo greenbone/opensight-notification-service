@@ -9,6 +9,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
 type CheckMailServerController struct {
@@ -24,9 +25,8 @@ func AddCheckMailServerController(
 		notificationChannelServicer: notificationChannelServicer,
 	}
 
-	group := router.Group("/notification-channel/mail")
-	// TODO: 21.01.2026 stolksdorf - add again
-	//Use(middleware.AuthorizeRoles(auth, "admin")...)
+	group := router.Group("/notification-channel/mail").
+		Use(middleware.AuthorizeRoles(auth, "admin")...)
 	group.Use(validationErrorHandler(gin.ErrorTypePrivate))
 
 	group.POST("/check", ctrl.CheckMailServer)
@@ -34,6 +34,7 @@ func AddCheckMailServerController(
 	return ctrl
 }
 
+// TODO: 21.01.2026 stolksdorf - move
 func validationErrorHandler(errorType gin.ErrorType) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
