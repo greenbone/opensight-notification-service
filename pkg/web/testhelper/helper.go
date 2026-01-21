@@ -16,6 +16,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
@@ -94,8 +95,9 @@ func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
 }
 
 func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepository, *sqlx.DB) {
+	encryptMng := security.NewEncryptManager()
 	db := pgtesting.NewDB(t)
-	repo, err := notificationrepository.NewNotificationChannelRepository(db)
+	repo, err := notificationrepository.NewNotificationChannelRepository(db, encryptMng)
 	if err != nil {
 		t.Fatalf("failed to create repository: %v", err)
 	}
