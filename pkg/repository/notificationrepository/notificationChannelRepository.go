@@ -31,11 +31,11 @@ const createNotificationChannelQuery = `
     INSERT INTO notification_service.notification_channel (
         channel_type, channel_name, webhook_url, domain, port,
         is_authentication_required, is_tls_enforced, username, password,
-        max_email_attachment_size_mb, max_email_include_size_mb, sender_email_address
+        max_email_attachment_size_mb, max_email_include_size_mb, sender_email_address, salt_version
     ) VALUES (
         :channel_type, :channel_name, :webhook_url, :domain, :port,
         :is_authentication_required, :is_tls_enforced, :username, :password,
-        :max_email_attachment_size_mb, :max_email_include_size_mb, :sender_email_address
+        :max_email_attachment_size_mb, :max_email_include_size_mb, :sender_email_address, :salt_version
     )
     RETURNING *
 `
@@ -50,11 +50,13 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
             port = :port,
             is_authentication_required = :is_authentication_required,
             is_tls_enforced = :is_tls_enforced,
-            username = :username,`
+            username = :username,
+            salt_version = :salt_version,`
+
 	if in.Password != nil {
-		query += `
-            password = :password,`
+		query += `password = :password,`
 	}
+
 	query += `
             max_email_attachment_size_mb = :max_email_attachment_size_mb,
             max_email_include_size_mb = :max_email_include_size_mb,
