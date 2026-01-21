@@ -5,26 +5,26 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/wneessen/go-mail"
 )
 
-func ConnectionCheckMail(ctx context.Context, channel models.NotificationChannel) error {
+func ConnectionCheckMail(ctx context.Context, mailServer dtos.CheckMailServerRequest) error {
 	options := []mail.Option{
-		mail.WithPort(*channel.Port),
+		mail.WithPort(mailServer.Port),
 		mail.WithTimeout(5 * time.Second),
 	}
 
-	if *channel.IsTlsEnforced {
+	if mailServer.IsTlsEnforced {
 		options = append(options, mail.WithSSL())
 	}
 
-	if *channel.IsAuthenticationRequired {
-		options = append(options, mail.WithUsername(*channel.Username), mail.WithPassword(*channel.Password))
+	if mailServer.IsAuthenticationRequired {
+		options = append(options, mail.WithUsername(mailServer.Username), mail.WithPassword(mailServer.Password))
 	}
 
 	client, err := mail.NewClient(
-		*channel.Domain,
+		mailServer.Domain,
 		options...,
 	)
 	defer client.Close()

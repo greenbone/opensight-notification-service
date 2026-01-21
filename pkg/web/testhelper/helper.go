@@ -23,7 +23,8 @@ import (
 func VerifyResponseWithMetadata[T any](
 	t *testing.T,
 	wantResponseCode int, wantResponseParsed T,
-	gotResponse *httptest.ResponseRecorder) {
+	gotResponse *httptest.ResponseRecorder,
+) {
 
 	assert.Equal(t, wantResponseCode, gotResponse.Code)
 
@@ -107,7 +108,7 @@ func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
 	return request.MailNotificationChannelRequest{
 		ChannelName:              "mail1",
 		Domain:                   "example.com",
-		Port:                     "25",
+		Port:                     25,
 		IsAuthenticationRequired: true,
 		IsTlsEnforced:            false,
 		Username:                 helper.ToPtr("user"),

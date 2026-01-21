@@ -8,6 +8,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 )
 
 var (
@@ -48,4 +49,11 @@ func (v *MailChannelService) CreateMailChannel(c context.Context, channel reques
 	}
 
 	return mapper.MapNotificationChannelToMail(created), nil
+}
+
+func (s *NotificationChannelService) CheckNotificationChannelConnectivity(
+	ctx context.Context,
+	mailServer dtos.CheckMailServerRequest,
+) error {
+	return ConnectionCheckMail(ctx, mailServer)
 }

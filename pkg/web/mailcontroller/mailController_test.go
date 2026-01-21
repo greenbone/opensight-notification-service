@@ -19,7 +19,7 @@ import (
 func getValidNotificationChannel() models.NotificationChannel {
 	name := "mail1"
 	domain := "example.com"
-	port := "25"
+	port := 25
 	auth := true
 	tls := false
 	username := "user"
@@ -115,7 +115,12 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 				resp.JsonPath("$.channelName", mailValid.ChannelName)
 			}
 			if tt.name == "internal error" {
-				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$.title", httpassert.Matcher(func(
+					t *testing.T,
+					actual any,
+				) bool {
+					return actual != ""
+				}))
 			} else if tt.wantStatusCode == http.StatusBadRequest {
 				if tt.name == "invalid sender email" {
 					resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool {
@@ -182,7 +187,12 @@ func TestMailController_ListMailChannelsByType(t *testing.T) {
 				resp.JsonPath("$", httpassert.HasSize(len(tt.mockReturn)))
 			}
 			if tt.wantStatusCode == http.StatusInternalServerError {
-				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$.title", httpassert.Matcher(func(
+					t *testing.T,
+					actual any,
+				) bool {
+					return actual != ""
+				}))
 				resp.JsonPath("$", httpassert.HasSize(2))
 			}
 			mockService.AssertExpectations(t)
@@ -255,7 +265,12 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 				resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != nil }))
 			}
 			if tt.wantStatusCode == http.StatusInternalServerError {
-				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$.title", httpassert.Matcher(func(
+					t *testing.T,
+					actual any,
+				) bool {
+					return actual != ""
+				}))
 			}
 			mockService.AssertExpectations(t)
 		})
@@ -306,7 +321,12 @@ func TestMailController_DeleteMailChannel(t *testing.T) {
 				resp.NoContent()
 			}
 			if tt.wantStatusCode == http.StatusInternalServerError {
-				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$.title", httpassert.Matcher(func(
+					t *testing.T,
+					actual any,
+				) bool {
+					return actual != ""
+				}))
 				resp.JsonPath("$", httpassert.HasSize(2))
 			}
 			mockService.AssertExpectations(t)

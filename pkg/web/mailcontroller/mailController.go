@@ -157,7 +157,7 @@ func (v *MailController) validateFields(channel request.MailNotificationChannelR
 	if channel.Domain == "" {
 		errors["domain"] = "A Mailhub is required."
 	}
-	if channel.Port == "" {
+	if channel.Port == 0 {
 		errors["port"] = "A port is required."
 	}
 	if channel.SenderEmailAddress == "" {

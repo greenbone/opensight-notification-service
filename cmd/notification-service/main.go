@@ -97,9 +97,10 @@ func run(config config.Config) error {
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
-	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelRepository)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService)
 	healthService := healthservice.NewHealthService(pgClient)
 
+	// scheduler
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		return fmt.Errorf("error creating scheduler: %w", err)

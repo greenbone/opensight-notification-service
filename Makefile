@@ -1,7 +1,7 @@
 all: api-docs build test
 
 SWAG = github.com/swaggo/swag/cmd/swag@v1.16.4
-MOCKERY = github.com/vektra/mockery/v2@v2.53.0
+MOCKERY = github.com/vektra/mockery/v3@v3.5.1 --log-level warn
 GOLANGCI-LINT = github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 .PHONY: lint

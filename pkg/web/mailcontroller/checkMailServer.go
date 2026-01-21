@@ -2,13 +2,13 @@ package mailcontroller
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/mapper"
-	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
-	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 )
 
 type CheckMailServerController struct {
@@ -23,15 +23,28 @@ func AddCheckMailServerController(
 	ctrl := &CheckMailServerController{
 		notificationChannelServicer: notificationChannelServicer,
 	}
-	ctrl.registerRoutes(router, auth)
+
+	group := router.Group("/notification-channel/mail")
+	// TODO: 21.01.2026 stolksdorf - add again
+	//Use(middleware.AuthorizeRoles(auth, "admin")...)
+	group.Use(validationErrorHandler(gin.ErrorTypePrivate))
+
+	group.POST("/check", ctrl.CheckMailServer)
+
 	return ctrl
 }
 
-func (mc *CheckMailServerController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
-	group := router.Group("/notification-channel/mail/check").
-		Use(middleware.AuthorizeRoles(auth, "admin")...)
-
-	group.POST("", mc.CheckMailServer)
+func validationErrorHandler(errorType gin.ErrorType) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		for _, errorValue := range c.Errors.ByType(errorType) {
+			validateErrors := dtos.ValidateErrors{}
+			if errors.As(errorValue, &validateErrors) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse("", "", validateErrors))
+				return
+			}
+		}
+	}
 }
 
 // CheckMailServer
@@ -48,15 +61,17 @@ func (mc *CheckMailServerController) registerRoutes(router gin.IRouter, auth gin
 //	@Failure		422 "Mail server error"
 //	@Router			/notifications/mail [post]
 func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
-	var channel models.MailNotificationChannel
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var mailServer dtos.CheckMailServerRequest
+	if err := c.ShouldBindJSON(&mailServer); err != nil {
+		c.Error(err)
+		return
+	}
+	if err := mailServer.Validate(); err != nil {
+		c.Error(err)
 		return
 	}
 
-	notificationChannel := mapper.MapMailToNotificationChannel(channel)
-
-	err := mc.notificationChannelServicer.CheckNotificationChannelConnectivity(context.Background(), notificationChannel)
+	err := mc.notificationChannelServicer.CheckNotificationChannelConnectivity(context.Background(), mailServer)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return

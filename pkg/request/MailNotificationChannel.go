@@ -4,7 +4,7 @@ type MailNotificationChannelRequest struct {
 	Id                       *string `json:"id,omitempty"`
 	ChannelName              string  `json:"channelName"`
 	Domain                   string  `json:"domain"`
-	Port                     string  `json:"port"`
+	Port                     int     `json:"port"`
 	IsAuthenticationRequired bool    `json:"isAuthenticationRequired" default:"false"`
 	IsTlsEnforced            bool    `json:"isTlsEnforced" default:"false"`
 	Username                 *string `json:"username,omitempty"`
