@@ -12,10 +12,11 @@ import (
 // I.e. the env var in {INNER1:{INNER2:{FIELD1:"foo"}}} for FIELD1 is `INNER1_INNER2_FIELD1`
 
 type Config struct {
-	Http           Http           `envconfig:"HTTP"`
-	Database       Database       `envconfig:"DB"`
-	LogLevel       string         `envconfig:"LOG_LEVEL" default:"info"`
-	KeycloakConfig KeycloakConfig `envconfig:"KEYCLOAK"`
+	Http                  Http                  `envconfig:"HTTP"`
+	Database              Database              `envconfig:"DB"`
+	LogLevel              string                `envconfig:"LOG_LEVEL" default:"info"`
+	KeycloakConfig        KeycloakConfig        `envconfig:"KEYCLOAK"`
+	DatabaseKeyringConfig DatabaseKeyringConfig `envconfig:"DATABASE_KEYRING_CONFIG"`
 }
 
 type Http struct {
@@ -33,6 +34,15 @@ type Database struct {
 	Password string `validate:"required" envconfig:"PASSWORD"`
 	DBName   string `validate:"required" envconfig:"NAME"`
 	SSLMode  string `envconfig:"SSL_MODE" default:"require"`
+}
+
+type EncryptionKey struct {
+	Password     string `envconfig:"DATABASE_KEYRING_CONFIG_KEYS_PASSWORD"`
+	PasswordSalt string `envconfig:"DATABASE_KEYRING_CONFIG_KEYS_PASSWORD_SALT"` // TODO double check the syntax
+}
+type DatabaseKeyringConfig struct {
+	ActiveID int                   `validate:"required" envconfig:"DATABASE_KEYRING_CONFIG_ACTIVE_ID" default:"0"`
+	Keys     map[int]EncryptionKey `validate:"required" envconfig:"DATABASE_KEYRING_CONFIG_KEYS" default:"{\"1\": {\"password\": \"super-secure-password\",\"password_salt\": \"base64_encoded_key_v1_sample\"}}"`
 }
 
 type KeycloakConfig struct {
