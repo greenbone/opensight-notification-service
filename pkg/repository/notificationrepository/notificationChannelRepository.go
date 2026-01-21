@@ -8,18 +8,21 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 )
 
 type NotificationChannelRepository struct {
-	client *sqlx.DB
+	client         *sqlx.DB
+	encryptManager port.EncryptManager
 }
 
-func NewNotificationChannelRepository(db *sqlx.DB) (port.NotificationChannelRepository, error) {
+func NewNotificationChannelRepository(db *sqlx.DB, encryptService port.EncryptManager) (port.NotificationChannelRepository, error) {
 	if db == nil {
 		return nil, errors.New("nil db reference")
 	}
 	client := &NotificationChannelRepository{
-		client: db,
+		client:         db,
+		encryptManager: encryptService,
 	}
 	return client, nil
 }
@@ -66,6 +69,10 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
 func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Context, channelIn models.NotificationChannel) (models.NotificationChannel, error) {
 	insertRow := toNotificationChannelRow(channelIn)
 
+	if err := r.withPasswordEncrypted(&insertRow); err != nil {
+		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
+	}
+
 	tx, err := r.client.BeginTxx(ctx, nil)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not begin transaction: %w", err)
@@ -89,8 +96,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(ctx context.Co
 		return models.NotificationChannel{}, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	channel := row.ToModel()
-	return channel, nil
+	return r.withPasswordDecrypted(&row).ToModel(), nil
 }
 
 func (r *NotificationChannelRepository) ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error) {
@@ -102,7 +108,7 @@ func (r *NotificationChannelRepository) ListNotificationChannelsByType(ctx conte
 	}
 	result := make([]models.NotificationChannel, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, row.ToModel())
+		result = append(result, r.withPasswordDecrypted(&row).ToModel())
 	}
 	return result, nil
 }
@@ -111,6 +117,10 @@ func (r *NotificationChannelRepository) ListNotificationChannelsByType(ctx conte
 func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Context, id string, in models.NotificationChannel) (models.NotificationChannel, error) {
 	rowIn := toNotificationChannelRow(in)
 	rowIn.Id = &id
+
+	if err := r.withPasswordEncrypted(&rowIn); err != nil {
+		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
+	}
 
 	tx, err := r.client.BeginTxx(ctx, nil)
 	if err != nil {
@@ -135,7 +145,39 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(ctx context.Co
 		return in, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	return row.ToModel(), nil
+	// TODO discuss I would go with a pointer here
+	return r.withPasswordDecrypted(&row).ToModel(), nil
+}
+
+// TODO add encryption test cases
+func (r *NotificationChannelRepository) withPasswordEncrypted(row *notificationChannelRow) error {
+	// TODO discuss about this pointer '*row.Password'
+	if row.Password == nil {
+		return nil
+	}
+
+	encryptedPasswd, version, err := r.encryptManager.Encrypt(*row.Password)
+	if err != nil {
+		return fmt.Errorf("could not encrypt password: %w", err)
+	}
+
+	passwd := string(encryptedPasswd)
+	row.Password = &passwd
+	row.SaltVersion = version
+
+	return nil
+}
+
+// TODO add decryption test cases
+func (r *NotificationChannelRepository) withPasswordDecrypted(row *notificationChannelRow) *notificationChannelRow {
+	dPasswd := *row.Password
+	dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd), row.SaltVersion)
+	if err != nil {
+		log.Err(err).Msg("could not decrypt password")
+	}
+
+	row.Password = &dcPassword
+	return row
 }
 
 // DeleteNotificationChannel is now transactional.

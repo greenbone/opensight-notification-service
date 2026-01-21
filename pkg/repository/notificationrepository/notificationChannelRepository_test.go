@@ -12,13 +12,15 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func setupTestRepo(t *testing.T) (context.Context, port.NotificationChannelRepository) {
+	encryptSvc := security.NewEncryptManager()
 	db := pgtesting.NewDB(t)
-	repo, err := NewNotificationChannelRepository(db)
+	repo, err := NewNotificationChannelRepository(db, encryptSvc)
 	require.NoError(t, err)
 	ctx := context.Background()
 	return ctx, repo
