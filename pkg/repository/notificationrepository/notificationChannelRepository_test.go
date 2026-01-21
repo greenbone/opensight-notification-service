@@ -33,7 +33,7 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 		ChannelName:              helper.ToPtr("Test Channel"),
 		WebhookUrl:               nil,
 		Domain:                   helper.ToPtr("example.com"),
-		Port:                     helper.ToPtr("587"),
+		Port:                     helper.ToPtr(587),
 		IsAuthenticationRequired: helper.ToPtr(true),
 		IsTlsEnforced:            helper.ToPtr(true),
 		Username:                 helper.ToPtr("user"),

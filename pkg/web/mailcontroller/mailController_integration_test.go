@@ -37,7 +37,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonPath("$.id", httpassert.ExtractTo(&mailId)).
 			JsonPath("$.channelName", "mail1").
 			JsonPath("$.domain", "example.com").
-			JsonPath("$.port", "25").
+			JsonPath("$.port", float64(25)).
 			JsonPath("$.isAuthenticationRequired", true).
 			JsonPath("$.isTlsEnforced", false).
 			JsonPath("$.username", "user").
@@ -55,7 +55,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonPath("$[0].id", httpassert.ExtractTo(&mailId)).
 			JsonPath("$[0].channelName", "mail1").
 			JsonPath("$[0].domain", "example.com").
-			JsonPath("$[0].port", "25").
+			JsonPath("$[0].port", float64(25)).
 			JsonPath("$[0].isAuthenticationRequired", true).
 			JsonPath("$[0].isTlsEnforced", false).
 			JsonPath("$[0].username", "user").
@@ -76,7 +76,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonPath("$.id", mailId).
 			JsonPath("$.channelName", newName).
 			JsonPath("$.domain", "example.com").
-			JsonPath("$.port", "25").
+			JsonPath("$.port", float64(25)).
 			JsonPath("$.isAuthenticationRequired", true).
 			JsonPath("$.isTlsEnforced", false).
 			JsonPath("$.username", "user").
