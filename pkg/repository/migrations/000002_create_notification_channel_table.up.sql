@@ -7,7 +7,7 @@ CREATE TABLE notification_service.notification_channel
     "channel_name"                 VARCHAR(255) UNIQUE,
     "webhook_url"                  VARCHAR(2048),
     "domain"                       VARCHAR(255),
-    "port"                         INT,
+    "port"                         VARCHAR(255),
     "is_authentication_required"   BOOLEAN,
     "is_tls_enforced"              BOOLEAN,
     "username"                     VARCHAR(255),

@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	models "github.com/greenbone/opensight-notification-service/pkg/models"
+	models "github.com/greenbone/opensight-notification-service/pkg/request"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -23,25 +23,25 @@ func (_m *MailChannelService) EXPECT() *MailChannelService_Expecter {
 }
 
 // CreateMailChannel provides a mock function with given fields: ctx, channel
-func (_m *MailChannelService) CreateMailChannel(ctx context.Context, channel models.MailNotificationChannel) (models.MailNotificationChannel, error) {
+func (_m *MailChannelService) CreateMailChannel(ctx context.Context, channel models.MailNotificationChannelRequest) (models.MailNotificationChannelRequest, error) {
 	ret := _m.Called(ctx, channel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateMailChannel")
 	}
 
-	var r0 models.MailNotificationChannel
+	var r0 models.MailNotificationChannelRequest
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, models.MailNotificationChannel) (models.MailNotificationChannel, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, models.MailNotificationChannelRequest) (models.MailNotificationChannelRequest, error)); ok {
 		return rf(ctx, channel)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, models.MailNotificationChannel) models.MailNotificationChannel); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, models.MailNotificationChannelRequest) models.MailNotificationChannelRequest); ok {
 		r0 = rf(ctx, channel)
 	} else {
-		r0 = ret.Get(0).(models.MailNotificationChannel)
+		r0 = ret.Get(0).(models.MailNotificationChannelRequest)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, models.MailNotificationChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, models.MailNotificationChannelRequest) error); ok {
 		r1 = rf(ctx, channel)
 	} else {
 		r1 = ret.Error(1)
@@ -57,24 +57,24 @@ type MailChannelService_CreateMailChannel_Call struct {
 
 // CreateMailChannel is a helper method to define mock.On call
 //   - ctx context.Context
-//   - channel models.MailNotificationChannel
+//   - channel models.MailNotificationChannelRequest
 func (_e *MailChannelService_Expecter) CreateMailChannel(ctx interface{}, channel interface{}) *MailChannelService_CreateMailChannel_Call {
 	return &MailChannelService_CreateMailChannel_Call{Call: _e.mock.On("CreateMailChannel", ctx, channel)}
 }
 
-func (_c *MailChannelService_CreateMailChannel_Call) Run(run func(ctx context.Context, channel models.MailNotificationChannel)) *MailChannelService_CreateMailChannel_Call {
+func (_c *MailChannelService_CreateMailChannel_Call) Run(run func(ctx context.Context, channel models.MailNotificationChannelRequest)) *MailChannelService_CreateMailChannel_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(models.MailNotificationChannel))
+		run(args[0].(context.Context), args[1].(models.MailNotificationChannelRequest))
 	})
 	return _c
 }
 
-func (_c *MailChannelService_CreateMailChannel_Call) Return(_a0 models.MailNotificationChannel, _a1 error) *MailChannelService_CreateMailChannel_Call {
+func (_c *MailChannelService_CreateMailChannel_Call) Return(_a0 models.MailNotificationChannelRequest, _a1 error) *MailChannelService_CreateMailChannel_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MailChannelService_CreateMailChannel_Call) RunAndReturn(run func(context.Context, models.MailNotificationChannel) (models.MailNotificationChannel, error)) *MailChannelService_CreateMailChannel_Call {
+func (_c *MailChannelService_CreateMailChannel_Call) RunAndReturn(run func(context.Context, models.MailNotificationChannelRequest) (models.MailNotificationChannelRequest, error)) *MailChannelService_CreateMailChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
 	mailmocks "github.com/greenbone/opensight-notification-service/pkg/port/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
 )
@@ -55,7 +56,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 	tests := []struct {
 		name           string
 		input          any
-		mockReturn     models.MailNotificationChannel
+		mockReturn     request.MailNotificationChannelRequest
 		mockErr        error
 		wantStatusCode int
 	}{
@@ -79,6 +80,15 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 		{
 			name:           "empty body",
 			input:          nil,
+			wantStatusCode: http.StatusBadRequest,
+		},
+		{
+			name: "invalid sender email",
+			input: func() request.MailNotificationChannelRequest {
+				invalid := mailValid
+				invalid.SenderEmailAddress = "not-an-email"
+				return invalid
+			}(),
 			wantStatusCode: http.StatusBadRequest,
 		},
 	}
@@ -107,7 +117,18 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 			if tt.name == "internal error" {
 				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
 			} else if tt.wantStatusCode == http.StatusBadRequest {
-				resp.JsonPath("$.error", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				if tt.name == "invalid sender email" {
+					resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool {
+						m, ok := actual.(map[string]interface{})
+						if !ok {
+							return false
+						}
+						_, exists := m["senderEmailAddress"]
+						return exists
+					}))
+				} else {
+					resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != nil }))
+				}
 			}
 			mockMailService.AssertExpectations(t)
 		})
@@ -161,7 +182,8 @@ func TestMailController_ListMailChannelsByType(t *testing.T) {
 				resp.JsonPath("$", httpassert.HasSize(len(tt.mockReturn)))
 			}
 			if tt.wantStatusCode == http.StatusInternalServerError {
-				resp.JsonPath("$.error", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$", httpassert.HasSize(2))
 			}
 			mockService.AssertExpectations(t)
 		})
@@ -220,7 +242,6 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 					Return(tt.mockReturn, tt.mockErr).
 					Once()
 			}
-
 			req := httpassert.New(t, router).Put("/notification-channel/mail/" + tt.id)
 			if tt.input != nil {
 				req.JsonContentObject(tt.input)
@@ -230,8 +251,11 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 			if tt.wantStatusCode == http.StatusOK {
 				resp.JsonPath("$.channelName", *valid.ChannelName)
 			}
-			if tt.wantStatusCode == http.StatusBadRequest || tt.wantStatusCode == http.StatusInternalServerError {
-				resp.JsonPath("$.error", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+			if tt.wantStatusCode == http.StatusBadRequest {
+				resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != nil }))
+			}
+			if tt.wantStatusCode == http.StatusInternalServerError {
+				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
 			}
 			mockService.AssertExpectations(t)
 		})
@@ -282,7 +306,8 @@ func TestMailController_DeleteMailChannel(t *testing.T) {
 				resp.NoContent()
 			}
 			if tt.wantStatusCode == http.StatusInternalServerError {
-				resp.JsonPath("$.error", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$.title", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != "" }))
+				resp.JsonPath("$", httpassert.HasSize(2))
 			}
 			mockService.AssertExpectations(t)
 		})

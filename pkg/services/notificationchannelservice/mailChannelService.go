@@ -7,11 +7,13 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/request"
 )
 
 var (
 	ErrMailChannelAlreadyExists = errors.New("mail channel already exists")
 	ErrListMailChannels         = errors.New("failed to list mail channels")
+	ErrMailChannelBadRequest    = errors.New("bad request for mail channel")
 )
 
 type MailChannelService struct {
@@ -34,15 +36,15 @@ func (v *MailChannelService) mailChannelAlreadyExists(c context.Context) error {
 	return nil
 }
 
-func (v *MailChannelService) CreateMailChannel(c context.Context, channel models.MailNotificationChannel) (models.MailNotificationChannel, error) {
+func (v *MailChannelService) CreateMailChannel(c context.Context, channel request.MailNotificationChannelRequest) (request.MailNotificationChannelRequest, error) {
 	if errResp := v.mailChannelAlreadyExists(c); errResp != nil {
-		return models.MailNotificationChannel{}, errResp
+		return request.MailNotificationChannelRequest{}, errResp
 	}
 
 	notificationChannel := mapper.MapMailToNotificationChannel(channel)
 	created, err := v.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
-		return models.MailNotificationChannel{}, err
+		return request.MailNotificationChannelRequest{}, err
 	}
 
 	return mapper.MapNotificationChannelToMail(created), nil

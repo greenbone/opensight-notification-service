@@ -12,10 +12,10 @@ import (
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
-	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
+	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
@@ -103,8 +103,8 @@ func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepo
 	return repo, db
 }
 
-func GetValidMailNotificationChannel() models.MailNotificationChannel {
-	return models.MailNotificationChannel{
+func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
+	return request.MailNotificationChannelRequest{
 		ChannelName:              "mail1",
 		Domain:                   "example.com",
 		Port:                     "25",
