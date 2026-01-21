@@ -10,13 +10,22 @@ import (
 )
 
 func ConnectionCheckMail(ctx context.Context, channel models.NotificationChannel) error {
+	options := []mail.Option{
+		mail.WithPort(*channel.Port),
+		mail.WithTimeout(5 * time.Second),
+	}
+
+	if *channel.IsTlsEnforced {
+		options = append(options, mail.WithSSL())
+	}
+
+	if *channel.IsAuthenticationRequired {
+		options = append(options, mail.WithUsername(*channel.Username), mail.WithPassword(*channel.Password))
+	}
+
 	client, err := mail.NewClient(
 		*channel.Domain,
-		mail.WithPort(*channel.Port),
-		mail.WithSSL(),
-		mail.WithUsername(*channel.Username),
-		mail.WithPassword(*channel.Password),
-		mail.WithTimeout(5*time.Second),
+		options...,
 	)
 	defer client.Close()
 
