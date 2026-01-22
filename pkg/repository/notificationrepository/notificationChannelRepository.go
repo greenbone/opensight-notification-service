@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
@@ -73,7 +74,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 ) (models.NotificationChannel, error) {
 	insertRow := toNotificationChannelRow(channelIn)
 
-	rowWithEncryption, err := r.withPasswordEncrypted(insertRow)
+	rowWithEncryption, err := r.withEncryptedValues(insertRow)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
@@ -148,7 +149,7 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 	rowIn := toNotificationChannelRow(in)
 	rowIn.Id = &id
 
-	rowWithEncryption, err := r.withPasswordEncrypted(rowIn)
+	rowWithEncryption, err := r.withEncryptedValues(rowIn)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
@@ -181,31 +182,51 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 	return r.withPasswordDecrypted(row).ToModel(), nil
 }
 
-func (r *NotificationChannelRepository) withPasswordEncrypted(row notificationChannelRow) (notificationChannelRow, error) {
-	if row.Password == nil {
-		return row, nil
+func (r *NotificationChannelRepository) withEncryptedValues(row notificationChannelRow) (notificationChannelRow, error) {
+	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
+		encryptedPasswd, err := r.encryptManager.Encrypt(*row.Password)
+		if err != nil {
+			return empty, fmt.Errorf("could not encrypt password: %w", err)
+		}
+
+		passwd := string(encryptedPasswd)
+		row.Password = &passwd
 	}
 
-	encryptedPasswd, err := r.encryptManager.Encrypt(*row.Password)
-	if err != nil {
-		return empty, fmt.Errorf("could not encrypt password: %w", err)
-	}
+	if row.Username != nil && strings.TrimSpace(*row.Username) != "" {
+		encryptedUsername, err := r.encryptManager.Encrypt(*row.Username)
+		if err != nil {
+			return empty, fmt.Errorf("could not encrypt password: %w", err)
+		}
 
-	passwd := string(encryptedPasswd)
-	row.Password = &passwd
+		username := string(encryptedUsername)
+		row.Username = &username
+	}
 
 	return row, nil
 }
 
 func (r *NotificationChannelRepository) withPasswordDecrypted(row notificationChannelRow) notificationChannelRow {
-	dPasswd := *row.Password
+	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
+		dPasswd := *row.Password
+		dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd))
+		if err != nil {
+			log.Err(err).Msg("could not decrypt password")
+		}
 
-	dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd))
-	if err != nil {
-		log.Err(err).Msg("could not decrypt password")
+		row.Password = &dcPassword
 	}
 
-	row.Password = &dcPassword
+	if row.Username != nil && strings.TrimSpace(*row.Username) != "" {
+		username := *row.Username
+		dcUsername, err := r.encryptManager.Decrypt([]byte(username))
+		if err != nil {
+			log.Err(err).Msg("could not decrypt password")
+		}
+
+		row.Username = &dcUsername
+	}
+
 	return row
 }
 
