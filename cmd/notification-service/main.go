@@ -96,8 +96,6 @@ func run(config config.Config) error {
 	manager := security.NewEncryptManager()
 	manager.UpdateKeys(config.DatabaseKeyringConfig)
 
-	go manager.StartRefresher(ctx, config.DatabaseKeyringConfig, 10*time.Minute)
-
 	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
 	if err != nil {
 		return fmt.Errorf("error creating Notification Channel Repository: %w", err)

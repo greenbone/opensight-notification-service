@@ -1,10 +1,8 @@
 package security
 
 import (
-	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
@@ -42,20 +40,6 @@ func (sm *EncryptManager) UpdateKeys(keyringConfig config.DatabaseKeyringConfig)
 	sm.keys = newKeys
 	sm.activeID = keyringConfig.ActiveID
 	log.Info().Msgf("Keyring successfully refreshed in memory")
-}
-
-func (sm *EncryptManager) StartRefresher(ctx context.Context, keyringConfig config.DatabaseKeyringConfig, interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			sm.UpdateKeys(keyringConfig)
-		}
-	}
 }
 
 func (sm *EncryptManager) Encrypt(plaintext string) ([]byte, int, error) {
