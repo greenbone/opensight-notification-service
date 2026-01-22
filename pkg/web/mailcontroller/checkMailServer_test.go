@@ -18,6 +18,22 @@ func TestCheckMailServer(t *testing.T) {
 
 	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
 
+	t.Run("minimal required fields", func(t *testing.T) {
+		httpassert.New(t, engine).
+			Post("/notification-channel/mail/check").
+			Content(`{}`).
+			Expect().
+			StatusCode(http.StatusBadRequest).
+			Json(`{
+				"type": "greenbone/validation-error",
+				"title": "",
+				"errors": {
+					"domain": "required",
+					"port": "required"
+				}
+		}`)
+	})
+
 	t.Run("username and password are required if isAuthenticationRequired is true", func(t *testing.T) {
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
@@ -30,7 +46,7 @@ func TestCheckMailServer(t *testing.T) {
 				"password": ""
 			}`).
 			Expect().
-			StatusCode(400).
+			StatusCode(http.StatusBadRequest).
 			Json(`{
 				"type": "greenbone/validation-error",
 				"title": "",
