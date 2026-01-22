@@ -1,5 +1,22 @@
 basePath: /api/notification-service
 definitions:
+  dtos.CheckMailServerEntityRequest:
+    properties:
+      domain:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    type: object
   dtos.CheckMailServerRequest:
     properties:
       domain:
@@ -531,7 +548,37 @@ paths:
       summary: List Notifications
       tags:
       - notification
-  /notifications/mail:
+  /notifications/mail/{id}/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mail server is reachable
+      parameters:
+      - description: Mail server to check
+        in: body
+        name: MailServerConfig
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CheckMailServerEntityRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mail server reachable
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Mail server error
+      security:
+      - KeycloakAuth: []
+      summary: Check mail server
+      tags:
+      - mailserver
+  /notifications/mail/check:
     post:
       consumes:
       - application/json

@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
+	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
 
@@ -120,10 +122,11 @@ func run(config config.Config) error {
 	}
 	scheduler.Start()
 
-	gin := web.NewWebEngine(config.Http)
-	rootRouter := gin.Group("/")
-	notificationServiceRouter := gin.Group("/api/notification-service")
-	docsRouter := gin.Group("/docs/notification-service")
+	router := web.NewWebEngine(config.Http)
+	router.Use(helper.ValidationErrorHandler(gin.ErrorTypePrivate))
+	rootRouter := router.Group("/")
+	notificationServiceRouter := router.Group("/api/notification-service")
+	docsRouter := router.Group("/docs/notification-service")
 
 	// rest api docs
 	web.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
@@ -137,7 +140,7 @@ func run(config config.Config) error {
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.Http.Port),
-		Handler:      gin,
+		Handler:      router,
 		ReadTimeout:  config.Http.ReadTimeout,
 		WriteTimeout: config.Http.WriteTimeout,
 		IdleTimeout:  config.Http.IdleTimeout,

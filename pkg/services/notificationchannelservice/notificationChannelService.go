@@ -5,7 +5,6 @@ import (
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 )
 
 type NotificationChannelServicer interface {
@@ -13,7 +12,7 @@ type NotificationChannelServicer interface {
 	GetNotificationChannelByIdAndType(
 		ctx context.Context,
 		id string,
-		channelType models.NotificationChannel,
+		channelType models.ChannelType,
 	) (models.NotificationChannel, error)
 	ListNotificationChannelsByType(
 		ctx context.Context,
@@ -25,7 +24,12 @@ type NotificationChannelServicer interface {
 		req models.NotificationChannel,
 	) (models.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
-	CheckNotificationChannelConnectivity(ctx context.Context, channel dtos.CheckMailServerRequest) error
+	CheckNotificationChannelConnectivity(ctx context.Context, channel models.NotificationChannel) error
+	CheckNotificationChannelEntityConnectivity(
+		ctx context.Context,
+		id string,
+		channel models.NotificationChannel,
+	) error
 }
 
 type NotificationChannelService struct {
@@ -51,7 +55,7 @@ func (s *NotificationChannelService) CreateNotificationChannel(
 func (s *NotificationChannelService) GetNotificationChannelByIdAndType(
 	ctx context.Context,
 	id string,
-	channelType models.NotificationChannel,
+	channelType models.ChannelType,
 ) (models.NotificationChannel, error) {
 	return s.store.GetNotificationChannelByIdAndType(ctx, id, channelType)
 }

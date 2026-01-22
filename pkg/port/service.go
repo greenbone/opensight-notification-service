@@ -10,7 +10,6 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 )
 
 type NotificationService interface {
@@ -36,7 +35,7 @@ type NotificationChannelService interface {
 	GetNotificationChannelByIdAndType(
 		ctx context.Context,
 		id string,
-		channelType models.NotificationChannel,
+		channelType models.ChannelType,
 	) (models.NotificationChannel, error)
 	ListNotificationChannelsByType(
 		ctx context.Context,
@@ -48,7 +47,12 @@ type NotificationChannelService interface {
 		channelIn models.NotificationChannel,
 	) (models.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
-	CheckNotificationChannelConnectivity(ctx context.Context, channel dtos.CheckMailServerRequest) error
+	CheckNotificationChannelConnectivity(ctx context.Context, channel models.NotificationChannel) error
+	CheckNotificationChannelEntityConnectivity(
+		ctx context.Context,
+		id string,
+		channel models.NotificationChannel,
+	) error
 }
 
 type MailChannelService interface {

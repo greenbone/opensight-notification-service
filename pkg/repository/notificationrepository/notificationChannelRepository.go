@@ -110,14 +110,15 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 func (r *NotificationChannelRepository) GetNotificationChannelByIdAndType(
 	ctx context.Context,
 	id string,
-	channelType models.NotificationChannel,
+	channelType models.ChannelType,
 ) (models.NotificationChannel, error) {
 	query := `SELECT * FROM notification_service.notification_channel WHERE id = $1 AND channel_type = $2`
 
 	var row notificationChannelRow
-	if err := r.client.SelectContext(ctx, &row, query, id, channelType); err != nil {
+	if err := r.client.GetContext(ctx, &row, query, id, channelType); err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("select by id failed: %w", err)
 	}
+
 	return row.ToModel(), nil
 }
 

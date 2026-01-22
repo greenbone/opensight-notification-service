@@ -8,7 +8,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 )
 
 const (
@@ -30,9 +29,7 @@ func NewJob(
 		}
 
 		for _, channel := range mailChannels {
-			// TODO: 21.01.2026 stolksdorf - fix asd
-			asd := dtos.NewCheckMailServerRequest(channel)
-			if err := checkChannelConnectivity(service, asd); err != nil {
+			if err := checkChannelConnectivity(service, channel); err != nil {
 				_, err := notificationService.CreateNotification(context.Background(), models.Notification{
 					Origin:    "notification-service",
 					Timestamp: time.Now().UTC().Format(time.RFC3339),
@@ -54,7 +51,7 @@ func NewJob(
 	}
 }
 
-func checkChannelConnectivity(service port.NotificationChannelService, channel dtos.CheckMailServerRequest) error {
+func checkChannelConnectivity(service port.NotificationChannelService, channel models.NotificationChannel) error {
 	ctx, cancel := context.WithTimeout(context.Background(), channelCheckTimeout)
 	defer cancel()
 

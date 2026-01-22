@@ -1,6 +1,7 @@
 package mailcontroller
 
 import (
+	"context"
 	"net/http"
 	"regexp"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
@@ -36,6 +38,7 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 	group.GET("", mc.ListMailChannelsByType)
 	group.PUT("/:id", mc.UpdateMailChannel)
 	group.DELETE("/:id", mc.DeleteMailChannel)
+	group.POST("/:id/check", mc.CheckMailServer)
 }
 
 // CreateMailChannel
@@ -146,6 +149,44 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 	id := c.Param("id")
 	if err := mc.Service.DeleteNotificationChannel(c, id); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// CheckMailServer
+//
+//	@Summary		Check mail server
+//	@Description	Check if a mail server is reachable
+//	@Tags			mailserver
+//	@Accept			json
+//	@Produce		json
+//	@Security		KeycloakAuth
+//	@Param			MailServerConfig	body		dtos.CheckMailServerEntityRequest	true	"Mail server to check"
+//	@Success		204 "Mail server reachable"
+//	@Failure		400			{object}	map[string]string
+//	@Failure		422 "Mail server error"
+//	@Router			/notifications/mail/{id}/check [post]
+func (mc *MailController) CheckMailServer(c *gin.Context) {
+	id := c.Param("id")
+
+	var mailServer dtos.CheckMailServerEntityRequest
+	if err := c.ShouldBindJSON(&mailServer); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if err := mailServer.Validate(); err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	err := mc.Service.CheckNotificationChannelEntityConnectivity(context.Background(), id, mailServer.ToModel())
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"type":  "greenbone/generic-error",
+			"title": err.Error()},
+		)
 		return
 	}
 

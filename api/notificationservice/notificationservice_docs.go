@@ -305,7 +305,7 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "/notifications/mail": {
+        "/notifications/mail/check": {
             "post": {
                 "security": [
                     {
@@ -331,6 +331,54 @@ const docTemplatenotificationservice = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/dtos.CheckMailServerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Mail server reachable"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Mail server error"
+                    }
+                }
+            }
+        },
+        "/notifications/mail/{id}/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mail server is reachable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mailserver"
+                ],
+                "summary": "Check mail server",
+                "parameters": [
+                    {
+                        "description": "Mail server to check",
+                        "name": "MailServerConfig",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CheckMailServerEntityRequest"
                         }
                     }
                 ],
@@ -386,6 +434,31 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
+        "dtos.CheckMailServerEntityRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dtos.CheckMailServerRequest": {
             "type": "object",
             "properties": {
