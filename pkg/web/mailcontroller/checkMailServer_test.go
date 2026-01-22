@@ -31,7 +31,7 @@ func TestCheckMailServer(t *testing.T) {
 					"domain": "required",
 					"port": "required"
 				}
-		}`)
+			}`)
 	})
 
 	t.Run("username and password are required if isAuthenticationRequired is true", func(t *testing.T) {
@@ -54,7 +54,7 @@ func TestCheckMailServer(t *testing.T) {
 					"password": "required",
 					"username": "required"
 				}
-		}`)
+			}`)
 	})
 
 	t.Run("return the error if the mail server check fails", func(t *testing.T) {
@@ -74,6 +74,6 @@ func TestCheckMailServer(t *testing.T) {
 			Json(`{
 				"type": "greenbone/generic-error",
 				"title": "assert.AnError general error for testing"
-		}`)
+			}`)
 	})
 }
