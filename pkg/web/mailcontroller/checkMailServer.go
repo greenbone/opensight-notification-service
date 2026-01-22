@@ -74,7 +74,10 @@ func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
 
 	err := mc.notificationChannelServicer.CheckNotificationChannelConnectivity(context.Background(), mailServer)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"type":  "greenbone/generic-error",
+			"title": err.Error()},
+		)
 		return
 	}
 
