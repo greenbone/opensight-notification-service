@@ -68,12 +68,12 @@ func TestCreateMattermostChannel_BadRequest(t *testing.T) {
 
 func TestListMattermostChannelsByType_Success(t *testing.T) {
 	r, notificationService, _ := setupTestController()
-	id := strPtr("123")
-	desc := strPtr("desc")
+	id := helper.ToPtr("123")
+	desc := helper.ToPtr("desc")
 	channels := []models.NotificationChannel{{
 		Id:          id,
-		ChannelName: strPtr("test"),
-		WebhookUrl:  strPtr("url"),
+		ChannelName: helper.ToPtr("test"),
+		WebhookUrl:  helper.ToPtr("url"),
 		Description: desc,
 	}}
 	notificationService.
@@ -111,10 +111,10 @@ func TestUpdateMattermostChannel_Success(t *testing.T) {
 		WebhookUrl:  "url",
 		Description: "desc"}
 	updated := models.NotificationChannel{
-		Id:          strPtr(id),
-		ChannelName: strPtr("test"),
-		WebhookUrl:  strPtr("url"),
-		Description: strPtr("desc")}
+		Id:          helper.ToPtr(id),
+		ChannelName: helper.ToPtr("test"),
+		WebhookUrl:  helper.ToPtr("url"),
+		Description: helper.ToPtr("desc")}
 
 	notificationService.
 		On("UpdateNotificationChannel", mock.Anything, id, mock.Anything).
@@ -164,5 +164,3 @@ func TestDeleteMattermostChannel_Error(t *testing.T) {
 		Expect().
 		StatusCode(http.StatusInternalServerError)
 }
-
-func strPtr(s string) *string { return &s }
