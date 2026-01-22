@@ -14,8 +14,8 @@ import (
 )
 
 type MattermostController struct {
-	Service                  port.NotificationChannelService
-	MattermostChannelService port.MattermostChannelService
+	service                  port.NotificationChannelService
+	mattermostChannelService port.MattermostChannelService
 }
 
 func NewMattermostController(
@@ -23,7 +23,7 @@ func NewMattermostController(
 	service port.NotificationChannelService, mattermostChannelService port.MattermostChannelService,
 	auth gin.HandlerFunc,
 ) *MattermostController {
-	ctrl := &MattermostController{Service: service, MattermostChannelService: mattermostChannelService}
+	ctrl := &MattermostController{service: service, mattermostChannelService: mattermostChannelService}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
 }
@@ -63,7 +63,7 @@ func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
 		return
 	}
 
-	mattermostChannel, err := mc.MattermostChannelService.CreateMattermostChannel(c, channel)
+	mattermostChannel, err := mc.mattermostChannelService.CreateMattermostChannel(c, channel)
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
@@ -84,7 +84,7 @@ func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/mattermost [get]
 func (mc *MattermostController) ListMattermostChannelsByType(c *gin.Context) {
-	channels, err := mc.Service.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
+	channels, err := mc.service.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
 
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
@@ -122,7 +122,7 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 	}
 
 	notificationChannel := mapper.MapMattermostToNotificationChannel(channel)
-	updated, err := mc.Service.UpdateNotificationChannel(c, id, notificationChannel)
+	updated, err := mc.service.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
@@ -144,7 +144,7 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 //		@Router			/notification-channel/mattermost/{id} [delete]
 func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
-	if err := mc.Service.DeleteNotificationChannel(c, id); err != nil {
+	if err := mc.service.DeleteNotificationChannel(c, id); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
