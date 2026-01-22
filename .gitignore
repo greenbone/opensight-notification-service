@@ -22,3 +22,6 @@ cov-pg-tests.txt
 
 # docker compose env file, might be used to store secrets -> must not be comitted
 .env
+
+# bin folder
+bin/*

@@ -18,6 +18,422 @@ const docTemplatenotificationservice = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/notification-channel/mail": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "List mail notification channels by type",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mail-channel"
+                ],
+                "summary": "List Mail Channels",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Channel type",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new mail notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mail-channel"
+                ],
+                "summary": "Create Mail Channel",
+                "parameters": [
+                    {
+                        "description": "Mail channel to add",
+                        "name": "MailChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-channel/mail/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Update an existing mail notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mail-channel"
+                ],
+                "summary": "Update Mail Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mail channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Mail channel to update",
+                        "name": "MailChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Delete a mail notification channel",
+                "tags": [
+                    "mail-channel"
+                ],
+                "summary": "Delete Mail Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mail channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-channel/mattermost": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "List mattermost notification channels by type",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mattermost-channel"
+                ],
+                "summary": "List Mattermost Channels",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Channel type",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new mattermost notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mattermost-channel"
+                ],
+                "summary": "Create Mattermost Channel",
+                "parameters": [
+                    {
+                        "description": "Mattermost channel to add",
+                        "name": "MattermostChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-channel/mattermost/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Update an existing mattermost notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mattermost-channel"
+                ],
+                "summary": "Update Mattermost Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mattermost channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Mattermost channel to update",
+                        "name": "MattermostChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Delete a mattermost notification channel",
+                "tags": [
+                    "mattermost-channel"
+                ],
+                "summary": "Delete Mattermost Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mattermost channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notifications": {
             "put": {
                 "security": [
@@ -106,6 +522,102 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/notifications/mail/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mail server is reachable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mailserver"
+                ],
+                "summary": "Check mail server",
+                "parameters": [
+                    {
+                        "description": "Mail server to check",
+                        "name": "MailServerConfig",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CheckMailServerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Mail server reachable"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Mail server error"
+                    }
+                }
+            }
+        },
+        "/notifications/mail/{id}/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mail server is reachable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mailserver"
+                ],
+                "summary": "Check mail server",
+                "parameters": [
+                    {
+                        "description": "Mail server to check",
+                        "name": "MailServerConfig",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CheckMailServerEntityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Mail server reachable"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Mail server error"
+                    }
+                }
+            }
+        },
         "/notifications/options": {
             "get": {
                 "security": [
@@ -139,6 +651,56 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
+        "dtos.CheckMailServerEntityRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.CheckMailServerRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "filter.CompareOperator": {
             "type": "string",
             "enum": [
@@ -148,28 +710,29 @@ const docTemplatenotificationservice = `{
                 "doesNotContain",
                 "textContains",
                 "isNumberEqualTo",
-                "isEqualTo",
-                "isIpEqualTo",
-                "isStringEqualTo",
-                "isStringCaseInsensitiveEqualTo",
-                "isNotEqualTo",
                 "isNumberNotEqualTo",
+                "isEqualTo",
+                "isNotEqualTo",
+                "isIpEqualTo",
                 "isIpNotEqualTo",
+                "isStringEqualTo",
                 "isStringNotEqualTo",
+                "isStringCaseInsensitiveEqualTo",
                 "isGreaterThan",
                 "isGreaterThanOrEqualTo",
                 "isLessThan",
                 "isLessThanOrEqualTo",
                 "beforeDate",
                 "afterDate",
+                "betweenDates",
                 "exists",
+                "doesNotExist",
                 "isEqualToRating",
                 "isNotEqualToRating",
-                "isGreaterThanRating",
                 "isLessThanRating",
-                "isGreaterThanOrEqualToRating",
                 "isLessThanOrEqualToRating",
-                "betweenDates"
+                "isGreaterThanRating",
+                "isGreaterThanOrEqualToRating"
             ],
             "x-enum-varnames": [
                 "CompareOperatorBeginsWith",
@@ -178,28 +741,29 @@ const docTemplatenotificationservice = `{
                 "CompareOperatorDoesNotContain",
                 "CompareOperatorTextContains",
                 "CompareOperatorIsNumberEqualTo",
-                "CompareOperatorIsEqualTo",
-                "CompareOperatorIsIpEqualTo",
-                "CompareOperatorIsStringEqualTo",
-                "CompareOperatorIsStringCaseInsensitiveEqualTo",
-                "CompareOperatorIsNotEqualTo",
                 "CompareOperatorIsNumberNotEqualTo",
+                "CompareOperatorIsEqualTo",
+                "CompareOperatorIsNotEqualTo",
+                "CompareOperatorIsIpEqualTo",
                 "CompareOperatorIsIpNotEqualTo",
+                "CompareOperatorIsStringEqualTo",
                 "CompareOperatorIsStringNotEqualTo",
+                "CompareOperatorIsStringCaseInsensitiveEqualTo",
                 "CompareOperatorIsGreaterThan",
                 "CompareOperatorIsGreaterThanOrEqualTo",
                 "CompareOperatorIsLessThan",
                 "CompareOperatorIsLessThanOrEqualTo",
                 "CompareOperatorBeforeDate",
                 "CompareOperatorAfterDate",
+                "CompareOperatorBetweenDates",
                 "CompareOperatorExists",
+                "CompareOperatorDoesNotExist",
                 "CompareOperatorIsEqualToRating",
                 "CompareOperatorIsNotEqualToRating",
-                "CompareOperatorIsGreaterThanRating",
                 "CompareOperatorIsLessThanRating",
-                "CompareOperatorIsGreaterThanOrEqualToRating",
                 "CompareOperatorIsLessThanOrEqualToRating",
-                "CompareOperatorBetweenDates"
+                "CompareOperatorIsGreaterThanRating",
+                "CompareOperatorIsGreaterThanOrEqualToRating"
             ]
         },
         "filter.ControlType": {
@@ -512,6 +1076,60 @@ const docTemplatenotificationservice = `{
                 },
                 "sorting": {
                     "$ref": "#/definitions/sorting.Request"
+                }
+            }
+        },
+        "request.MailNotificationChannelRequest": {
+            "type": "object",
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "maxEmailAttachmentSizeMb": {
+                    "type": "integer"
+                },
+                "maxEmailIncludeSizeMb": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "senderEmailAddress": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MattermostNotificationChannelRequest": {
+            "type": "object",
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "webhookUrl": {
+                    "type": "string"
                 }
             }
         },

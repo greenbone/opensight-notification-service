@@ -18,6 +18,6 @@ services:
       - "-c" # log everything for debugging
       - "log_statement=all"
       - "-c" # allow many connections for parallel tests
-      - "max_connections=1000" 
+      - "max_connections=1000"
     ports:
       - "5632:5432" # avoid clash with the other compose deployments

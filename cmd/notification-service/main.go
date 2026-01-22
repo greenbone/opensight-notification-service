@@ -8,12 +8,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/greenbone/keycloak-client-golang/auth"
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-co-op/gocron/v2"
+	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 
 	"github.com/go-playground/validator"
+	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
+	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/rs/zerolog/log"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
@@ -24,9 +37,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller"
-	"github.com/kelseyhightower/envconfig"
-
-	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -82,28 +92,58 @@ func run(config config.Config) error {
 
 	notificationRepository, err := notificationrepository.NewNotificationRepository(pgClient)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating Notification Repository: %w", err)
+	}
+
+	// Encrypt
+	manager := security.NewEncryptManager()
+	manager.UpdateKeys(config.DatabaseEncryptionKey)
+
+	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
+	if err != nil {
+		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
+	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, config.ChannelLimit.EMailLimit)
+	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.ChannelLimit.MattermostLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
-	gin := web.NewWebEngine(config.Http)
-	rootRouter := gin.Group("/")
-	notificationServiceRouter := gin.Group("/api/notification-service")
-	docsRouter := gin.Group("/docs/notification-service")
+	// scheduler
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		return fmt.Errorf("error creating scheduler: %w", err)
+	}
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(1*time.Hour),
+		gocron.NewTask(checkmailconnectivity.NewJob(notificationService, notificationChannelService)),
+	)
+	if err != nil {
+		return fmt.Errorf("error creating mail connectivity check job: %w", err)
+	}
+	scheduler.Start()
+
+	router := web.NewWebEngine(config.Http)
+	router.Use(helper.ValidationErrorHandler(gin.ErrorTypePrivate))
+	rootRouter := router.Group("/")
+	notificationServiceRouter := router.Group("/api/notification-service")
+	docsRouter := router.Group("/docs/notification-service")
 
 	// rest api docs
 	web.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 	healthcontroller.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 
 	//instantiate controllers
-	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)
+	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
+	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
+	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
+	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.Http.Port),
-		Handler:      gin,
+		Handler:      router,
 		ReadTimeout:  config.Http.ReadTimeout,
 		WriteTimeout: config.Http.WriteTimeout,
 		IdleTimeout:  config.Http.IdleTimeout,

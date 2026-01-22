@@ -1,5 +1,39 @@
 basePath: /api/notification-service
 definitions:
+  dtos.CheckMailServerEntityRequest:
+    properties:
+      domain:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    type: object
+  dtos.CheckMailServerRequest:
+    properties:
+      domain:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    type: object
   filter.CompareOperator:
     enum:
     - beginsWith
@@ -8,28 +42,29 @@ definitions:
     - doesNotContain
     - textContains
     - isNumberEqualTo
-    - isEqualTo
-    - isIpEqualTo
-    - isStringEqualTo
-    - isStringCaseInsensitiveEqualTo
-    - isNotEqualTo
     - isNumberNotEqualTo
+    - isEqualTo
+    - isNotEqualTo
+    - isIpEqualTo
     - isIpNotEqualTo
+    - isStringEqualTo
     - isStringNotEqualTo
+    - isStringCaseInsensitiveEqualTo
     - isGreaterThan
     - isGreaterThanOrEqualTo
     - isLessThan
     - isLessThanOrEqualTo
     - beforeDate
     - afterDate
+    - betweenDates
     - exists
+    - doesNotExist
     - isEqualToRating
     - isNotEqualToRating
-    - isGreaterThanRating
     - isLessThanRating
-    - isGreaterThanOrEqualToRating
     - isLessThanOrEqualToRating
-    - betweenDates
+    - isGreaterThanRating
+    - isGreaterThanOrEqualToRating
     type: string
     x-enum-varnames:
     - CompareOperatorBeginsWith
@@ -38,28 +73,29 @@ definitions:
     - CompareOperatorDoesNotContain
     - CompareOperatorTextContains
     - CompareOperatorIsNumberEqualTo
-    - CompareOperatorIsEqualTo
-    - CompareOperatorIsIpEqualTo
-    - CompareOperatorIsStringEqualTo
-    - CompareOperatorIsStringCaseInsensitiveEqualTo
-    - CompareOperatorIsNotEqualTo
     - CompareOperatorIsNumberNotEqualTo
+    - CompareOperatorIsEqualTo
+    - CompareOperatorIsNotEqualTo
+    - CompareOperatorIsIpEqualTo
     - CompareOperatorIsIpNotEqualTo
+    - CompareOperatorIsStringEqualTo
     - CompareOperatorIsStringNotEqualTo
+    - CompareOperatorIsStringCaseInsensitiveEqualTo
     - CompareOperatorIsGreaterThan
     - CompareOperatorIsGreaterThanOrEqualTo
     - CompareOperatorIsLessThan
     - CompareOperatorIsLessThanOrEqualTo
     - CompareOperatorBeforeDate
     - CompareOperatorAfterDate
+    - CompareOperatorBetweenDates
     - CompareOperatorExists
+    - CompareOperatorDoesNotExist
     - CompareOperatorIsEqualToRating
     - CompareOperatorIsNotEqualToRating
-    - CompareOperatorIsGreaterThanRating
     - CompareOperatorIsLessThanRating
-    - CompareOperatorIsGreaterThanOrEqualToRating
     - CompareOperatorIsLessThanOrEqualToRating
-    - CompareOperatorBetweenDates
+    - CompareOperatorIsGreaterThanRating
+    - CompareOperatorIsGreaterThanOrEqualToRating
   filter.ControlType:
     enum:
     - bool
@@ -276,6 +312,42 @@ definitions:
       sorting:
         $ref: '#/definitions/sorting.Request'
     type: object
+  request.MailNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      maxEmailAttachmentSizeMb:
+        type: integer
+      maxEmailIncludeSizeMb:
+        type: integer
+      password:
+        type: string
+      port:
+        type: integer
+      senderEmailAddress:
+        type: string
+      username:
+        type: string
+    type: object
+  request.MattermostNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      description:
+        type: string
+      webhookUrl:
+        type: string
+    type: object
   sorting.Request:
     properties:
       column:
@@ -304,6 +376,270 @@ info:
   title: Notification Service API
   version: "1.0"
 paths:
+  /notification-channel/mail:
+    get:
+      description: List mail notification channels by type
+      parameters:
+      - description: Channel type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/request.MailNotificationChannelRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: List Mail Channels
+      tags:
+      - mail-channel
+    post:
+      consumes:
+      - application/json
+      description: Create a new mail notification channel
+      parameters:
+      - description: Mail channel to add
+        in: body
+        name: MailChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.MailNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/request.MailNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Create Mail Channel
+      tags:
+      - mail-channel
+  /notification-channel/mail/{id}:
+    delete:
+      description: Delete a mail notification channel
+      parameters:
+      - description: Mail channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Delete Mail Channel
+      tags:
+      - mail-channel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing mail notification channel
+      parameters:
+      - description: Mail channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mail channel to update
+        in: body
+        name: MailChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.MailNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.MailNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Update Mail Channel
+      tags:
+      - mail-channel
+  /notification-channel/mattermost:
+    get:
+      description: List mattermost notification channels by type
+      parameters:
+      - description: Channel type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: List Mattermost Channels
+      tags:
+      - mattermost-channel
+    post:
+      consumes:
+      - application/json
+      description: Create a new mattermost notification channel
+      parameters:
+      - description: Mattermost channel to add
+        in: body
+        name: MattermostChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Create Mattermost Channel
+      tags:
+      - mattermost-channel
+  /notification-channel/mattermost/{id}:
+    delete:
+      description: Delete a mattermost notification channel
+      parameters:
+      - description: Mattermost channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Delete Mattermost Channel
+      tags:
+      - mattermost-channel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing mattermost notification channel
+      parameters:
+      - description: Mattermost channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mattermost channel to update
+        in: body
+        name: MattermostChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Update Mattermost Channel
+      tags:
+      - mattermost-channel
   /notifications:
     post:
       consumes:
@@ -359,6 +695,66 @@ paths:
       summary: List Notifications
       tags:
       - notification
+  /notifications/mail/{id}/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mail server is reachable
+      parameters:
+      - description: Mail server to check
+        in: body
+        name: MailServerConfig
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CheckMailServerEntityRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mail server reachable
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Mail server error
+      security:
+      - KeycloakAuth: []
+      summary: Check mail server
+      tags:
+      - mailserver
+  /notifications/mail/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mail server is reachable
+      parameters:
+      - description: Mail server to check
+        in: body
+        name: MailServerConfig
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CheckMailServerRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mail server reachable
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Mail server error
+      security:
+      - KeycloakAuth: []
+      summary: Check mail server
+      tags:
+      - mailserver
   /notifications/options:
     get:
       description: Get filter options for listing notifications

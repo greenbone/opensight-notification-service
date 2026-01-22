@@ -6,14 +6,14 @@ package notificationcontroller
 
 import (
 	"errors"
-	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
-	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
@@ -94,8 +94,8 @@ func TestListNotifications(t *testing.T) {
 			},
 		},
 		{
-			name:        "return bad request on invalid input",
-			requestBody: query.ResultSelector{Paging: &paging.Request{PageSize: -1}}, // invalid page size
+			name:        "return bad request on invalid page size",
+			requestBody: query.ResultSelector{Paging: &paging.Request{PageSize: -1}},
 			want: want{
 				serviceCall:  false,
 				responseCode: http.StatusBadRequest,
@@ -103,18 +103,12 @@ func TestListNotifications(t *testing.T) {
 		},
 	}
 
-	requestUrl := "/notifications"
-
-	gin.SetMode(gin.TestMode)
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockNotificationService := mocks.NewNotificationService(t)
 
-			// Create a new engine for testing
-			engine := gin.Default()
-			// constructor registers the routes
-			_ = NewNotificationController(&engine.RouterGroup, mockNotificationService, testhelper.MockAuthMiddleware)
+			engine := testhelper.NewTestWebEngine()
+			AddNotificationController(engine, mockNotificationService, testhelper.MockAuthMiddleware)
 
 			if tt.want.serviceCall {
 				mockNotificationService.EXPECT().ListNotifications(mock.Anything, tt.want.serviceArg).
@@ -122,7 +116,7 @@ func TestListNotifications(t *testing.T) {
 					Once()
 			}
 
-			req, err := testhelper.NewJSONRequest(http.MethodPut, requestUrl, tt.requestBody)
+			req, err := testhelper.NewJSONRequest(http.MethodPut, "/notifications", tt.requestBody)
 			if err != nil {
 				t.Error("could not build request", err)
 				return
@@ -179,8 +173,8 @@ func TestCreateNotification(t *testing.T) {
 			},
 		},
 		{
-			name:                 "don't create a notification if validation fails",
-			notificationToCreate: models.Notification{}, // invalid: mandatory parameters not set
+			name:                 "don't create a notification if mandatory parameters not set",
+			notificationToCreate: models.Notification{},
 			want: want{
 				responseCode: http.StatusBadRequest,
 			},
@@ -190,16 +184,12 @@ func TestCreateNotification(t *testing.T) {
 	httpMethod := http.MethodPost
 	requestUrl := "/notifications"
 
-	gin.SetMode(gin.TestMode)
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockNotificationService := mocks.NewNotificationService(t)
 
-			// Create a new engine for testing
-			engine := gin.Default()
-			// constructor registers the routes
-			_ = NewNotificationController(&engine.RouterGroup, mockNotificationService, testhelper.MockAuthMiddleware)
+			engine := testhelper.NewTestWebEngine()
+			AddNotificationController(engine, mockNotificationService, testhelper.MockAuthMiddleware)
 
 			if tt.want.notificationServiceArg != nil {
 				mockNotificationService.EXPECT().CreateNotification(mock.Anything, *tt.want.notificationServiceArg).

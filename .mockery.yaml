@@ -1,10 +1,10 @@
-with-expecter: true
 dir: "{{.InterfaceDir}}/mocks"
-outpkg: "mocks"
-mockname: "{{.InterfaceName}}"
-filename: "{{.InterfaceNameSnake}}.go"
+pkgname: "mocks"
+structname: "{{.InterfaceName}}"
+filename: "{{.InterfaceName}}.go"
+all: true
 
 packages:
-  github.com/greenbone/opensight-notification-service/pkg/port:
-    interfaces:
-      NotificationService:
+  github.com/greenbone/opensight-notification-service/pkg:
+    config:
+      recursive: true

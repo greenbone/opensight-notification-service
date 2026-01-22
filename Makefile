@@ -1,7 +1,7 @@
-all: api-docs build test
+all: generate-code api-docs lint build test
 
 SWAG = github.com/swaggo/swag/cmd/swag@v1.16.4
-MOCKERY = github.com/vektra/mockery/v2@v2.53.0
+MOCKERY = github.com/vektra/mockery/v3@v3.5.1
 GOLANGCI-LINT = github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 .PHONY: lint
@@ -15,7 +15,7 @@ install-code-generation-tools:
 
 .PHONY: generate-code
 generate-code: # create mocks
-	go run $(MOCKERY)
+	go run $(MOCKERY) --log-level warn
 
 .PHONY: api-docs
 api-docs:
@@ -48,7 +48,7 @@ stop-postgres-test-service:
 
 .PHONY: run-postgres-tests
 run-postgres-tests:
-	TEST_POSTGRES=1 go test ./pkg/repository/... -coverprofile=cov-pg-tests.txt
+	TEST_POSTGRES=1 go test -tags=integration ./pkg/repository/... ./pkg/web/... -coverprofile=cov-pg-tests.txt
 
 .PHONY: test-postgres
 test-postgres:
