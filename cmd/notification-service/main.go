@@ -98,13 +98,13 @@ func run(config config.Config) error {
 	manager := security.NewEncryptManager()
 	manager.UpdateKeys(config.DatabaseEncryptionKey)
 
-	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
+	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
-	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
+	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository, manager)
 	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService)
 	healthService := healthservice.NewHealthService(pgClient)
 

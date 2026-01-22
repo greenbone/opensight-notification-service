@@ -10,6 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
+	"github.com/greenbone/opensight-notification-service/pkg/config"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
@@ -159,8 +161,14 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 }
 
 func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
+	encryptMgr := security.NewEncryptManager()
+	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
+		Password:     "password",
+		PasswordSalt: "password-salt-should-no-be-short-fyi",
+	})
+
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
-	svc := notificationchannelservice.NewNotificationChannelService(repo)
+	svc := notificationchannelservice.NewNotificationChannelService(repo, encryptMgr)
 	mailSvc := notificationchannelservice.NewMailChannelService(svc)
 
 	router := testhelper.NewTestWebEngine()
