@@ -13,3 +13,8 @@ type MailNotificationChannelRequest struct {
 	MaxEmailIncludeSizeMb    *int    `json:"maxEmailIncludeSizeMb,omitempty"`
 	SenderEmailAddress       string  `json:"senderEmailAddress"`
 }
+
+func (r MailNotificationChannelRequest) WithEmptyPassword() MailNotificationChannelRequest {
+	r.Password = nil
+	return r
+}

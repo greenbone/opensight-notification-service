@@ -91,7 +91,7 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMail(channels))
+	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMailWithEmptyPassword(channels))
 }
 
 // UpdateMailChannel
