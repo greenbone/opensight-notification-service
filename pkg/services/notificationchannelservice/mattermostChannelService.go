@@ -14,7 +14,6 @@ var (
 	ErrMattermostChannelLimitReached = errors.New("mattermost channel limit reached")
 	ErrListMattermostChannels        = errors.New("failed to list mattermost channels")
 	ErrMattermostChannelBadRequest   = errors.New("bad request for mattermost channel")
-	MattermostChannelLimit           = 20
 )
 
 type MattermostChannelService struct {
@@ -32,7 +31,7 @@ func (v *MattermostChannelService) mattermostChannelLimitReached(c context.Conte
 		return errors.Join(ErrListMattermostChannels, err)
 	}
 
-	if len(channels) >= MattermostChannelLimit {
+	if len(channels) >= v.mattermostChannelLimit {
 		return ErrMattermostChannelLimitReached
 	}
 	return nil
