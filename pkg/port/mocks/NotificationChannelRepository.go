@@ -162,7 +162,7 @@ func (_c *NotificationChannelRepository_DeleteNotificationChannel_Call) RunAndRe
 }
 
 // GetNotificationChannelByIdAndType provides a mock function for the type NotificationChannelRepository
-func (_mock *NotificationChannelRepository) GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType models.NotificationChannel) (models.NotificationChannel, error) {
+func (_mock *NotificationChannelRepository) GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType models.ChannelType) (models.NotificationChannel, error) {
 	ret := _mock.Called(ctx, id, channelType)
 
 	if len(ret) == 0 {
@@ -171,15 +171,15 @@ func (_mock *NotificationChannelRepository) GetNotificationChannelByIdAndType(ct
 
 	var r0 models.NotificationChannel
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.NotificationChannel) (models.NotificationChannel, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.ChannelType) (models.NotificationChannel, error)); ok {
 		return returnFunc(ctx, id, channelType)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.NotificationChannel) models.NotificationChannel); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.ChannelType) models.NotificationChannel); ok {
 		r0 = returnFunc(ctx, id, channelType)
 	} else {
 		r0 = ret.Get(0).(models.NotificationChannel)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, models.NotificationChannel) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, models.ChannelType) error); ok {
 		r1 = returnFunc(ctx, id, channelType)
 	} else {
 		r1 = ret.Error(1)
@@ -195,12 +195,12 @@ type NotificationChannelRepository_GetNotificationChannelByIdAndType_Call struct
 // GetNotificationChannelByIdAndType is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-//   - channelType models.NotificationChannel
+//   - channelType models.ChannelType
 func (_e *NotificationChannelRepository_Expecter) GetNotificationChannelByIdAndType(ctx interface{}, id interface{}, channelType interface{}) *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call {
 	return &NotificationChannelRepository_GetNotificationChannelByIdAndType_Call{Call: _e.mock.On("GetNotificationChannelByIdAndType", ctx, id, channelType)}
 }
 
-func (_c *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call) Run(run func(ctx context.Context, id string, channelType models.NotificationChannel)) *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call {
+func (_c *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call) Run(run func(ctx context.Context, id string, channelType models.ChannelType)) *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -210,9 +210,9 @@ func (_c *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call) 
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 models.NotificationChannel
+		var arg2 models.ChannelType
 		if args[2] != nil {
-			arg2 = args[2].(models.NotificationChannel)
+			arg2 = args[2].(models.ChannelType)
 		}
 		run(
 			arg0,
@@ -228,7 +228,7 @@ func (_c *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call) 
 	return _c
 }
 
-func (_c *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call) RunAndReturn(run func(ctx context.Context, id string, channelType models.NotificationChannel) (models.NotificationChannel, error)) *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call {
+func (_c *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call) RunAndReturn(run func(ctx context.Context, id string, channelType models.ChannelType) (models.NotificationChannel, error)) *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call {
 	_c.Call.Return(run)
 	return _c
 }

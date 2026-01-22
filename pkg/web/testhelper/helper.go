@@ -11,11 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
+	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
@@ -95,8 +97,14 @@ func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
 }
 
 func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepository, *sqlx.DB) {
+	encryptMgr := security.NewEncryptManager()
+	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
+		Password:     "password",
+		PasswordSalt: "password-salt-should-no-be-short-fyi",
+	})
+
 	db := pgtesting.NewDB(t)
-	repo, err := notificationrepository.NewNotificationChannelRepository(db)
+	repo, err := notificationrepository.NewNotificationChannelRepository(db, encryptMgr)
 	if err != nil {
 		t.Fatalf("failed to create repository: %v", err)
 	}

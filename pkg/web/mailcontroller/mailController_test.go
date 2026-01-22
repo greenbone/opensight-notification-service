@@ -21,7 +21,7 @@ func getValidNotificationChannel() models.NotificationChannel {
 	domain := "example.com"
 	port := 25
 	auth := true
-	tls := false
+	tls := true
 	username := "user"
 	password := "pass"
 	maxAttach := 10
@@ -42,8 +42,8 @@ func getValidNotificationChannel() models.NotificationChannel {
 }
 
 func setupRouter(service *mocks.NotificationChannelService, mailService *mailmocks.MailChannelService) *gin.Engine {
-	gin.SetMode(gin.TestMode)
-	engine := gin.New()
+	engine := testhelper.NewTestWebEngine()
+
 	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin)
 	return engine
 }

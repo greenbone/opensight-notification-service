@@ -7,12 +7,13 @@ package notificationcontroller
 import (
 	"errors"
 	"fmt"
-	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
-	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller/dtos"
-	"github.com/samber/lo"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
+	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller/dtos"
+	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
@@ -28,21 +29,15 @@ type NotificationController struct {
 	notificationService port.NotificationService
 }
 
-func NewNotificationController(router gin.IRouter, notificationService port.NotificationService, auth gin.HandlerFunc) *NotificationController {
+func AddNotificationController(router gin.IRouter, notificationService port.NotificationService, auth gin.HandlerFunc) {
 	ctrl := &NotificationController{
 		notificationService: notificationService,
 	}
 
-	ctrl.registerRoutes(router, auth)
-
-	return ctrl
-}
-
-func (c *NotificationController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
 	group := router.Group("/notifications").Use(middleware.AuthorizeRoles(auth, middleware.UserRole, middleware.NotificationRole)...)
-	group.POST("", c.CreateNotification)
-	group.PUT("", c.ListNotifications)
-	group.GET("/options", c.GetOptions)
+	group.POST("", ctrl.CreateNotification)
+	group.PUT("", ctrl.ListNotifications)
+	group.GET("/options", ctrl.GetOptions)
 }
 
 // CreateNotification

@@ -12,11 +12,11 @@ import (
 // I.e. the env var in {INNER1:{INNER2:{FIELD1:"foo"}}} for FIELD1 is `INNER1_INNER2_FIELD1`
 
 type Config struct {
-	Http           Http           `envconfig:"HTTP"`
-	Database       Database       `envconfig:"DB"`
-	LogLevel       string         `envconfig:"LOG_LEVEL" default:"info"`
-	KeycloakConfig KeycloakConfig `envconfig:"KEYCLOAK"`
-	Restrict       Restrict       `envconfig:"Restrict"`
+	Http                  Http                  `envconfig:"HTTP"`
+	Database              Database              `envconfig:"DB"`
+	LogLevel              string                `envconfig:"LOG_LEVEL" default:"info"`
+	KeycloakConfig        KeycloakConfig        `envconfig:"KEYCLOAK"`
+	DatabaseEncryptionKey DatabaseEncryptionKey `envconfig:"DATABASE_ENCRYPTION_KEY"`
 }
 
 type Restrict struct {
@@ -38,6 +38,11 @@ type Database struct {
 	Password string `validate:"required" envconfig:"PASSWORD"`
 	DBName   string `validate:"required" envconfig:"NAME"`
 	SSLMode  string `envconfig:"SSL_MODE" default:"require"`
+}
+
+type DatabaseEncryptionKey struct {
+	Password     string `envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD" default:"database-encryption-key-default-password"`
+	PasswordSalt string `envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD_SALT" default:"database-encryption-key-default-password-salt"`
 }
 
 type KeycloakConfig struct {

@@ -205,7 +205,7 @@ func Test_ListNotifications(t *testing.T) {
 			},
 			wantTotalResults: 3, // total results independent of page size
 		},
-		"filtery by name": {
+		"filter by name": {
 			resultSelector: query.ResultSelector{
 				Filter: &filter.Request{
 					Operator: filter.LogicOperatorAnd,

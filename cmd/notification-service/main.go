@@ -13,10 +13,16 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron/v2"
-	"github.com/go-playground/validator"
 	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
+
+	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
+	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
@@ -27,11 +33,9 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
-	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller"
 )
 
@@ -91,7 +95,11 @@ func run(config config.Config) error {
 		return fmt.Errorf("error creating Notification Repository: %w", err)
 	}
 
-	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient)
+	// Encrypt
+	manager := security.NewEncryptManager()
+	manager.UpdateKeys(config.DatabaseEncryptionKey)
+
+	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
 	if err != nil {
 		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}
@@ -116,17 +124,18 @@ func run(config config.Config) error {
 	}
 	scheduler.Start()
 
-	gin := web.NewWebEngine(config.Http)
-	rootRouter := gin.Group("/")
-	notificationServiceRouter := gin.Group("/api/notification-service")
-	docsRouter := gin.Group("/docs/notification-service")
+	router := web.NewWebEngine(config.Http)
+	router.Use(helper.ValidationErrorHandler(gin.ErrorTypePrivate))
+	rootRouter := router.Group("/")
+	notificationServiceRouter := router.Group("/api/notification-service")
+	docsRouter := router.Group("/docs/notification-service")
 
 	// rest api docs
 	web.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 	healthcontroller.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 
 	//instantiate controllers
-	notificationcontroller.NewNotificationController(notificationServiceRouter, notificationService, authMiddleware)
+	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
 	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
 	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
 	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware)
@@ -134,7 +143,7 @@ func run(config config.Config) error {
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.Http.Port),
-		Handler:      gin,
+		Handler:      router,
 		ReadTimeout:  config.Http.ReadTimeout,
 		WriteTimeout: config.Http.WriteTimeout,
 		IdleTimeout:  config.Http.IdleTimeout,

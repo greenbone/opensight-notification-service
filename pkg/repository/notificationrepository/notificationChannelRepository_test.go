@@ -8,17 +8,25 @@ import (
 	"context"
 	"testing"
 
+	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func setupTestRepo(t *testing.T) (context.Context, port.NotificationChannelRepository) {
+	encryptMgr := security.NewEncryptManager()
+	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
+		Password:     "password",
+		PasswordSalt: "password-salt-should-no-be-short-fyi",
+	})
+
 	db := pgtesting.NewDB(t)
-	repo, err := NewNotificationChannelRepository(db)
+	repo, err := NewNotificationChannelRepository(db, encryptMgr)
 	require.NoError(t, err)
 	ctx := context.Background()
 	return ctx, repo

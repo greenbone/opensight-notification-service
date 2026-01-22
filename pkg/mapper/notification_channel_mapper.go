@@ -16,6 +16,7 @@ func MapNotificationChannelToMail(channel models.NotificationChannel) request.Ma
 		IsAuthenticationRequired: *channel.IsAuthenticationRequired,
 		IsTlsEnforced:            *channel.IsTlsEnforced,
 		Username:                 channel.Username,
+		Password:                 channel.Password,
 		MaxEmailAttachmentSizeMb: channel.MaxEmailAttachmentSizeMb,
 		MaxEmailIncludeSizeMb:    channel.MaxEmailIncludeSizeMb,
 		SenderEmailAddress:       *channel.SenderEmailAddress,
@@ -39,11 +40,11 @@ func MapMailToNotificationChannel(mail request.MailNotificationChannelRequest) m
 	}
 }
 
-// MapNotificationChannelsToMail maps a slice of NotificationChannel to MailNotificationChannelRequest.
-func MapNotificationChannelsToMail(channels []models.NotificationChannel) []request.MailNotificationChannelRequest {
+// MapNotificationChannelsToMailWithEmptyPassword maps a slice of NotificationChannel to MailNotificationChannelRequest.
+func MapNotificationChannelsToMailWithEmptyPassword(channels []models.NotificationChannel) []request.MailNotificationChannelRequest {
 	mailChannels := make([]request.MailNotificationChannelRequest, 0, len(channels))
 	for _, ch := range channels {
-		mailChannels = append(mailChannels, MapNotificationChannelToMail(ch))
+		mailChannels = append(mailChannels, MapNotificationChannelToMail(ch).WithEmptyPassword())
 	}
 	return mailChannels
 }
