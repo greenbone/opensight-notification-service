@@ -73,7 +73,7 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, mailChannel)
+	c.JSON(http.StatusCreated, mailChannel.WithEmptyPassword())
 }
 
 // ListMailChannelsByType
@@ -94,7 +94,7 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMail(channels))
+	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMailWithEmptyPassword(channels))
 }
 
 // UpdateMailChannel
@@ -131,8 +131,8 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	response := mapper.MapNotificationChannelToMail(updated)
-	c.JSON(http.StatusOK, response)
+	mailChannel := mapper.MapNotificationChannelToMail(updated)
+	c.JSON(http.StatusOK, mailChannel.WithEmptyPassword())
 }
 
 // DeleteMailChannel

@@ -21,7 +21,7 @@ func getValidNotificationChannel() models.NotificationChannel {
 	domain := "example.com"
 	port := 25
 	auth := true
-	tls := false
+	tls := true
 	username := "user"
 	password := "pass"
 	maxAttach := 10

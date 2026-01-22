@@ -15,8 +15,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron/v2"
-	"github.com/go-playground/validator"
 	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
+
+	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
 	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/kelseyhightower/envconfig"
@@ -28,11 +32,9 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
-	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller"
 )
 
@@ -92,7 +94,11 @@ func run(config config.Config) error {
 		return fmt.Errorf("error creating Notification Repository: %w", err)
 	}
 
-	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient)
+	// Encrypt
+	manager := security.NewEncryptManager()
+	manager.UpdateKeys(config.DatabaseEncryptionKey)
+
+	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
 	if err != nil {
 		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}

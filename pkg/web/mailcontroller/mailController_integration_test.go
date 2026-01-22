@@ -5,8 +5,8 @@ package mailcontroller
 
 import (
 	"net/http"
+	"strings"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const encryptionPrefix = "ENCV"
+
 func TestIntegration_MailController_CRUD(t *testing.T) {
 	t.Parallel()
 
@@ -24,7 +26,8 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 	t.Run("Perform all the CRUD operations", func(t *testing.T) {
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer func() { _ = db.Close() }()
+
 		request := httpassert.New(t, router)
 
 		// --- Create ---
@@ -111,12 +114,20 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonPath("$.id", httpassert.ExtractTo(&mailId))
 		require.NotEmpty(t, mailId)
 
-		require.Eventually(t, func() bool {
-			var password string
-			err := db.QueryRow("SELECT password FROM notification_service.notification_channel WHERE id = $1",
-				mailId).Scan(&password)
-			return err == nil && password == "pass"
-		}, 5*time.Second, 100*time.Millisecond)
+		{ // Create assertion section
+			var username, password string
+			err := db.QueryRow(`
+			SELECT username, password 
+			FROM notification_service.notification_channel 
+			WHERE id = $1`, mailId).Scan(&username, &password)
+			require.NoError(t, err)
+
+			require.NotEmpty(t, username)
+			require.NotEmpty(t, password)
+
+			require.True(t, strings.HasPrefix(username, encryptionPrefix), "username encryption prefix is missing")
+			require.True(t, strings.HasPrefix(password, encryptionPrefix), "password encryption prefix is missing")
+		}
 
 		// --- Update ---
 		updated := valid
@@ -130,12 +141,20 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			StatusCode(http.StatusOK).
 			JsonPath("$.channelName", newName)
 
-		require.Eventually(t, func() bool {
-			var password string
-			err := db.QueryRow("SELECT password FROM notification_service.notification_channel WHERE id = $1",
-				mailId).Scan(&password)
-			return err == nil && password == newPassword
-		}, 5*time.Second, 100*time.Millisecond)
+		{ // Update assertions section
+			var username, password string
+			err := db.QueryRow(`
+			SELECT username, password 
+			FROM notification_service.notification_channel 
+			WHERE id = $1`, mailId).Scan(&username, &password)
+			require.NoError(t, err)
+
+			require.NotEmpty(t, username)
+			require.NotEmpty(t, password)
+
+			require.True(t, strings.HasPrefix(username, encryptionPrefix), "username encryption prefix is missing")
+			require.True(t, strings.HasPrefix(password, encryptionPrefix), "password encryption prefix is missing")
+		}
 	})
 }
 

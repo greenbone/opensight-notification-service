@@ -27,7 +27,9 @@ func ConnectionCheckMail(ctx context.Context, mailServer models.NotificationChan
 		*mailServer.Domain,
 		options...,
 	)
-	defer client.Close()
+	defer func() {
+		_ = client.Close()
+	}()
 
 	if err != nil {
 		return fmt.Errorf("failed to create mail client: %w", err)

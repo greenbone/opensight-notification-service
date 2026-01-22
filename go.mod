@@ -5,6 +5,7 @@ go 1.24.2
 require (
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
+	github.com/go-openapi/testify/v2 v2.0.2
 	github.com/go-co-op/gocron/v2 v2.19.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.19.1
