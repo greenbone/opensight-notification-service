@@ -137,6 +137,25 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			return err == nil && password == newPassword
 		}, 5*time.Second, 100*time.Millisecond)
 	})
+
+	t.Run("Create mail as non-admin user with JWT should be forbidden", func(t *testing.T) {
+		router, db := setupTestRouter(t)
+		defer db.Close()
+
+		request := httpassert.New(t, router)
+
+		token, err := testhelper.GenerateJWTForRole("user", "jwtSecret")
+		require.NoError(t, err)
+
+		valid := testhelper.GetValidMailNotificationChannel()
+		request.Post("/notification-channel/mail").
+			AuthJwt(token).
+			JsonContentObject(valid).
+			Expect().
+			StatusCode(http.StatusForbidden)
+
+		defer db.Close()
+	})
 }
 
 func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {

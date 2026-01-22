@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
@@ -78,14 +80,14 @@ func MockAuthMiddleware(ctx *gin.Context) {
 // MockAuthMiddleware mocks authentication by setting a admin user context in the Gin context for testing purposes.
 func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
 	const userContextKey = "USER_CONTEXT_DATA"
-	const iamRoleUser = "admin"
+	const iamRoleAdmin = "admin"
 
 	userContext := auth.UserContext{
 		Realm:          "",
 		UserID:         "",
 		UserName:       "",
 		EmailAddress:   "",
-		Roles:          []string{iamRoleUser},
+		Roles:          []string{iamRoleAdmin},
 		Groups:         nil,
 		AllowedOrigins: nil,
 	}
@@ -117,4 +119,14 @@ func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
 		MaxEmailIncludeSizeMb:    helper.ToPtr(5),
 		SenderEmailAddress:       "sender@example.com",
 	}
+}
+
+// GenerateJWTForRole generates a JWT token with the specified role for testing.
+func GenerateJWTForRole(role string, secret string) (string, error) {
+	claims := jwt.MapClaims{
+		"roles": []string{role},
+		"exp":   time.Now().Add(time.Hour).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
 }
