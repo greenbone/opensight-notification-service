@@ -2,8 +2,6 @@ package notificationrepository
 
 import "github.com/greenbone/opensight-notification-service/pkg/models"
 
-var empty = notificationChannelRow{}
-
 type notificationChannelRow struct {
 	Id                       *string `db:"id"`
 	CreatedAt                string  `db:"created_at"`
