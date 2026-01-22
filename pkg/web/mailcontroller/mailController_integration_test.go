@@ -143,8 +143,9 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 	mailSvc := notificationchannelservice.NewMailChannelService(svc)
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
+
+	router := testhelper.NewTestWebEngine()
+
 	NewMailController(router, svc, mailSvc, testhelper.MockAuthMiddlewareWithAdmin)
 
 	return router, db
