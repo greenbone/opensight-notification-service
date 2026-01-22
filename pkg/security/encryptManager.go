@@ -1,8 +1,9 @@
 package security
 
 import (
+	"errors"
 	"fmt"
-	"sync"
+	"strings"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
@@ -15,67 +16,59 @@ type Key struct {
 }
 
 type EncryptManager struct {
-	activeID int
-	keys     map[int]Key
-	mu       sync.RWMutex
+	activeKey Key
 }
 
 func NewEncryptManager() *EncryptManager {
 	return &EncryptManager{}
 }
 
-func (sm *EncryptManager) UpdateKeys(keyringConfig config.DatabaseKeyringConfig) {
-	newKeys := make(map[int]Key)
-	for id, key := range keyringConfig.Keys {
-		// TODO add validations before updating
-		newKeys[id] = Key{
-			Password:     key.Password,
-			PasswordSalt: key.PasswordSalt,
-		}
+func (sm *EncryptManager) UpdateKeys(keyringConfig config.DatabaseEncryptionKey) {
+	if strings.TrimSpace(keyringConfig.Password) == "" {
+		log.Error().Msg("Empty password for keyring")
 	}
 
-	sm.mu.Lock()
-	defer sm.mu.Unlock()
+	if strings.TrimSpace(keyringConfig.PasswordSalt) == "" {
+		log.Error().Msg("Empty password_salt for keyring")
+	}
 
-	sm.keys = newKeys
-	sm.activeID = keyringConfig.ActiveID
+	sm.activeKey = Key{
+		Password:     keyringConfig.Password,
+		PasswordSalt: keyringConfig.PasswordSalt,
+	}
+
 	log.Info().Msgf("Keyring successfully refreshed in memory")
 }
 
-func (sm *EncryptManager) Encrypt(plaintext string) ([]byte, int, error) {
-	sm.mu.RLock()
-	currentVersion := sm.activeID
-	activeKey := sm.keys[currentVersion]
-	sm.mu.RUnlock()
+func (sm *EncryptManager) Encrypt(plaintext string) ([]byte, error) {
+	if len(strings.TrimSpace(plaintext)) == 0 {
+		return nil, errors.New("plaintext must be a value")
+	}
 
 	cipher, err := dbcrypt.NewDBCipher(dbcrypt.Config{
-		Password:     activeKey.Password,
-		PasswordSalt: activeKey.PasswordSalt,
+		Password:     sm.activeKey.Password,
+		PasswordSalt: sm.activeKey.PasswordSalt,
 	})
 	if err != nil {
-		return nil, 0, fmt.Errorf("unable to create a new cipher instance: %w", err)
+		return nil, fmt.Errorf("unable to create a new cipher instance: %w", err)
 	}
 
 	encryptedBytes, err := cipher.Encrypt([]byte(plaintext))
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	return encryptedBytes, currentVersion, nil
+	return encryptedBytes, nil
 }
 
-func (sm *EncryptManager) Decrypt(data []byte, version int) (string, error) {
-	sm.mu.RLock()
-	activeKey, ok := sm.keys[version]
-	sm.mu.RUnlock()
-
-	if !ok {
-		return "", fmt.Errorf("unknown salt version: %d", version)
+func (sm *EncryptManager) Decrypt(data []byte) (string, error) {
+	if len(data) == 0 {
+		return "", errors.New("data must be a value")
 	}
 
 	cipher, err := dbcrypt.NewDBCipher(dbcrypt.Config{
-		Password:     activeKey.Password,
-		PasswordSalt: activeKey.PasswordSalt,
+		Password:     sm.activeKey.Password,
+		PasswordSalt: sm.activeKey.PasswordSalt,
 	})
 	if err != nil {
 		return "", err

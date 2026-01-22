@@ -94,7 +94,7 @@ func run(config config.Config) error {
 
 	// Encrypt
 	manager := security.NewEncryptManager()
-	manager.UpdateKeys(config.DatabaseKeyringConfig)
+	manager.UpdateKeys(config.DatabaseEncryptionKey)
 
 	notificationChannelRepository, err := notificationrepository.NewNotificationChannelRepository(pgClient, manager)
 	if err != nil {

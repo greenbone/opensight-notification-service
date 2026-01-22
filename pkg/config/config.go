@@ -16,7 +16,7 @@ type Config struct {
 	Database              Database              `envconfig:"DB"`
 	LogLevel              string                `envconfig:"LOG_LEVEL" default:"info"`
 	KeycloakConfig        KeycloakConfig        `envconfig:"KEYCLOAK"`
-	DatabaseKeyringConfig DatabaseKeyringConfig `envconfig:"DATABASE_KEYRING_CONFIG"`
+	DatabaseEncryptionKey DatabaseEncryptionKey `envconfig:"DATABASE_ENCRYPTION_KEY"`
 }
 
 type Http struct {
@@ -36,13 +36,9 @@ type Database struct {
 	SSLMode  string `envconfig:"SSL_MODE" default:"require"`
 }
 
-type EncryptionKey struct {
-	Password     string `envconfig:"DATABASE_KEYRING_CONFIG_KEYS_PASSWORD"`
-	PasswordSalt string `envconfig:"DATABASE_KEYRING_CONFIG_KEYS_PASSWORD_SALT"` // TODO double check the syntax
-}
-type DatabaseKeyringConfig struct {
-	ActiveID int                   `validate:"required" envconfig:"DATABASE_KEYRING_CONFIG_ACTIVE_ID" default:"0"`
-	Keys     map[int]EncryptionKey `validate:"required" envconfig:"DATABASE_KEYRING_CONFIG_KEYS" default:"{\"1\": {\"password\": \"super-secure-password\",\"password_salt\": \"base64_encoded_key_v1_sample\"}}"`
+type DatabaseEncryptionKey struct {
+	Password     string `envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD" default:"database-encryption-key-default-password"`
+	PasswordSalt string `envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD_SALT" default:"database-encryption-key-default-password-salt"`
 }
 
 type KeycloakConfig struct {

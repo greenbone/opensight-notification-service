@@ -31,11 +31,11 @@ const createNotificationChannelQuery = `
     INSERT INTO notification_service.notification_channel (
         channel_type, channel_name, webhook_url, domain, port,
         is_authentication_required, is_tls_enforced, username, password,
-        max_email_attachment_size_mb, max_email_include_size_mb, sender_email_address, salt_version
+        max_email_attachment_size_mb, max_email_include_size_mb, sender_email_address 
     ) VALUES (
         :channel_type, :channel_name, :webhook_url, :domain, :port,
         :is_authentication_required, :is_tls_enforced, :username, :password,
-        :max_email_attachment_size_mb, :max_email_include_size_mb, :sender_email_address, :salt_version
+        :max_email_attachment_size_mb, :max_email_include_size_mb, :sender_email_address
     )
     RETURNING *
 `
@@ -50,8 +50,7 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
             port = :port,
             is_authentication_required = :is_authentication_required,
             is_tls_enforced = :is_tls_enforced,
-            username = :username,
-            salt_version = :salt_version,`
+            username = :username,`
 
 	if in.Password != nil {
 		query += `password = :password,`
@@ -74,7 +73,8 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 ) (models.NotificationChannel, error) {
 	insertRow := toNotificationChannelRow(channelIn)
 
-	if err := r.withPasswordEncrypted(&insertRow); err != nil {
+	rowWithEncryption, err := r.withPasswordEncrypted(insertRow)
+	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
 
@@ -88,10 +88,12 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 		_ = tx.Rollback()
 		return models.NotificationChannel{}, fmt.Errorf("could not prepare sql statement: %w", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	var row notificationChannelRow
-	err = stmt.QueryRowxContext(ctx, insertRow).StructScan(&row)
+	err = stmt.QueryRowxContext(ctx, rowWithEncryption).StructScan(&row)
 	if err != nil {
 		_ = tx.Rollback()
 		return models.NotificationChannel{}, fmt.Errorf("could not insert into database: %w", err)
@@ -101,7 +103,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 		return models.NotificationChannel{}, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	return r.withPasswordDecrypted(&row).ToModel(), nil
+	return r.withPasswordDecrypted(row).ToModel(), nil
 }
 
 func (r *NotificationChannelRepository) GetNotificationChannelByIdAndType(
@@ -110,9 +112,9 @@ func (r *NotificationChannelRepository) GetNotificationChannelByIdAndType(
 	channelType models.NotificationChannel,
 ) (models.NotificationChannel, error) {
 	query := `SELECT * FROM notification_service.notification_channel WHERE id = $1 AND channel_type = $2`
+
 	var row notificationChannelRow
-	err := r.client.SelectContext(ctx, &row, query, id, channelType)
-	if err != nil {
+	if err := r.client.SelectContext(ctx, &row, query, id, channelType); err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("select by id failed: %w", err)
 	}
 	return row.ToModel(), nil
@@ -123,15 +125,17 @@ func (r *NotificationChannelRepository) ListNotificationChannelsByType(
 	channelType models.ChannelType,
 ) ([]models.NotificationChannel, error) {
 	query := `SELECT * FROM notification_service.notification_channel WHERE channel_type = $1`
+
 	var rows []notificationChannelRow
-	err := r.client.SelectContext(ctx, &rows, query, string(channelType))
-	if err != nil {
+	if err := r.client.SelectContext(ctx, &rows, query, string(channelType)); err != nil {
 		return nil, fmt.Errorf("select by type failed: %w", err)
 	}
+
 	result := make([]models.NotificationChannel, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, r.withPasswordDecrypted(&row).ToModel())
+		result = append(result, r.withPasswordDecrypted(row).ToModel())
 	}
+
 	return result, nil
 }
 
@@ -144,7 +148,8 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 	rowIn := toNotificationChannelRow(in)
 	rowIn.Id = &id
 
-	if err := r.withPasswordEncrypted(&rowIn); err != nil {
+	rowWithEncryption, err := r.withPasswordEncrypted(rowIn)
+	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
 
@@ -155,15 +160,17 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 
 	stmt, err := tx.PrepareNamedContext(ctx, buildUpdateNotificationChannelQuery(in))
 	if err != nil {
-		_ = tx.Rollback()
 		return in, fmt.Errorf("prepare failed: %w", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+		_ = tx.Rollback()
+	}()
 
 	var row notificationChannelRow
-	err = stmt.QueryRowxContext(ctx, rowIn).StructScan(&row)
+
+	err = stmt.QueryRowxContext(ctx, rowWithEncryption).StructScan(&row)
 	if err != nil {
-		_ = tx.Rollback()
 		return in, fmt.Errorf("update failed: %w", err)
 	}
 
@@ -171,33 +178,29 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 		return in, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	// TODO discuss I would go with a pointer here
-	return r.withPasswordDecrypted(&row).ToModel(), nil
+	return r.withPasswordDecrypted(row).ToModel(), nil
 }
 
-// TODO add encryption test cases
-func (r *NotificationChannelRepository) withPasswordEncrypted(row *notificationChannelRow) error {
-	// TODO discuss about this pointer '*row.Password'
+func (r *NotificationChannelRepository) withPasswordEncrypted(row notificationChannelRow) (notificationChannelRow, error) {
 	if row.Password == nil {
-		return nil
+		return row, nil
 	}
 
-	encryptedPasswd, version, err := r.encryptManager.Encrypt(*row.Password)
+	encryptedPasswd, err := r.encryptManager.Encrypt(*row.Password)
 	if err != nil {
-		return fmt.Errorf("could not encrypt password: %w", err)
+		return empty, fmt.Errorf("could not encrypt password: %w", err)
 	}
 
 	passwd := string(encryptedPasswd)
 	row.Password = &passwd
-	row.SaltVersion = version
 
-	return nil
+	return row, nil
 }
 
-// TODO add decryption test cases
-func (r *NotificationChannelRepository) withPasswordDecrypted(row *notificationChannelRow) *notificationChannelRow {
+func (r *NotificationChannelRepository) withPasswordDecrypted(row notificationChannelRow) notificationChannelRow {
 	dPasswd := *row.Password
-	dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd), row.SaltVersion)
+
+	dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd))
 	if err != nil {
 		log.Err(err).Msg("could not decrypt password")
 	}
@@ -214,9 +217,12 @@ func (r *NotificationChannelRepository) DeleteNotificationChannel(ctx context.Co
 	}
 
 	query := `DELETE FROM notification_service.notification_channel WHERE id = $1`
-	_, err = tx.ExecContext(ctx, query, id)
-	if err != nil {
+
+	defer func() {
 		_ = tx.Rollback()
+	}()
+
+	if _, err = tx.ExecContext(ctx, query, id); err != nil {
 		return fmt.Errorf("delete failed: %w", err)
 	}
 

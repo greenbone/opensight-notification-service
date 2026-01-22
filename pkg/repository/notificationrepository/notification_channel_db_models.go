@@ -2,6 +2,8 @@ package notificationrepository
 
 import "github.com/greenbone/opensight-notification-service/pkg/models"
 
+var empty = notificationChannelRow{}
+
 type notificationChannelRow struct {
 	Id                       *string `db:"id"`
 	CreatedAt                string  `db:"created_at"`
@@ -13,9 +15,8 @@ type notificationChannelRow struct {
 	Port                     *int    `db:"port"`
 	IsAuthenticationRequired *bool   `db:"is_authentication_required"`
 	IsTlsEnforced            *bool   `db:"is_tls_enforced"`
-	Username                 *string `db:"username"` // TODO confirm if the Username encryption is required
+	Username                 *string `db:"username"`
 	Password                 *string `db:"password"`
-	SaltVersion              int     `db:"salt_version"`
 	MaxEmailAttachmentSizeMb *int    `db:"max_email_attachment_size_mb"`
 	MaxEmailIncludeSizeMb    *int    `db:"max_email_include_size_mb"`
 	SenderEmailAddress       *string `db:"sender_email_address"`

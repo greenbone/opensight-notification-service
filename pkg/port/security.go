@@ -1,6 +1,6 @@
 package port
 
 type EncryptManager interface {
-	Encrypt(plaintext string) ([]byte, int, error)
-	Decrypt(data []byte, version int) (string, error)
+	Encrypt(plaintext string) ([]byte, error)
+	Decrypt(data []byte) (string, error)
 }

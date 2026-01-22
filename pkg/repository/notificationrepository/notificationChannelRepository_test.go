@@ -20,14 +20,9 @@ import (
 
 func setupTestRepo(t *testing.T) (context.Context, port.NotificationChannelRepository) {
 	encryptMgr := security.NewEncryptManager()
-	encryptMgr.UpdateKeys(config.DatabaseKeyringConfig{
-		ActiveID: 1,
-		Keys: map[int]config.EncryptionKey{
-			1: {
-				Password:     "password",
-				PasswordSalt: "3459d18a01fa6541d328a4c2b1877299",
-			},
-		},
+	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
+		Password:     "password",
+		PasswordSalt: "password-salt-should-no-be-short-fyi",
 	})
 
 	db := pgtesting.NewDB(t)
