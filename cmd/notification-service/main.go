@@ -99,7 +99,7 @@ func run(config config.Config) error {
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
 	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService)
-	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService)
+	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.MattermostLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler

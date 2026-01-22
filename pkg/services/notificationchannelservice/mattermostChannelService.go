@@ -19,10 +19,11 @@ var (
 
 type MattermostChannelService struct {
 	notificationChannelService port.NotificationChannelService
+	mattermostChannelLimit     int
 }
 
-func NewMattermostChannelService(notificationChannelService port.NotificationChannelService) *MattermostChannelService {
-	return &MattermostChannelService{notificationChannelService: notificationChannelService}
+func NewMattermostChannelService(notificationChannelService port.NotificationChannelService, mattermostChannelLimit int) *MattermostChannelService {
+	return &MattermostChannelService{notificationChannelService: notificationChannelService, mattermostChannelLimit: mattermostChannelLimit}
 }
 
 func (v *MattermostChannelService) mattermostChannelLimitReached(c context.Context) error {
@@ -31,7 +32,7 @@ func (v *MattermostChannelService) mattermostChannelLimitReached(c context.Conte
 		return errors.Join(ErrListMattermostChannels, err)
 	}
 
-	if len(channels) > MattermostChannelLimit {
+	if len(channels) >= MattermostChannelLimit {
 		return ErrMattermostChannelLimitReached
 	}
 	return nil

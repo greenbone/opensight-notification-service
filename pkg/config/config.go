@@ -12,10 +12,11 @@ import (
 // I.e. the env var in {INNER1:{INNER2:{FIELD1:"foo"}}} for FIELD1 is `INNER1_INNER2_FIELD1`
 
 type Config struct {
-	Http           Http           `envconfig:"HTTP"`
-	Database       Database       `envconfig:"DB"`
-	LogLevel       string         `envconfig:"LOG_LEVEL" default:"info"`
-	KeycloakConfig KeycloakConfig `envconfig:"KEYCLOAK"`
+	Http            Http           `envconfig:"HTTP"`
+	Database        Database       `envconfig:"DB"`
+	LogLevel        string         `envconfig:"LOG_LEVEL" default:"info"`
+	KeycloakConfig  KeycloakConfig `envconfig:"KEYCLOAK"`
+	MattermostLimit int            `envconfig:"MATTERMOST_LIMIT" default:"20"`
 }
 
 type Http struct {

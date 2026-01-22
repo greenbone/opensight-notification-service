@@ -133,14 +133,15 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 
 // DeleteMattermostChannel
 //
-//	@Summary		Delete Mattermost Channel
-//	@Description	Delete a mattermost notification channel
-//	@Tags			mattermost-channel
-//	@Security		KeycloakAuth
-//	@Param			id	path	string	true	"Mattermost channel ID"
-//	@Success		204	"Deleted successfully"
-//	@Failure		500	{object}	map[string]string
-//	@Router			/notification-channel/mattermost/{id} [delete]
+//		@Summary		Delete Mattermost Channel
+//		@Description	Delete a mattermost notification channel
+//		@Tags			mattermost-channel
+//		@Security		KeycloakAuth
+//		@Param			id	path	string	true	"Mattermost channel ID"
+//		@Success		204	"Deleted successfully"
+//		@Failure		500	{object}	map[string]string
+//	    @Failure		404 {object}    map[string]string
+//		@Router			/notification-channel/mattermost/{id} [delete]
 func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
 	if err := mc.Service.DeleteNotificationChannel(c, id); err != nil {
