@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
@@ -11,14 +12,19 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestCheckMailServer(t *testing.T) {
+func setup(t *testing.T) (*gin.Engine, *mocks.NotificationChannelService) {
 	engine := testhelper.NewTestWebEngine()
 
 	notificationChannelServicer := mocks.NewNotificationChannelService(t)
 
 	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
+	return engine, notificationChannelServicer
+}
 
+func TestCheckMailServer(t *testing.T) {
 	t.Run("mail server check is successful", func(t *testing.T) {
+		engine, notificationChannelServicer := setup(t)
+
 		notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).
 			Return(nil)
 
@@ -38,6 +44,8 @@ func TestCheckMailServer(t *testing.T) {
 	})
 
 	t.Run("minimal required fields", func(t *testing.T) {
+		engine, _ := setup(t)
+
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
 			Content(`{}`).
@@ -54,6 +62,8 @@ func TestCheckMailServer(t *testing.T) {
 	})
 
 	t.Run("username and password are required if isAuthenticationRequired is true", func(t *testing.T) {
+		engine, _ := setup(t)
+
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
 			Content(`{
@@ -77,6 +87,8 @@ func TestCheckMailServer(t *testing.T) {
 	})
 
 	t.Run("return the error if the mail server check fails", func(t *testing.T) {
+		engine, notificationChannelServicer := setup(t)
+
 		notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).
 			Return(assert.AnError)
 
