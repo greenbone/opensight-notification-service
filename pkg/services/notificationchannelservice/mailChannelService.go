@@ -11,41 +11,48 @@ import (
 )
 
 var (
-	ErrMailChannelAlreadyExists = errors.New("mail channel already exists")
-	ErrListMailChannels         = errors.New("failed to list mail channels")
-	ErrMailChannelBadRequest    = errors.New("bad request for mail channel")
+	ErrMailChannelLimitReached = errors.New("mail channel limit reached")
+	ErrListMailChannels        = errors.New("failed to list mail channels")
+	ErrMailChannelBadRequest   = errors.New("bad request for mail channel")
 )
 
 type MailChannelService struct {
 	notificationChannelService port.NotificationChannelService
+	emailLimit                 int
 }
 
-func NewMailChannelService(notificationChannelService port.NotificationChannelService) *MailChannelService {
-	return &MailChannelService{notificationChannelService: notificationChannelService}
+func NewMailChannelService(
+	notificationChannelService port.NotificationChannelService,
+	emailLimit int,
+) *MailChannelService {
+	return &MailChannelService{
+		notificationChannelService: notificationChannelService,
+		emailLimit:                 emailLimit,
+	}
 }
 
-func (v *MailChannelService) mailChannelAlreadyExists(c context.Context) error {
-	channels, err := v.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMail)
+func (m *MailChannelService) mailChannelAlreadyExists(c context.Context) error {
+	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMail)
 	if err != nil {
 		return errors.Join(ErrListMailChannels, err)
 	}
 
-	if len(channels) > 0 {
-		return ErrMailChannelAlreadyExists
+	if len(channels) >= m.emailLimit {
+		return ErrMailChannelLimitReached
 	}
 	return nil
 }
 
-func (v *MailChannelService) CreateMailChannel(
+func (m *MailChannelService) CreateMailChannel(
 	c context.Context,
 	channel request.MailNotificationChannelRequest,
 ) (request.MailNotificationChannelRequest, error) {
-	if errResp := v.mailChannelAlreadyExists(c); errResp != nil {
+	if errResp := m.mailChannelAlreadyExists(c); errResp != nil {
 		return request.MailNotificationChannelRequest{}, errResp
 	}
 
 	notificationChannel := mapper.MapMailToNotificationChannel(channel)
-	created, err := v.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
+	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
 		return request.MailNotificationChannelRequest{}, err
 	}

@@ -23,7 +23,7 @@ func NewJob(
 		ctx, cancel := context.WithTimeout(context.Background(), channelListTimeout)
 		defer cancel()
 
-		mailChannels, err := service.ListNotificationChannelsByType(ctx, "mail")
+		mailChannels, err := service.ListNotificationChannelsByType(ctx, models.ChannelTypeMail)
 		if err != nil {
 			return err
 		}
@@ -37,9 +37,9 @@ func NewJob(
 					Detail:    fmt.Sprintf("Mail server:%s not reachable: %s", *channel.Domain, err),
 					Level:     "info",
 					CustomFields: map[string]any{
-						"Domain":   *channel.Domain,
-						"Port":     *channel.Port,
-						"Username": *channel.Username,
+						"Domain":   Value(channel.Domain),
+						"Port":     Value(channel.Port),
+						"Username": Value(channel.Username),
 					},
 				})
 				if err != nil {
@@ -49,6 +49,13 @@ func NewJob(
 		}
 		return nil
 	}
+}
+
+func Value[T any](value *T) any {
+	if value == nil {
+		return nil
+	}
+	return *value
 }
 
 func checkChannelConnectivity(service port.NotificationChannelService, channel models.NotificationChannel) error {

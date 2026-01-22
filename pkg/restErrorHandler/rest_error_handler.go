@@ -63,8 +63,8 @@ func NotificationChannelErrorHandler(gc *gin.Context, title string, errs map[str
 	case errors.Is(err, notificationchannelservice.ErrListMailChannels) ||
 		errors.Is(err, notificationchannelservice.ErrListMattermostChannels):
 		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
-	case errors.Is(err, notificationchannelservice.ErrMailChannelAlreadyExists):
-		gc.JSON(http.StatusConflict, errorResponses.NewErrorValidationResponse("Mail channel already exists.", "",
+	case errors.Is(err, notificationchannelservice.ErrMailChannelLimitReached):
+		gc.JSON(http.StatusConflict, errorResponses.NewErrorValidationResponse("Mail channel limit reached.", "",
 			map[string]string{"channelName": "Mail channel already exists."}))
 	case errors.Is(err, notificationchannelservice.ErrMattermostChannelLimitReached):
 		gc.JSON(http.StatusUnprocessableEntity, errorResponses.NewErrorValidationResponse("Mattermost channel limit reached.", "",

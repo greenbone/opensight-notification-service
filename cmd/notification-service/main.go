@@ -106,8 +106,8 @@ func run(config config.Config) error {
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
-	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService)
-	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.Restrict.MattermostLimit)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, config.ChannelLimit.EMailLimit)
+	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.ChannelLimit.MattermostLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler

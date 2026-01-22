@@ -20,8 +20,6 @@ import (
 const encryptionPrefix = "ENCV"
 
 func TestIntegration_MailController_CRUD(t *testing.T) {
-	t.Parallel()
-
 	valid := testhelper.GetValidMailNotificationChannel()
 
 	t.Run("Perform all the CRUD operations", func(t *testing.T) {
@@ -161,7 +159,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
-	mailSvc := notificationchannelservice.NewMailChannelService(svc)
+	mailSvc := notificationchannelservice.NewMailChannelService(svc, 1)
 
 	router := testhelper.NewTestWebEngine()
 

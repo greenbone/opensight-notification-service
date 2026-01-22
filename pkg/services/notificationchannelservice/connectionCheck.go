@@ -15,11 +15,11 @@ func ConnectionCheckMail(ctx context.Context, mailServer models.NotificationChan
 		mail.WithTimeout(5 * time.Second),
 	}
 
-	if *mailServer.IsTlsEnforced {
+	if mailServer.IsTlsEnforced != nil && *mailServer.IsTlsEnforced {
 		options = append(options, mail.WithSSL())
 	}
 
-	if *mailServer.IsAuthenticationRequired {
+	if mailServer.IsAuthenticationRequired != nil && *mailServer.IsAuthenticationRequired {
 		options = append(options, mail.WithUsername(*mailServer.Username), mail.WithPassword(*mailServer.Password))
 	}
 

@@ -17,3 +17,5 @@ CREATE TABLE notification_service.notification_channel
     "max_email_include_size_mb"    INT,
     "sender_email_address"         VARCHAR(255)
 );
+
+CREATE INDEX idx_notification_channel_type ON notification_service.notification_channel(channel_type);

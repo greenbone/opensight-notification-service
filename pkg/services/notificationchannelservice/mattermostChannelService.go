@@ -22,29 +22,38 @@ type MattermostChannelService struct {
 	mattermostChannelLimit     int
 }
 
-func NewMattermostChannelService(notificationChannelService port.NotificationChannelService, mattermostChannelLimit int) *MattermostChannelService {
-	return &MattermostChannelService{notificationChannelService: notificationChannelService, mattermostChannelLimit: mattermostChannelLimit}
+func NewMattermostChannelService(
+	notificationChannelService port.NotificationChannelService,
+	mattermostChannelLimit int,
+) *MattermostChannelService {
+	return &MattermostChannelService{
+		notificationChannelService: notificationChannelService,
+		mattermostChannelLimit:     mattermostChannelLimit,
+	}
 }
 
-func (v *MattermostChannelService) mattermostChannelLimitReached(c context.Context) error {
-	channels, err := v.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
+func (m *MattermostChannelService) mattermostChannelLimitReached(c context.Context) error {
+	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
 	if err != nil {
 		return errors.Join(ErrListMattermostChannels, err)
 	}
 
-	if len(channels) >= v.mattermostChannelLimit {
+	if len(channels) >= m.mattermostChannelLimit {
 		return ErrMattermostChannelLimitReached
 	}
 	return nil
 }
 
-func (v *MattermostChannelService) CreateMattermostChannel(c context.Context, channel request.MattermostNotificationChannelRequest) (response.MattermostNotificationChannelResponse, error) {
-	if errResp := v.mattermostChannelLimitReached(c); errResp != nil {
+func (m *MattermostChannelService) CreateMattermostChannel(
+	c context.Context,
+	channel request.MattermostNotificationChannelRequest,
+) (response.MattermostNotificationChannelResponse, error) {
+	if errResp := m.mattermostChannelLimitReached(c); errResp != nil {
 		return response.MattermostNotificationChannelResponse{}, errResp
 	}
 
 	notificationChannel := mapper.MapMattermostToNotificationChannel(channel)
-	created, err := v.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
+	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
 		return response.MattermostNotificationChannelResponse{}, err
 	}

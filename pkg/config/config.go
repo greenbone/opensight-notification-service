@@ -16,11 +16,12 @@ type Config struct {
 	Database              Database              `envconfig:"DB"`
 	LogLevel              string                `envconfig:"LOG_LEVEL" default:"info"`
 	KeycloakConfig        KeycloakConfig        `envconfig:"KEYCLOAK"`
-	Restrict              Restrict              `envconfig:"RESTRICT"`
+	ChannelLimit          ChannelLimits         `envconfig:"CHANNELLIMIT"`
 	DatabaseEncryptionKey DatabaseEncryptionKey `envconfig:"DATABASE_ENCRYPTION_KEY"`
 }
 
-type Restrict struct {
+type ChannelLimits struct {
+	EMailLimit      int `envconfig:"EMAIL_LIMIT" default:"1"`
 	MattermostLimit int `envconfig:"MATTERMOST_LIMIT" default:"20"`
 }
 
