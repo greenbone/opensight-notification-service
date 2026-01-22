@@ -11,6 +11,7 @@ type notificationChannelRow struct {
 	ChannelType              string  `db:"channel_type"`
 	ChannelName              *string `db:"channel_name"`
 	WebhookUrl               *string `db:"webhook_url"`
+	Description              *string `db:"description"`
 	Domain                   *string `db:"domain"`
 	Port                     *int    `db:"port"`
 	IsAuthenticationRequired *bool   `db:"is_authentication_required"`
@@ -30,6 +31,7 @@ func (r notificationChannelRow) ToModel() models.NotificationChannel {
 		ChannelType:              r.ChannelType,
 		ChannelName:              r.ChannelName,
 		WebhookUrl:               r.WebhookUrl,
+		Description:              r.Description,
 		Domain:                   r.Domain,
 		Port:                     r.Port,
 		IsAuthenticationRequired: r.IsAuthenticationRequired,
@@ -51,6 +53,7 @@ func toNotificationChannelRow(in models.NotificationChannel) notificationChannel
 		ChannelType:              in.ChannelType,
 		ChannelName:              in.ChannelName,
 		WebhookUrl:               in.WebhookUrl,
+		Description:              in.Description,
 		Domain:                   in.Domain,
 		Port:                     in.Port,
 		IsAuthenticationRequired: in.IsAuthenticationRequired,

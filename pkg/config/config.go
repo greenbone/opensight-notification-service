@@ -16,7 +16,12 @@ type Config struct {
 	Database              Database              `envconfig:"DB"`
 	LogLevel              string                `envconfig:"LOG_LEVEL" default:"info"`
 	KeycloakConfig        KeycloakConfig        `envconfig:"KEYCLOAK"`
+	Restrict              Restrict              `envconfig:"RESTRICT"`
 	DatabaseEncryptionKey DatabaseEncryptionKey `envconfig:"DATABASE_ENCRYPTION_KEY"`
+}
+
+type Restrict struct {
+	MattermostLimit int `envconfig:"MATTERMOST_LIMIT" default:"20"`
 }
 
 type Http struct {
