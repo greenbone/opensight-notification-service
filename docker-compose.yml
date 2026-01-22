@@ -25,7 +25,7 @@ services:
     volumes:
       - opensight-notification-data:/var/lib/postgresql/data
     healthcheck:
-      test: "pg_isready --username=application-user --dbname=asset-management-backend"
+      test: "pg_isready --username=postgres --dbname=notification_service"
       interval: 30s
       timeout: 10s
       retries: 5
