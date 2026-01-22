@@ -64,11 +64,11 @@ func validationErrorHandler(errorType gin.ErrorType) gin.HandlerFunc {
 func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
 	var mailServer dtos.CheckMailServerRequest
 	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	if err := mailServer.Validate(); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
