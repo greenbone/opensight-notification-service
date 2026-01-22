@@ -1,12 +1,15 @@
 package mailcontroller
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckMailServer(t *testing.T) {
@@ -18,7 +21,6 @@ func TestCheckMailServer(t *testing.T) {
 	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
 
 	t.Run("username and password are required if isAuthenticationRequired is true", func(t *testing.T) {
-
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
 			Content(`{
@@ -41,4 +43,23 @@ func TestCheckMailServer(t *testing.T) {
 		}`)
 	})
 
+	t.Run("return the error if the mail server check fails", func(t *testing.T) {
+		notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).
+			Return(assert.AnError)
+
+		httpassert.New(t, engine).
+			Post("/notification-channel/mail/check").
+			Content(`{
+				"domain": "example.com",
+				"port": 123,
+				"isAuthenticationRequired": false,
+				"isTlsEnforced": false
+			}`).
+			Expect().
+			StatusCode(http.StatusUnprocessableEntity).
+			Json(`{
+				"type": "greenbone/generic-error",
+				"title": "assert.AnError general error for testing"
+		}`)
+	})
 }
