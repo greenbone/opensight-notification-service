@@ -8,7 +8,6 @@ import (
 	"context"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -40,7 +39,7 @@ func (_m *NotificationChannelServicer) EXPECT() *NotificationChannelServicer_Exp
 }
 
 // CheckNotificationChannelConnectivity provides a mock function for the type NotificationChannelServicer
-func (_mock *NotificationChannelServicer) CheckNotificationChannelConnectivity(ctx context.Context, channel dtos.CheckMailServerRequest) error {
+func (_mock *NotificationChannelServicer) CheckNotificationChannelConnectivity(ctx context.Context, channel models.NotificationChannel) error {
 	ret := _mock.Called(ctx, channel)
 
 	if len(ret) == 0 {
@@ -48,7 +47,7 @@ func (_mock *NotificationChannelServicer) CheckNotificationChannelConnectivity(c
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, dtos.CheckMailServerRequest) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.NotificationChannel) error); ok {
 		r0 = returnFunc(ctx, channel)
 	} else {
 		r0 = ret.Error(0)
@@ -63,20 +62,20 @@ type NotificationChannelServicer_CheckNotificationChannelConnectivity_Call struc
 
 // CheckNotificationChannelConnectivity is a helper method to define mock.On call
 //   - ctx context.Context
-//   - channel dtos.CheckMailServerRequest
+//   - channel models.NotificationChannel
 func (_e *NotificationChannelServicer_Expecter) CheckNotificationChannelConnectivity(ctx interface{}, channel interface{}) *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call {
 	return &NotificationChannelServicer_CheckNotificationChannelConnectivity_Call{Call: _e.mock.On("CheckNotificationChannelConnectivity", ctx, channel)}
 }
 
-func (_c *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call) Run(run func(ctx context.Context, channel dtos.CheckMailServerRequest)) *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call {
+func (_c *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call) Run(run func(ctx context.Context, channel models.NotificationChannel)) *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 dtos.CheckMailServerRequest
+		var arg1 models.NotificationChannel
 		if args[1] != nil {
-			arg1 = args[1].(dtos.CheckMailServerRequest)
+			arg1 = args[1].(models.NotificationChannel)
 		}
 		run(
 			arg0,
@@ -91,7 +90,70 @@ func (_c *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call)
 	return _c
 }
 
-func (_c *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call) RunAndReturn(run func(ctx context.Context, channel dtos.CheckMailServerRequest) error) *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call {
+func (_c *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call) RunAndReturn(run func(ctx context.Context, channel models.NotificationChannel) error) *NotificationChannelServicer_CheckNotificationChannelConnectivity_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CheckNotificationChannelEntityConnectivity provides a mock function for the type NotificationChannelServicer
+func (_mock *NotificationChannelServicer) CheckNotificationChannelEntityConnectivity(ctx context.Context, id string, channel models.NotificationChannel) error {
+	ret := _mock.Called(ctx, id, channel)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CheckNotificationChannelEntityConnectivity")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.NotificationChannel) error); ok {
+		r0 = returnFunc(ctx, id, channel)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CheckNotificationChannelEntityConnectivity'
+type NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call struct {
+	*mock.Call
+}
+
+// CheckNotificationChannelEntityConnectivity is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - channel models.NotificationChannel
+func (_e *NotificationChannelServicer_Expecter) CheckNotificationChannelEntityConnectivity(ctx interface{}, id interface{}, channel interface{}) *NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call {
+	return &NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call{Call: _e.mock.On("CheckNotificationChannelEntityConnectivity", ctx, id, channel)}
+}
+
+func (_c *NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call) Run(run func(ctx context.Context, id string, channel models.NotificationChannel)) *NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 models.NotificationChannel
+		if args[2] != nil {
+			arg2 = args[2].(models.NotificationChannel)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call) Return(err error) *NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call) RunAndReturn(run func(ctx context.Context, id string, channel models.NotificationChannel) error) *NotificationChannelServicer_CheckNotificationChannelEntityConnectivity_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -220,7 +282,7 @@ func (_c *NotificationChannelServicer_DeleteNotificationChannel_Call) RunAndRetu
 }
 
 // GetNotificationChannelByIdAndType provides a mock function for the type NotificationChannelServicer
-func (_mock *NotificationChannelServicer) GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType models.NotificationChannel) (models.NotificationChannel, error) {
+func (_mock *NotificationChannelServicer) GetNotificationChannelByIdAndType(ctx context.Context, id string, channelType models.ChannelType) (models.NotificationChannel, error) {
 	ret := _mock.Called(ctx, id, channelType)
 
 	if len(ret) == 0 {
@@ -229,15 +291,15 @@ func (_mock *NotificationChannelServicer) GetNotificationChannelByIdAndType(ctx 
 
 	var r0 models.NotificationChannel
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.NotificationChannel) (models.NotificationChannel, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.ChannelType) (models.NotificationChannel, error)); ok {
 		return returnFunc(ctx, id, channelType)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.NotificationChannel) models.NotificationChannel); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, models.ChannelType) models.NotificationChannel); ok {
 		r0 = returnFunc(ctx, id, channelType)
 	} else {
 		r0 = ret.Get(0).(models.NotificationChannel)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, models.NotificationChannel) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, models.ChannelType) error); ok {
 		r1 = returnFunc(ctx, id, channelType)
 	} else {
 		r1 = ret.Error(1)
@@ -253,12 +315,12 @@ type NotificationChannelServicer_GetNotificationChannelByIdAndType_Call struct {
 // GetNotificationChannelByIdAndType is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-//   - channelType models.NotificationChannel
+//   - channelType models.ChannelType
 func (_e *NotificationChannelServicer_Expecter) GetNotificationChannelByIdAndType(ctx interface{}, id interface{}, channelType interface{}) *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call {
 	return &NotificationChannelServicer_GetNotificationChannelByIdAndType_Call{Call: _e.mock.On("GetNotificationChannelByIdAndType", ctx, id, channelType)}
 }
 
-func (_c *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call) Run(run func(ctx context.Context, id string, channelType models.NotificationChannel)) *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call {
+func (_c *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call) Run(run func(ctx context.Context, id string, channelType models.ChannelType)) *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -268,9 +330,9 @@ func (_c *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call) Ru
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 models.NotificationChannel
+		var arg2 models.ChannelType
 		if args[2] != nil {
-			arg2 = args[2].(models.NotificationChannel)
+			arg2 = args[2].(models.ChannelType)
 		}
 		run(
 			arg0,
@@ -286,7 +348,7 @@ func (_c *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call) Re
 	return _c
 }
 
-func (_c *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call) RunAndReturn(run func(ctx context.Context, id string, channelType models.NotificationChannel) (models.NotificationChannel, error)) *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call {
+func (_c *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call) RunAndReturn(run func(ctx context.Context, id string, channelType models.ChannelType) (models.NotificationChannel, error)) *NotificationChannelServicer_GetNotificationChannelByIdAndType_Call {
 	_c.Call.Return(run)
 	return _c
 }

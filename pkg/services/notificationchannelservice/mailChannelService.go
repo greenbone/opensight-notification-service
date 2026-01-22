@@ -8,7 +8,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 )
 
 var (
@@ -37,7 +36,10 @@ func (v *MailChannelService) mailChannelAlreadyExists(c context.Context) error {
 	return nil
 }
 
-func (v *MailChannelService) CreateMailChannel(c context.Context, channel request.MailNotificationChannelRequest) (request.MailNotificationChannelRequest, error) {
+func (v *MailChannelService) CreateMailChannel(
+	c context.Context,
+	channel request.MailNotificationChannelRequest,
+) (request.MailNotificationChannelRequest, error) {
 	if errResp := v.mailChannelAlreadyExists(c); errResp != nil {
 		return request.MailNotificationChannelRequest{}, errResp
 	}
@@ -53,7 +55,26 @@ func (v *MailChannelService) CreateMailChannel(c context.Context, channel reques
 
 func (s *NotificationChannelService) CheckNotificationChannelConnectivity(
 	ctx context.Context,
-	mailServer dtos.CheckMailServerRequest,
+	mailServer models.NotificationChannel,
 ) error {
+	return ConnectionCheckMail(ctx, mailServer)
+}
+
+func (s *NotificationChannelService) CheckNotificationChannelEntityConnectivity(
+	ctx context.Context,
+	id string,
+	mailServer models.NotificationChannel,
+) error {
+	channel, err := s.GetNotificationChannelByIdAndType(ctx, id, models.ChannelTypeMail)
+	if err != nil {
+		return err
+	}
+
+	if *mailServer.Password == "" && *mailServer.Username != "" {
+		if channel.Password != nil {
+			mailServer.Password = channel.Password
+		}
+	}
+
 	return ConnectionCheckMail(ctx, mailServer)
 }

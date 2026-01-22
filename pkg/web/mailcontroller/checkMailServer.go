@@ -2,11 +2,9 @@ package mailcontroller
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
@@ -27,25 +25,10 @@ func AddCheckMailServerController(
 
 	group := router.Group("/notification-channel/mail").
 		Use(middleware.AuthorizeRoles(auth, "admin")...)
-	group.Use(validationErrorHandler(gin.ErrorTypePrivate))
 
 	group.POST("/check", ctrl.CheckMailServer)
 
 	return ctrl
-}
-
-// TODO: 21.01.2026 stolksdorf - move
-func validationErrorHandler(errorType gin.ErrorType) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-		for _, errorValue := range c.Errors.ByType(errorType) {
-			validateErrors := dtos.ValidateErrors{}
-			if errors.As(errorValue, &validateErrors) {
-				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse("", "", validateErrors))
-				return
-			}
-		}
-	}
 }
 
 // CheckMailServer
@@ -72,7 +55,7 @@ func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
 		return
 	}
 
-	err := mc.notificationChannelServicer.CheckNotificationChannelConnectivity(context.Background(), mailServer)
+	err := mc.notificationChannelServicer.CheckNotificationChannelConnectivity(context.Background(), mailServer.ToModel())
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"type":  "greenbone/generic-error",

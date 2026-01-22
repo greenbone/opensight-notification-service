@@ -30,7 +30,7 @@ type NotificationChannelRepository interface {
 	GetNotificationChannelByIdAndType(
 		ctx context.Context,
 		id string,
-		channelType models.NotificationChannel,
+		channelType models.ChannelType,
 	) (models.NotificationChannel, error)
 	ListNotificationChannelsByType(
 		ctx context.Context,

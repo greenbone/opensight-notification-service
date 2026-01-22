@@ -1,6 +1,9 @@
 package dtos
 
-import "github.com/greenbone/opensight-notification-service/pkg/models"
+import (
+	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
+)
 
 type CheckMailServerRequest struct {
 	Domain                   string `json:"domain"`
@@ -11,29 +14,25 @@ type CheckMailServerRequest struct {
 	Password                 string `json:"password"`
 }
 
-func NewCheckMailServerRequest(channel models.NotificationChannel) CheckMailServerRequest {
-	return CheckMailServerRequest{
-		Domain:                   *channel.Domain,
-		Port:                     *channel.Port,
-		IsAuthenticationRequired: *channel.IsAuthenticationRequired,
-		IsTlsEnforced:            *channel.IsTlsEnforced,
-		Username:                 *channel.Username,
-		Password:                 *channel.Password,
+func (v CheckMailServerRequest) ToModel() models.NotificationChannel {
+	return models.NotificationChannel{
+		Domain:                   &v.Domain,
+		Port:                     &v.Port,
+		IsAuthenticationRequired: &v.IsAuthenticationRequired,
+		IsTlsEnforced:            &v.IsTlsEnforced,
+		Username:                 &v.Username,
+		Password:                 &v.Password,
 	}
 }
 
-// TODO: 21.01.2026 stolksdorf - move ValidateErrors
-type ValidateErrors map[string]string
-
-func (v ValidateErrors) Error() string {
-	return "validation error"
-}
-
-func (v CheckMailServerRequest) Validate() ValidateErrors {
-	errors := make(ValidateErrors)
+func (v CheckMailServerRequest) Validate() helper.ValidateErrors {
+	errors := make(helper.ValidateErrors)
 
 	if v.Domain == "" {
 		errors["domain"] = "required"
+	}
+	if v.Port == 0 {
+		errors["port"] = "required"
 	}
 
 	if v.IsAuthenticationRequired {
@@ -42,6 +41,49 @@ func (v CheckMailServerRequest) Validate() ValidateErrors {
 		}
 		if v.Password == "" {
 			errors["password"] = "required"
+		}
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
+}
+
+type CheckMailServerEntityRequest struct {
+	Domain                   string `json:"domain"`
+	Port                     int    `json:"port"`
+	IsAuthenticationRequired bool   `json:"isAuthenticationRequired" default:"false"`
+	IsTlsEnforced            bool   `json:"isTlsEnforced" default:"false"`
+	Username                 string `json:"username"`
+	Password                 string `json:"password"`
+}
+
+func (v CheckMailServerEntityRequest) ToModel() models.NotificationChannel {
+	return models.NotificationChannel{
+		Domain:                   &v.Domain,
+		Port:                     &v.Port,
+		IsAuthenticationRequired: &v.IsAuthenticationRequired,
+		IsTlsEnforced:            &v.IsTlsEnforced,
+		Username:                 &v.Username,
+		Password:                 &v.Password,
+	}
+}
+
+func (v CheckMailServerEntityRequest) Validate() helper.ValidateErrors {
+	errors := make(helper.ValidateErrors)
+
+	if v.Domain == "" {
+		errors["domain"] = "required"
+	}
+	if v.Port == 0 {
+		errors["port"] = "required"
+	}
+
+	if v.IsAuthenticationRequired {
+		if v.Username == "" {
+			errors["username"] = "required"
 		}
 	}
 

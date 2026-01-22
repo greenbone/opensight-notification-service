@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
@@ -13,8 +12,7 @@ import (
 )
 
 func TestCheckMailServer(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	engine := gin.New()
+	engine := testhelper.NewTestWebEngine()
 
 	notificationChannelServicer := mocks.NewNotificationChannelService(t)
 
