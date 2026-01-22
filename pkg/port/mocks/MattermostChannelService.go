@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/response"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,22 +40,22 @@ func (_m *MattermostChannelService) EXPECT() *MattermostChannelService_Expecter 
 }
 
 // CreateMattermostChannel provides a mock function for the type MattermostChannelService
-func (_mock *MattermostChannelService) CreateMattermostChannel(ctx context.Context, channel request.MattermostNotificationChannelRequest) (request.MattermostNotificationChannelRequest, error) {
+func (_mock *MattermostChannelService) CreateMattermostChannel(ctx context.Context, channel request.MattermostNotificationChannelRequest) (response.MattermostNotificationChannelResponse, error) {
 	ret := _mock.Called(ctx, channel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateMattermostChannel")
 	}
 
-	var r0 request.MattermostNotificationChannelRequest
+	var r0 response.MattermostNotificationChannelResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, request.MattermostNotificationChannelRequest) (request.MattermostNotificationChannelRequest, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, request.MattermostNotificationChannelRequest) (response.MattermostNotificationChannelResponse, error)); ok {
 		return returnFunc(ctx, channel)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, request.MattermostNotificationChannelRequest) request.MattermostNotificationChannelRequest); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, request.MattermostNotificationChannelRequest) response.MattermostNotificationChannelResponse); ok {
 		r0 = returnFunc(ctx, channel)
 	} else {
-		r0 = ret.Get(0).(request.MattermostNotificationChannelRequest)
+		r0 = ret.Get(0).(response.MattermostNotificationChannelResponse)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, request.MattermostNotificationChannelRequest) error); ok {
 		r1 = returnFunc(ctx, channel)
@@ -94,12 +95,12 @@ func (_c *MattermostChannelService_CreateMattermostChannel_Call) Run(run func(ct
 	return _c
 }
 
-func (_c *MattermostChannelService_CreateMattermostChannel_Call) Return(mattermostNotificationChannelRequest request.MattermostNotificationChannelRequest, err error) *MattermostChannelService_CreateMattermostChannel_Call {
-	_c.Call.Return(mattermostNotificationChannelRequest, err)
+func (_c *MattermostChannelService_CreateMattermostChannel_Call) Return(mattermostNotificationChannelResponse response.MattermostNotificationChannelResponse, err error) *MattermostChannelService_CreateMattermostChannel_Call {
+	_c.Call.Return(mattermostNotificationChannelResponse, err)
 	return _c
 }
 
-func (_c *MattermostChannelService_CreateMattermostChannel_Call) RunAndReturn(run func(ctx context.Context, channel request.MattermostNotificationChannelRequest) (request.MattermostNotificationChannelRequest, error)) *MattermostChannelService_CreateMattermostChannel_Call {
+func (_c *MattermostChannelService_CreateMattermostChannel_Call) RunAndReturn(run func(ctx context.Context, channel request.MattermostNotificationChannelRequest) (response.MattermostNotificationChannelResponse, error)) *MattermostChannelService_CreateMattermostChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }

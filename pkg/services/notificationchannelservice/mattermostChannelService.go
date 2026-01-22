@@ -8,6 +8,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/response"
 )
 
 var (
@@ -37,15 +38,15 @@ func (v *MattermostChannelService) mattermostChannelLimitReached(c context.Conte
 	return nil
 }
 
-func (v *MattermostChannelService) CreateMattermostChannel(c context.Context, channel request.MattermostNotificationChannelRequest) (request.MattermostNotificationChannelRequest, error) {
+func (v *MattermostChannelService) CreateMattermostChannel(c context.Context, channel request.MattermostNotificationChannelRequest) (response.MattermostNotificationChannelResponse, error) {
 	if errResp := v.mattermostChannelLimitReached(c); errResp != nil {
-		return request.MattermostNotificationChannelRequest{}, errResp
+		return response.MattermostNotificationChannelResponse{}, errResp
 	}
 
 	notificationChannel := mapper.MapMattermostToNotificationChannel(channel)
 	created, err := v.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
-		return request.MattermostNotificationChannelRequest{}, err
+		return response.MattermostNotificationChannelResponse{}, err
 	}
 
 	return mapper.MapNotificationChannelToMattermost(created), nil

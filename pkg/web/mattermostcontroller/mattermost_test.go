@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-notification-service/pkg/helper"
+	"github.com/greenbone/opensight-notification-service/pkg/response"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
@@ -38,7 +40,13 @@ func TestCreateMattermostChannel_Success(t *testing.T) {
 		WebhookUrl:  "http://webhook",
 		Description: "desc",
 	}
-	mattermostService.On("CreateMattermostChannel", mock.Anything, input).Return(input, nil)
+	output := response.MattermostNotificationChannelResponse{
+		ChannelName: "test-channel",
+		WebhookUrl:  "http://webhook",
+		Description: "desc",
+		Id:          helper.ToPtr("1"),
+	}
+	mattermostService.On("CreateMattermostChannel", mock.Anything, input).Return(output, nil)
 
 	httpassert.New(t, r).
 		Post("/notification-channel/mattermost").
@@ -68,7 +76,9 @@ func TestListMattermostChannelsByType_Success(t *testing.T) {
 		WebhookUrl:  strPtr("url"),
 		Description: desc,
 	}}
-	notificationService.On("ListNotificationChannelsByType", mock.Anything, models.ChannelTypeMattermost).Return(channels, nil)
+	notificationService.
+		On("ListNotificationChannelsByType", mock.Anything, models.ChannelTypeMattermost).
+		Return(channels, nil)
 
 	httpassert.New(t, r).
 		Get("/notification-channel/mattermost").
@@ -83,7 +93,9 @@ func TestListMattermostChannelsByType_Success(t *testing.T) {
 
 func TestListMattermostChannelsByType_Error(t *testing.T) {
 	r, notificationService, _ := setupTestController()
-	notificationService.On("ListNotificationChannelsByType", mock.Anything, models.ChannelTypeMattermost).Return(nil, errors.New("fail"))
+	notificationService.
+		On("ListNotificationChannelsByType", mock.Anything, models.ChannelTypeMattermost).
+		Return(nil, errors.New("fail"))
 
 	httpassert.New(t, r).
 		Get("/notification-channel/mattermost").
@@ -94,9 +106,19 @@ func TestListMattermostChannelsByType_Error(t *testing.T) {
 func TestUpdateMattermostChannel_Success(t *testing.T) {
 	r, notificationService, _ := setupTestController()
 	id := "1"
-	input := request.MattermostNotificationChannelRequest{ChannelName: "test", WebhookUrl: "url", Description: "desc", Id: strPtr(id)}
-	updated := models.NotificationChannel{Id: strPtr(id), ChannelName: strPtr("test"), WebhookUrl: strPtr("url"), Description: strPtr("desc")}
-	notificationService.On("UpdateNotificationChannel", mock.Anything, id, mock.Anything).Return(updated, nil)
+	input := request.MattermostNotificationChannelRequest{
+		ChannelName: "test",
+		WebhookUrl:  "url",
+		Description: "desc"}
+	updated := models.NotificationChannel{
+		Id:          strPtr(id),
+		ChannelName: strPtr("test"),
+		WebhookUrl:  strPtr("url"),
+		Description: strPtr("desc")}
+
+	notificationService.
+		On("UpdateNotificationChannel", mock.Anything, id, mock.Anything).
+		Return(updated, nil)
 
 	httpassert.New(t, r).
 		Put("/notification-channel/mattermost/1").
@@ -121,7 +143,9 @@ func TestUpdateMattermostChannel_BadRequest(t *testing.T) {
 
 func TestDeleteMattermostChannel_Success(t *testing.T) {
 	r, notificationService, _ := setupTestController()
-	notificationService.On("DeleteNotificationChannel", mock.Anything, "1").Return(nil)
+	notificationService.
+		On("DeleteNotificationChannel", mock.Anything, "1").
+		Return(nil)
 
 	httpassert.New(t, r).
 		Delete("/notification-channel/mattermost/1").
@@ -131,7 +155,9 @@ func TestDeleteMattermostChannel_Success(t *testing.T) {
 
 func TestDeleteMattermostChannel_Error(t *testing.T) {
 	r, notificationService, _ := setupTestController()
-	notificationService.On("DeleteNotificationChannel", mock.Anything, "1").Return(errors.New("fail"))
+	notificationService.
+		On("DeleteNotificationChannel", mock.Anything, "1").
+		Return(errors.New("fail"))
 
 	httpassert.New(t, r).
 		Delete("/notification-channel/mattermost/1").

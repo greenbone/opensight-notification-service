@@ -105,6 +105,7 @@ func (mc *MattermostController) ListMattermostChannelsByType(c *gin.Context) {
 //	@Param			MattermostChannel	body		request.MattermostNotificationChannelRequest	true	"Mattermost channel to update"
 //	@Success		200			{object}	request.MattermostNotificationChannelRequest
 //	@Failure		400			{object}	map[string]string
+//	@Failure		404 		{object}    map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/mattermost/{id} [put]
 func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {

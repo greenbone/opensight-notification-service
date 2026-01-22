@@ -5,7 +5,6 @@ package mattermostcontroller
 
 import (
 	"net/http"
-	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -18,9 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const channelName = "mattermost1"
-const MATTERMOST_LIMIT = 20
-
 func TestIntegration_MattermostController_CRUD(t *testing.T) {
 	t.Parallel()
 
@@ -31,7 +27,6 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 		defer db.Close()
 		request := httpassert.New(t, router)
 
-		// --- Create ---
 		var mattermostId string
 		request.Post("/notification-channel/mattermost").
 			JsonContentObject(valid).
@@ -39,7 +34,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			StatusCode(http.StatusCreated).
 			JsonPath("$", httpassert.HasSize(4)).
 			JsonPath("$.id", httpassert.ExtractTo(&mattermostId)).
-			JsonPath("$.channelName", channelName).
+			JsonPath("$.channelName", "mattermost1").
 			JsonPath("$.webhookUrl", "http://webhookurl.com/id1").
 			JsonPath("$.description", "This is a test mattermost channel")
 		require.NotEmpty(t, mattermostId)
@@ -50,7 +45,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 		defer db.Close()
 		request := httpassert.New(t, router)
 
-		mattermostId := createMattermostNotification(t, request, channelName, valid)
+		mattermostId := createMattermostNotification(t, request, "mattermost1", valid)
 
 		request.Get("/notification-channel/mattermost").
 			Expect().
@@ -58,7 +53,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonPath("$", httpassert.HasSize(1)).
 			JsonPath("$[0]", httpassert.HasSize(4)).
 			JsonPath("$[0].id", httpassert.ExtractTo(&mattermostId)).
-			JsonPath("$[0].channelName", channelName).
+			JsonPath("$[0].channelName", "mattermost1").
 			JsonPath("$[0].webhookUrl", "http://webhookurl.com/id1").
 			JsonPath("$[0].description", "This is a test mattermost channel")
 	})
@@ -68,14 +63,12 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 		defer db.Close()
 		request := httpassert.New(t, router)
 
-		mattermostId := createMattermostNotification(t, request, channelName, valid)
+		mattermostId := createMattermostNotification(t, request, "mattermost1", valid)
 
-		// --- Update ---
 		updated := valid
-		updated.Id = &mattermostId
 		newName := "updated mattermost"
 		updated.ChannelName = newName
-		request.Put("/notification-channel/mattermost/"+mattermostId).
+		request.Putf("/notification-channel/mattermost/%s", mattermostId).
 			JsonContentObject(updated).
 			Expect().
 			StatusCode(http.StatusOK).
@@ -91,14 +84,12 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 		defer db.Close()
 		request := httpassert.New(t, router)
 
-		mattermostId := createMattermostNotification(t, request, channelName, valid)
+		mattermostId := createMattermostNotification(t, request, "mattermost1", valid)
 
-		// --- Delete ---
 		request.Delete("/notification-channel/mattermost/" + mattermostId).
 			Expect().
 			StatusCode(http.StatusNoContent)
 
-		// --- List after delete ---
 		request.Get("/notification-channel/mattermost").
 			Expect().
 			StatusCode(http.StatusOK).
@@ -106,18 +97,22 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 	})
 
 	t.Run("Verify Limit check on mattermost limit", func(t *testing.T) {
-		router, db := setupTestRouter(t)
+		repo, db := testhelper.SetupNotificationChannelTestEnv(t)
+		svc := notificationchannelservice.NewNotificationChannelService(repo)
+		mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 1)
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+		NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
 		defer db.Close()
+
 		request := httpassert.New(t, router)
 
-		for i := 1; i <= MATTERMOST_LIMIT; i++ {
-			createMattermostNotification(t, request, channelName+strconv.Itoa(i), valid)
-		}
+		createMattermostNotification(t, request, "mattermost1", valid)
 
 		request.Post("/notification-channel/mattermost").
 			JsonContentObject(valid).
 			Expect().
-			StatusCode(http.StatusForbidden).
+			StatusCode(http.StatusUnprocessableEntity).
 			JsonPath("$.title", "Mattermost channel limit reached.")
 	})
 }
@@ -143,7 +138,7 @@ func createMattermostNotification(t *testing.T, request httpassert.Request, chan
 func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
-	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, MATTERMOST_LIMIT)
+	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20)
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)

@@ -3,6 +3,7 @@ package mapper
 import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/response"
 )
 
 // MapNotificationChannelToMail maps NotificationChannel to MailNotificationChannelRequest.
@@ -48,8 +49,8 @@ func MapNotificationChannelsToMail(channels []models.NotificationChannel) []requ
 }
 
 // MapNotificationChannelToMattermost maps NotificationChannel to MattermostNotificationChannelRequest.
-func MapNotificationChannelToMattermost(channel models.NotificationChannel) request.MattermostNotificationChannelRequest {
-	return request.MattermostNotificationChannelRequest{
+func MapNotificationChannelToMattermost(channel models.NotificationChannel) response.MattermostNotificationChannelResponse {
+	return response.MattermostNotificationChannelResponse{
 		Id:          channel.Id,
 		ChannelName: *channel.ChannelName,
 		WebhookUrl:  *channel.WebhookUrl,
@@ -60,7 +61,6 @@ func MapNotificationChannelToMattermost(channel models.NotificationChannel) requ
 func MapMattermostToNotificationChannel(mail request.MattermostNotificationChannelRequest) models.NotificationChannel {
 	return models.NotificationChannel{
 		ChannelType: string(models.ChannelTypeMattermost),
-		Id:          mail.Id,
 		ChannelName: &mail.ChannelName,
 		WebhookUrl:  &mail.WebhookUrl,
 		Description: &mail.Description,
@@ -68,8 +68,8 @@ func MapMattermostToNotificationChannel(mail request.MattermostNotificationChann
 }
 
 // MapNotificationChannelsToMattermost maps a slice of NotificationChannel to MattermostNotificationChannelRequest.
-func MapNotificationChannelsToMattermost(channels []models.NotificationChannel) []request.MattermostNotificationChannelRequest {
-	mattermostChannels := make([]request.MattermostNotificationChannelRequest, 0, len(channels))
+func MapNotificationChannelsToMattermost(channels []models.NotificationChannel) []response.MattermostNotificationChannelResponse {
+	mattermostChannels := make([]response.MattermostNotificationChannelResponse, 0, len(channels))
 	for _, ch := range channels {
 		mattermostChannels = append(mattermostChannels, MapNotificationChannelToMattermost(ch))
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/response"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 )
 
@@ -62,5 +63,5 @@ type MattermostChannelService interface {
 	CreateMattermostChannel(
 		ctx context.Context,
 		channel request.MattermostNotificationChannelRequest,
-	) (request.MattermostNotificationChannelRequest, error)
+	) (response.MattermostNotificationChannelResponse, error)
 }
