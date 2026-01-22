@@ -6,6 +6,7 @@ CREATE TABLE notification_service.notification_channel
     "channel_type"                 VARCHAR(100) NOT NULL CHECK (length(trim(channel_type)) > 0),
     "channel_name"                 VARCHAR(255) UNIQUE,
     "webhook_url"                  VARCHAR(2048),
+    "description"                  VARCHAR(2048),
     "domain"                       VARCHAR(255),
     "port"                         INT,
     "is_authentication_required"   BOOLEAN,

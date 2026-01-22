@@ -23,6 +23,7 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
 	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
 
@@ -106,6 +107,7 @@ func run(config config.Config) error {
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository, manager)
 	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService)
+	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.Restrict.MattermostLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler
@@ -136,6 +138,7 @@ func run(config config.Config) error {
 	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
 	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
 	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
+	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

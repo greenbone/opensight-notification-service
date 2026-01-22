@@ -339,6 +339,15 @@ definitions:
       username:
         type: string
     type: object
+  request.MattermostNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      description:
+        type: string
+      webhookUrl:
+        type: string
+    type: object
   sorting.Request:
     properties:
       column:
@@ -493,6 +502,144 @@ paths:
       summary: Update Mail Channel
       tags:
       - mail-channel
+  /notification-channel/mattermost:
+    get:
+      description: List mattermost notification channels by type
+      parameters:
+      - description: Channel type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: List Mattermost Channels
+      tags:
+      - mattermost-channel
+    post:
+      consumes:
+      - application/json
+      description: Create a new mattermost notification channel
+      parameters:
+      - description: Mattermost channel to add
+        in: body
+        name: MattermostChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Create Mattermost Channel
+      tags:
+      - mattermost-channel
+  /notification-channel/mattermost/{id}:
+    delete:
+      description: Delete a mattermost notification channel
+      parameters:
+      - description: Mattermost channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Delete Mattermost Channel
+      tags:
+      - mattermost-channel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing mattermost notification channel
+      parameters:
+      - description: Mattermost channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mattermost channel to update
+        in: body
+        name: MattermostChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Update Mattermost Channel
+      tags:
+      - mattermost-channel
   /notifications:
     post:
       consumes:

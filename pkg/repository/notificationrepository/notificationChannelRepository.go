@@ -26,11 +26,11 @@ func NewNotificationChannelRepository(db *sqlx.DB) (port.NotificationChannelRepo
 
 const createNotificationChannelQuery = `
     INSERT INTO notification_service.notification_channel (
-        channel_type, channel_name, webhook_url, domain, port,
+        channel_type, channel_name, webhook_url, description, domain, port,
         is_authentication_required, is_tls_enforced, username, password,
         max_email_attachment_size_mb, max_email_include_size_mb, sender_email_address 
     ) VALUES (
-        :channel_type, :channel_name, :webhook_url, :domain, :port,
+        :channel_type, :channel_name, :webhook_url, :description, :domain, :port,
         :is_authentication_required, :is_tls_enforced, :username, :password,
         :max_email_attachment_size_mb, :max_email_include_size_mb, :sender_email_address
     )
@@ -43,6 +43,7 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
             channel_type = :channel_type,
             channel_name = :channel_name,
             webhook_url = :webhook_url,
+            description = :description,
             domain = :domain,
             port = :port,
             is_authentication_required = :is_authentication_required,

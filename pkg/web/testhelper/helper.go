@@ -118,3 +118,11 @@ func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
 		SenderEmailAddress:       "sender@example.com",
 	}
 }
+
+func GetValidMattermostNotificationChannel() request.MattermostNotificationChannelRequest {
+	return request.MattermostNotificationChannelRequest{
+		ChannelName: "mattermost1",
+		WebhookUrl:  "http://webhookurl.com/id1",
+		Description: "This is a test mattermost channel",
+	}
+}
