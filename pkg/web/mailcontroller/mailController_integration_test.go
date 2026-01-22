@@ -115,14 +115,18 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 		require.NotEmpty(t, mailId)
 
 		{ // Create assertion section
-			var password string
+			var username, password string
 			err := db.QueryRow(`
-			SELECT password 
+			SELECT username, password 
 			FROM notification_service.notification_channel 
-			WHERE id = $1`, mailId).Scan(&password)
+			WHERE id = $1`, mailId).Scan(&username, &password)
 			require.NoError(t, err)
+
+			require.NotEmpty(t, username)
 			require.NotEmpty(t, password)
-			require.True(t, strings.HasPrefix(password, encryptionPrefix), "encryption prefix is missing")
+
+			require.True(t, strings.HasPrefix(username, encryptionPrefix), "username encryption prefix is missing")
+			require.True(t, strings.HasPrefix(password, encryptionPrefix), "password encryption prefix is missing")
 		}
 
 		// --- Update ---
@@ -138,14 +142,18 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 			JsonPath("$.channelName", newName)
 
 		{ // Update assertions section
-			var password string
+			var username, password string
 			err := db.QueryRow(`
-			SELECT password 
+			SELECT username, password 
 			FROM notification_service.notification_channel 
-			WHERE id = $1`, mailId).Scan(&password)
+			WHERE id = $1`, mailId).Scan(&username, &password)
 			require.NoError(t, err)
+
+			require.NotEmpty(t, username)
 			require.NotEmpty(t, password)
-			require.True(t, strings.HasPrefix(password, encryptionPrefix), "encryption prefix is missing")
+
+			require.True(t, strings.HasPrefix(username, encryptionPrefix), "username encryption prefix is missing")
+			require.True(t, strings.HasPrefix(password, encryptionPrefix), "password encryption prefix is missing")
 		}
 	})
 }
