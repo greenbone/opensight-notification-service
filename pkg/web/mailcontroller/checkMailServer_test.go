@@ -18,6 +18,25 @@ func TestCheckMailServer(t *testing.T) {
 
 	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
 
+	t.Run("mail server check is successful", func(t *testing.T) {
+		notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).
+			Return(nil)
+
+		httpassert.New(t, engine).
+			Post("/notification-channel/mail/check").
+			Content(`{
+				"domain": "example.com",
+				"port": 123,
+				"isAuthenticationRequired": true,
+				"isTlsEnforced": false,
+				"username": "testUser",
+				"password": "123"
+			}`).
+			Expect().
+			StatusCode(http.StatusNoContent).
+			NoContent()
+	})
+
 	t.Run("minimal required fields", func(t *testing.T) {
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
