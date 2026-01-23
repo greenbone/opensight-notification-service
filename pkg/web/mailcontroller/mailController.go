@@ -2,8 +2,11 @@ package mailcontroller
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
-	"regexp"
+	"net/mail"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
@@ -14,6 +17,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
+	"github.com/rs/zerolog/log"
 )
 
 type MailController struct {
@@ -193,33 +197,44 @@ func (mc *MailController) CheckMailServer(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (v *MailController) validateFields(channel request.MailNotificationChannelRequest) map[string]string {
-	errors := make(map[string]string)
-	if channel.Domain == "" {
-		errors["domain"] = "A Mailhub is required."
-	}
-	if channel.Port == 0 {
-		errors["port"] = "A port is required."
-	}
-	if channel.SenderEmailAddress == "" {
-		errors["senderEmailAddress"] = "A sender is required."
-	} else {
-		v.validateEmailAddress(channel.SenderEmailAddress, errors)
-	}
-	if channel.ChannelName == "" {
-		errors["channelName"] = "A Channel Name is required."
+func (mc *MailController) validateFields(channel request.MailNotificationChannelRequest) map[string]string {
+	errMap := make(map[string]string)
+
+	if strings.TrimSpace(channel.Domain) == "" {
+		log.Info().Msg("domain cannot be blank")
+		errMap["domain"] = "A domain is required."
 	}
 
-	if len(errors) > 0 {
-		return errors
+	if channel.Port < 1 || channel.Port > 65535 {
+		log.Info().Msg("Invalid port number")
+		errMap["port"] = "A port is required."
 	}
+
+	if err := mc.validateEmailAddress(channel.SenderEmailAddress); err != nil {
+		log.Info().Msgf("Invalid email address %s", err.Error())
+		errMap["senderEmailAddress"] = "A sender is required."
+	}
+
+	if strings.TrimSpace(channel.ChannelName) == "" {
+		errMap["channelName"] = "A Channel Name is required."
+	}
+
+	if len(errMap) > 0 {
+		return errMap
+	}
+
 	return nil
 }
 
-func (v *MailController) validateEmailAddress(channel string, errors map[string]string) {
-	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	matched, _ := regexp.MatchString(emailRegex, channel)
-	if !matched {
-		errors["senderEmailAddress"] = "A sender is required."
+func (mc *MailController) validateEmailAddress(emailAddress string) error {
+	if emailAddress == "" {
+		return errors.New("email address is empty")
 	}
+
+	_, err := mail.ParseAddress(emailAddress)
+	if err != nil {
+		return fmt.Errorf("invalid email address: %w", err)
+	}
+
+	return nil
 }
