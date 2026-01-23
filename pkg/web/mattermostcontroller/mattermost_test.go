@@ -37,12 +37,12 @@ func TestCreateMattermostChannel_Success(t *testing.T) {
 	r, _, mattermostService := setupTestController()
 	input := request.MattermostNotificationChannelRequest{
 		ChannelName: "test-channel",
-		WebhookUrl:  "http://webhook",
+		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "desc",
 	}
 	output := response.MattermostNotificationChannelResponse{
 		ChannelName: "test-channel",
-		WebhookUrl:  "http://webhook",
+		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "desc",
 		Id:          helper.ToPtr("1"),
 	}
@@ -108,12 +108,12 @@ func TestUpdateMattermostChannel_Success(t *testing.T) {
 	id := "1"
 	input := request.MattermostNotificationChannelRequest{
 		ChannelName: "test",
-		WebhookUrl:  "url",
+		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "desc"}
 	updated := models.NotificationChannel{
 		Id:          helper.ToPtr(id),
 		ChannelName: helper.ToPtr("test"),
-		WebhookUrl:  helper.ToPtr("url"),
+		WebhookUrl:  helper.ToPtr("https://webhookurl.com/hooks/id1"),
 		Description: helper.ToPtr("desc")}
 
 	notificationService.
@@ -126,7 +126,7 @@ func TestUpdateMattermostChannel_Success(t *testing.T) {
 		Expect().
 		StatusCode(http.StatusOK).
 		JsonPath("$.channelName", "test").
-		JsonPath("$.webhookUrl", "url").
+		JsonPath("$.webhookUrl", "https://webhookurl.com/hooks/id1").
 		JsonPath("$.description", "desc").
 		JsonPath("$.id", id)
 }

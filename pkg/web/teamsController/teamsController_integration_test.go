@@ -35,7 +35,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			JsonPath("$", httpassert.HasSize(4)).
 			JsonPath("$.id", httpassert.ExtractTo(&teamsId)).
 			JsonPath("$.channelName", "teams1").
-			JsonPath("$.webhookUrl", "http://webhookurl.com/id1").
+			JsonPath("$.webhookUrl", "https://webhookurl.com/webhook/id1").
 			JsonPath("$.description", "This is a test teams channel")
 		require.NotEmpty(t, teamsId)
 	})
@@ -54,7 +54,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			JsonPath("$[0]", httpassert.HasSize(4)).
 			JsonPath("$[0].id", httpassert.ExtractTo(&teamsId)).
 			JsonPath("$[0].channelName", "teams1").
-			JsonPath("$[0].webhookUrl", "http://webhookurl.com/id1").
+			JsonPath("$[0].webhookUrl", "https://webhookurl.com/webhook/id1").
 			JsonPath("$[0].description", "This is a test teams channel")
 	})
 
@@ -75,7 +75,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			JsonPath("$", httpassert.HasSize(4)).
 			JsonPath("$.id", teamsId).
 			JsonPath("$.channelName", newName).
-			JsonPath("$.webhookUrl", "http://webhookurl.com/id1").
+			JsonPath("$.webhookUrl", "https://webhookurl.com/webhook/id1").
 			JsonPath("$.description", "This is a test teams channel")
 	})
 
@@ -123,7 +123,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 
 		createTeamsNotification(t, request, "teams1", valid)
 
-		request.Post("/notification-channel/mattermost").
+		request.Post("/notification-channel/teams").
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusBadRequest).
@@ -142,7 +142,7 @@ func createTeamsNotification(t *testing.T, request httpassert.Request, channelNa
 		JsonPath("$", httpassert.HasSize(4)).
 		JsonPath("$.id", httpassert.ExtractTo(&teamsId)).
 		JsonPath("$.channelName", channelName).
-		JsonPath("$.webhookUrl", "http://webhookurl.com/id1").
+		JsonPath("$.webhookUrl", "https://webhookurl.com/webhook/id1").
 		JsonPath("$.description", "This is a test teams channel")
 	require.NotEmpty(t, teamsId)
 

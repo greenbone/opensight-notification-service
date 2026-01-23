@@ -35,7 +35,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonPath("$", httpassert.HasSize(4)).
 			JsonPath("$.id", httpassert.ExtractTo(&mattermostId)).
 			JsonPath("$.channelName", "mattermost1").
-			JsonPath("$.webhookUrl", "http://webhookurl.com/id1").
+			JsonPath("$.webhookUrl", "https://webhookurl.com/hooks/id1").
 			JsonPath("$.description", "This is a test mattermost channel")
 		require.NotEmpty(t, mattermostId)
 	})
@@ -54,7 +54,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonPath("$[0]", httpassert.HasSize(4)).
 			JsonPath("$[0].id", httpassert.ExtractTo(&mattermostId)).
 			JsonPath("$[0].channelName", "mattermost1").
-			JsonPath("$[0].webhookUrl", "http://webhookurl.com/id1").
+			JsonPath("$[0].webhookUrl", "https://webhookurl.com/hooks/id1").
 			JsonPath("$[0].description", "This is a test mattermost channel")
 	})
 
@@ -75,7 +75,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonPath("$", httpassert.HasSize(4)).
 			JsonPath("$.id", mattermostId).
 			JsonPath("$.channelName", newName).
-			JsonPath("$.webhookUrl", "http://webhookurl.com/id1").
+			JsonPath("$.webhookUrl", "https://webhookurl.com/hooks/id1").
 			JsonPath("$.description", "This is a test mattermost channel")
 	})
 
@@ -143,7 +143,7 @@ func createMattermostNotification(t *testing.T, request httpassert.Request, chan
 		JsonPath("$", httpassert.HasSize(4)).
 		JsonPath("$.id", httpassert.ExtractTo(&mattermostId)).
 		JsonPath("$.channelName", channelName).
-		JsonPath("$.webhookUrl", "http://webhookurl.com/id1").
+		JsonPath("$.webhookUrl", "https://webhookurl.com/hooks/id1").
 		JsonPath("$.description", "This is a test mattermost channel")
 	require.NotEmpty(t, mattermostId)
 

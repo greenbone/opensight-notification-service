@@ -2,6 +2,7 @@ package teamsController
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
@@ -157,6 +158,11 @@ func (tc *TeamsController) validateFields(channel request.TeamsNotificationChann
 	errors := make(map[string]string)
 	if channel.WebhookUrl == "" {
 		errors["webhookUrl"] = "A WebhookUrl is required."
+	} else {
+		var re = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
+		if !re.MatchString(channel.WebhookUrl) {
+			errors["webhookUrl"] = "Invalid Teams WebhookUrl format."
+		}
 	}
 
 	if len(errors) > 0 {

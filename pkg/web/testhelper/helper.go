@@ -130,7 +130,7 @@ func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
 func GetValidMattermostNotificationChannel() request.MattermostNotificationChannelRequest {
 	return request.MattermostNotificationChannelRequest{
 		ChannelName: "mattermost1",
-		WebhookUrl:  "http://webhookurl.com/id1",
+		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "This is a test mattermost channel",
 	}
 }
@@ -138,7 +138,7 @@ func GetValidMattermostNotificationChannel() request.MattermostNotificationChann
 func GetValidTeamsNotificationChannel() request.TeamsNotificationChannelRequest {
 	return request.TeamsNotificationChannelRequest{
 		ChannelName: "teams1",
-		WebhookUrl:  "http://webhookurl.com/id1",
+		WebhookUrl:  "https://webhookurl.com/webhook/id1",
 		Description: "This is a test teams channel",
 	}
 }
