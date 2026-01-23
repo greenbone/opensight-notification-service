@@ -100,8 +100,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 		repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 		svc := notificationchannelservice.NewNotificationChannelService(repo)
 		mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 1)
-		gin.SetMode(gin.TestMode)
-		router := gin.New()
+		router := testhelper.NewTestWebEngine()
 		NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
 		defer db.Close()
 
@@ -132,7 +131,12 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 	})
 }
 
-func createMattermostNotification(t *testing.T, request httpassert.Request, channelName string, valid request.MattermostNotificationChannelRequest) string {
+func createMattermostNotification(
+	t *testing.T,
+	request httpassert.Request,
+	channelName string,
+	valid request.MattermostNotificationChannelRequest,
+) string {
 	var mattermostId string
 	valid.ChannelName = channelName
 
@@ -154,8 +158,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20)
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	router := testhelper.NewTestWebEngine()
 	NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
 
 	return router, db

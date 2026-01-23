@@ -100,8 +100,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 		repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 		svc := notificationchannelservice.NewNotificationChannelService(repo)
 		teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 1)
-		gin.SetMode(gin.TestMode)
-		router := gin.New()
+		router := testhelper.NewTestWebEngine()
 		NewTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin)
 		defer db.Close()
 
@@ -131,7 +130,12 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 	})
 }
 
-func createTeamsNotification(t *testing.T, request httpassert.Request, channelName string, valid request.TeamsNotificationChannelRequest) string {
+func createTeamsNotification(
+	t *testing.T,
+	request httpassert.Request,
+	channelName string,
+	valid request.TeamsNotificationChannelRequest,
+) string {
 	var teamsId string
 	valid.ChannelName = channelName
 
@@ -153,8 +157,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 	teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 20)
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	router := testhelper.NewTestWebEngine()
 	NewTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin)
 
 	return router, db
