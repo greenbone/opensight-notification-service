@@ -117,6 +117,6 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 		request.Post("/notification-channel/mail").
 			JsonContentObject(valid).
 			Expect().
-			StatusCode(http.StatusConflict)
+			StatusCode(http.StatusUnprocessableEntity)
 	})
 }

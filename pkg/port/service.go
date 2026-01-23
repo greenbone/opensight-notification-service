@@ -69,3 +69,10 @@ type MattermostChannelService interface {
 		channel request.MattermostNotificationChannelRequest,
 	) (response.MattermostNotificationChannelResponse, error)
 }
+
+type TeamsChannelService interface {
+	CreateTeamsChannel(
+		ctx context.Context,
+		channel request.TeamsNotificationChannelRequest,
+	) (response.TeamsNotificationChannelResponse, error)
+}

@@ -201,11 +201,7 @@ func (v *MailController) validateFields(channel request.MailNotificationChannelR
 	if channel.Port == 0 {
 		errors["port"] = "A port is required."
 	}
-	if channel.SenderEmailAddress == "" {
-		errors["senderEmailAddress"] = "A sender is required."
-	} else {
-		v.validateEmailAddress(channel.SenderEmailAddress, errors)
-	}
+	v.validateEmailAddress(channel.SenderEmailAddress, errors)
 	if channel.ChannelName == "" {
 		errors["channelName"] = "A Channel Name is required."
 	}
@@ -216,9 +212,13 @@ func (v *MailController) validateFields(channel request.MailNotificationChannelR
 	return nil
 }
 
-func (v *MailController) validateEmailAddress(channel string, errors map[string]string) {
+func (v *MailController) validateEmailAddress(senderEmailAddress string, errors map[string]string) {
+	if senderEmailAddress == "" {
+		errors["senderEmailAddress"] = "A sender is required."
+	}
+
 	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	matched, _ := regexp.MatchString(emailRegex, channel)
+	matched, _ := regexp.MatchString(emailRegex, senderEmailAddress)
 	if !matched {
 		errors["senderEmailAddress"] = "A sender is required."
 	}

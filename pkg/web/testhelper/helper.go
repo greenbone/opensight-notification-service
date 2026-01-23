@@ -134,3 +134,11 @@ func GetValidMattermostNotificationChannel() request.MattermostNotificationChann
 		Description: "This is a test mattermost channel",
 	}
 }
+
+func GetValidTeamsNotificationChannel() request.TeamsNotificationChannelRequest {
+	return request.TeamsNotificationChannelRequest{
+		ChannelName: "teams1",
+		WebhookUrl:  "http://webhookurl.com/id1",
+		Description: "This is a test teams channel",
+	}
+}

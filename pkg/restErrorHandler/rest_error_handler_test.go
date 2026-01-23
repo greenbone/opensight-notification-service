@@ -47,9 +47,9 @@ func TestErrorHandler(t *testing.T) {
 			wantStatusCode: http.StatusNotFound,
 		},
 		{
-			name:              "conflict error",
+			name:              "UnprocessableEntity error",
 			err:               fmt.Errorf("wrapped: %w", &someConflictError),
-			wantStatusCode:    http.StatusConflict,
+			wantStatusCode:    http.StatusUnprocessableEntity,
 			wantErrorResponse: helper.ToPtr(ErrConflictToResponse(someConflictError)),
 		},
 		{

@@ -76,3 +76,31 @@ func MapNotificationChannelsToMattermost(channels []models.NotificationChannel) 
 	}
 	return mattermostChannels
 }
+
+// MapNotificationChannelToTeams maps NotificationChannel to TeamsNotificationChannelRequest.
+func MapNotificationChannelToTeams(channel models.NotificationChannel) response.TeamsNotificationChannelResponse {
+	return response.TeamsNotificationChannelResponse{
+		Id:          channel.Id,
+		ChannelName: *channel.ChannelName,
+		WebhookUrl:  *channel.WebhookUrl,
+		Description: *channel.Description,
+	}
+}
+
+func MapTeamsToNotificationChannel(mail request.TeamsNotificationChannelRequest) models.NotificationChannel {
+	return models.NotificationChannel{
+		ChannelType: string(models.ChannelTypeTeams),
+		ChannelName: &mail.ChannelName,
+		WebhookUrl:  &mail.WebhookUrl,
+		Description: &mail.Description,
+	}
+}
+
+// MapNotificationChannelsToTeams maps a slice of NotificationChannel to TeamsNotificationChannelRequest.
+func MapNotificationChannelsToTeams(channels []models.NotificationChannel) []response.TeamsNotificationChannelResponse {
+	teamsChannels := make([]response.TeamsNotificationChannelResponse, 0, len(channels))
+	for _, ch := range channels {
+		teamsChannels = append(teamsChannels, MapNotificationChannelToTeams(ch))
+	}
+	return teamsChannels
+}
