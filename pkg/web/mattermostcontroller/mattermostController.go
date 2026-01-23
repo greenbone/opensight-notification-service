@@ -36,6 +36,7 @@ func (mc *MattermostController) registerRoutes(router gin.IRouter, auth gin.Hand
 	group.GET("", mc.ListMattermostChannelsByType)
 	group.PUT("/:id", mc.UpdateMattermostChannel)
 	group.DELETE("/:id", mc.DeleteMattermostChannel)
+	group.POST("/:id/check", mc.SendMattermostTestMessage)
 }
 
 // CreateMattermostChannel
@@ -148,6 +149,34 @@ func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
 	if err := mc.service.DeleteNotificationChannel(c, id); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// SendMattermostTestMessage
+//
+//	@Summary		Check mattermost server
+//	@Description	Check if a mattermost server is able to send a test message
+//	@Tags			mattermost-channel
+//	@Accept			json
+//	@Produce		json
+//	@Security		KeycloakAuth
+//	@Param			id	path	string	true	"Mattermost channel ID"
+//	@Success		204 "Mattermost server test message sent successfully"
+//	@Failure		400			{object}	map[string]string
+//	@Router			/notification-channel/mattermost/{id}/check [post]
+func (mc *MattermostController) SendMattermostTestMessage(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		restErrorHandler.NotificationChannelErrorHandler(c, "Mattermost channel ID is required", nil,
+			notificationchannelservice.ErrMattermostChannelBadRequest)
+		return
+	}
+
+	if err := mc.mattermostChannelService.SendMattermostTestMessage(c, id); err != nil {
+		restErrorHandler.NotificationChannelErrorHandler(c, "Failed to send test message to mattermost server", nil, err)
 		return
 	}
 

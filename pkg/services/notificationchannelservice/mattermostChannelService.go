@@ -1,8 +1,11 @@
 package notificationchannelservice
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
 
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
@@ -67,4 +70,34 @@ func (m *MattermostChannelService) CreateMattermostChannel(
 	}
 
 	return mapper.MapNotificationChannelToMattermost(created), nil
+}
+
+func (m *MattermostChannelService) SendMattermostTestMessage(ctx context.Context, id string) error {
+	channel, err := m.notificationChannelService.GetNotificationChannelByIdAndType(ctx, id, models.ChannelTypeMattermost)
+	if err != nil {
+		return err
+	}
+
+	if channel.WebhookUrl == nil || *channel.WebhookUrl == "" {
+		return ErrMattermostChannelBadRequest
+	}
+
+	body, err := json.Marshal(map[string]string{"text": "Hello This is a test message"})
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(*channel.WebhookUrl, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return errors.New("failed to send test message to Mattermost webhook: " + resp.Status)
+	}
+
+	return nil
 }

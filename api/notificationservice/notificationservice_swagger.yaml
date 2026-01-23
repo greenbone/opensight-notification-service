@@ -902,6 +902,33 @@ paths:
       summary: Check mail server
       tags:
       - mailserver
+  /notifications/mattermost/{id}/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mattermost server is able to send a test message
+      parameters:
+      - description: Mattermost channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mattermost server test message sent successfully
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Check mattermost server
+      tags:
+      - mattermost-channel
   /notifications/options:
     get:
       description: Get filter options for listing notifications

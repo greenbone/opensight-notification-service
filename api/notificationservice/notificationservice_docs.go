@@ -835,6 +835,49 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/notifications/mattermost/{id}/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mattermost server is able to send a test message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mattermost-channel"
+                ],
+                "summary": "Check mattermost server",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mattermost channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Mattermost server test message sent successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notifications/options": {
             "get": {
                 "security": [

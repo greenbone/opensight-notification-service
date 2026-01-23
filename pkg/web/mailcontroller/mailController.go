@@ -220,6 +220,6 @@ func (v *MailController) validateEmailAddress(senderEmailAddress string, errors 
 	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	matched, _ := regexp.MatchString(emailRegex, senderEmailAddress)
 	if !matched {
-		errors["senderEmailAddress"] = "A sender is required."
+		errors["senderEmailAddress"] = "A valid sender email is required."
 	}
 }

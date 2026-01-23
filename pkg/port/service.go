@@ -68,6 +68,7 @@ type MattermostChannelService interface {
 		ctx context.Context,
 		channel request.MattermostNotificationChannelRequest,
 	) (response.MattermostNotificationChannelResponse, error)
+	SendMattermostTestMessage(ctx context.Context, id string) error
 }
 
 type TeamsChannelService interface {
