@@ -44,6 +44,7 @@ func (s *NotificationChannelService) CreateNotificationChannel(
 	ctx context.Context,
 	channelIn models.NotificationChannel,
 ) (models.NotificationChannel, error) {
+
 	notificationChannel, err := s.store.CreateNotificationChannel(ctx, channelIn)
 	if err != nil {
 		return models.NotificationChannel{}, err

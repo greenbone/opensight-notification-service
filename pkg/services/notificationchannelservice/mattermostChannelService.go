@@ -15,6 +15,7 @@ var (
 	ErrMattermostChannelLimitReached = errors.New("mattermost channel limit reached")
 	ErrListMattermostChannels        = errors.New("failed to list mattermost channels")
 	ErrMattermostChannelBadRequest   = errors.New("bad request for mattermost channel")
+	ErrMattermostChannelNameExists   = errors.New("mattermost channel name already exists")
 )
 
 type MattermostChannelService struct {
@@ -32,7 +33,7 @@ func NewMattermostChannelService(
 	}
 }
 
-func (m *MattermostChannelService) mattermostChannelLimitReached(c context.Context) error {
+func (m *MattermostChannelService) mattermostChannelValidations(c context.Context, channelName string) error {
 	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
 	if err != nil {
 		return errors.Join(ErrListMattermostChannels, err)
@@ -41,6 +42,13 @@ func (m *MattermostChannelService) mattermostChannelLimitReached(c context.Conte
 	if len(channels) >= m.mattermostChannelLimit {
 		return ErrMattermostChannelLimitReached
 	}
+
+	for _, ch := range channels {
+		if ch.ChannelName != nil && *ch.ChannelName == channelName {
+			return ErrMattermostChannelNameExists
+		}
+	}
+
 	return nil
 }
 
@@ -48,7 +56,7 @@ func (m *MattermostChannelService) CreateMattermostChannel(
 	c context.Context,
 	channel request.MattermostNotificationChannelRequest,
 ) (response.MattermostNotificationChannelResponse, error) {
-	if errResp := m.mattermostChannelLimitReached(c); errResp != nil {
+	if errResp := m.mattermostChannelValidations(c, channel.ChannelName); errResp != nil {
 		return response.MattermostNotificationChannelResponse{}, errResp
 	}
 

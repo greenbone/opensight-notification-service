@@ -115,6 +115,21 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			StatusCode(http.StatusUnprocessableEntity).
 			JsonPath("$.title", "Mattermost channel limit reached.")
 	})
+
+	t.Run("Create two mattermost channels with the same name", func(t *testing.T) {
+		router, db := setupTestRouter(t)
+		defer db.Close()
+
+		request := httpassert.New(t, router)
+
+		createMattermostNotification(t, request, "mattermost1", valid)
+
+		request.Post("/notification-channel/mattermost").
+			JsonContentObject(valid).
+			Expect().
+			StatusCode(http.StatusBadRequest).
+			JsonPath("$.title", "Channel name should be unique.")
+	})
 }
 
 func createMattermostNotification(t *testing.T, request httpassert.Request, channelName string, valid request.MattermostNotificationChannelRequest) string {

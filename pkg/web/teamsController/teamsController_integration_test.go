@@ -115,6 +115,20 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			StatusCode(http.StatusUnprocessableEntity).
 			JsonPath("$.title", "Teams channel limit reached.")
 	})
+
+	t.Run("Create two teams channels with the same name", func(t *testing.T) {
+		router, db := setupTestRouter(t)
+		defer db.Close()
+		request := httpassert.New(t, router)
+
+		createTeamsNotification(t, request, "teams1", valid)
+
+		request.Post("/notification-channel/mattermost").
+			JsonContentObject(valid).
+			Expect().
+			StatusCode(http.StatusBadRequest).
+			JsonPath("$.title", "Channel name should be unique.")
+	})
 }
 
 func createTeamsNotification(t *testing.T, request httpassert.Request, channelName string, valid request.TeamsNotificationChannelRequest) string {

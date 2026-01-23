@@ -15,6 +15,7 @@ var (
 	ErrTeamsChannelLimitReached = errors.New("teams channel limit reached")
 	ErrListTeamsChannels        = errors.New("failed to list teams channels")
 	ErrTeamsChannelBadRequest   = errors.New("bad request for teams channel")
+	ErrTeamsChannelNameExists   = errors.New("teams channel name already exists")
 )
 
 type TeamsChannelService struct {
@@ -32,7 +33,7 @@ func NewTeamsChannelService(
 	}
 }
 
-func (m *TeamsChannelService) teamsChannelLimitReached(c context.Context) error {
+func (m *TeamsChannelService) teamsChannelLimitReached(c context.Context, channelName string) error {
 	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
 	if err != nil {
 		return errors.Join(ErrListTeamsChannels, err)
@@ -41,6 +42,13 @@ func (m *TeamsChannelService) teamsChannelLimitReached(c context.Context) error 
 	if len(channels) >= m.teamsChannelLimit {
 		return ErrTeamsChannelLimitReached
 	}
+
+	for _, ch := range channels {
+		if ch.ChannelName != nil && *ch.ChannelName == channelName {
+			return ErrTeamsChannelNameExists
+		}
+	}
+
 	return nil
 }
 
@@ -48,7 +56,7 @@ func (m *TeamsChannelService) CreateTeamsChannel(
 	c context.Context,
 	channel request.TeamsNotificationChannelRequest,
 ) (response.TeamsNotificationChannelResponse, error) {
-	if errResp := m.teamsChannelLimitReached(c); errResp != nil {
+	if errResp := m.teamsChannelLimitReached(c, channel.ChannelName); errResp != nil {
 		return response.TeamsNotificationChannelResponse{}, errResp
 	}
 
