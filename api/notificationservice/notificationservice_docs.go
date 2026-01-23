@@ -434,6 +434,223 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/notification-channel/teams": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "List teams notification channels by type",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "List Teams Channels",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Channel type",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/request.TeamsNotificationChannelRequest"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new teams notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "Create Teams Channel",
+                "parameters": [
+                    {
+                        "description": "Teams channel to add",
+                        "name": "TeamsChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.TeamsNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/request.TeamsNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-channel/teams/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Update an existing teams notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "Update Teams Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Teams channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Teams channel to update",
+                        "name": "TeamsChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.TeamsNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.TeamsNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Delete a teams notification channel",
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "Delete Teams Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Teams channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notifications": {
             "put": {
                 "security": [
@@ -1120,6 +1337,20 @@ const docTemplatenotificationservice = `{
             }
         },
         "request.MattermostNotificationChannelRequest": {
+            "type": "object",
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "webhookUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.TeamsNotificationChannelRequest": {
             "type": "object",
             "properties": {
                 "channelName": {

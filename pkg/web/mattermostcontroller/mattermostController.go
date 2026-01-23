@@ -156,6 +156,9 @@ func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 
 func (v *MattermostController) validateFields(channel request.MattermostNotificationChannelRequest) map[string]string {
 	errors := make(map[string]string)
+	if channel.ChannelName == "" {
+		errors["channelName"] = "A channelName is required."
+	}
 	if channel.WebhookUrl == "" {
 		errors["webhookUrl"] = "A WebhookUrl is required."
 	} else {

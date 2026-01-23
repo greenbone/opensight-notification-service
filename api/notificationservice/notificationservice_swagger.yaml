@@ -348,6 +348,15 @@ definitions:
       webhookUrl:
         type: string
     type: object
+  request.TeamsNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      description:
+        type: string
+      webhookUrl:
+        type: string
+    type: object
   sorting.Request:
     properties:
       column:
@@ -640,6 +649,144 @@ paths:
       summary: Update Mattermost Channel
       tags:
       - mattermost-channel
+  /notification-channel/teams:
+    get:
+      description: List teams notification channels by type
+      parameters:
+      - description: Channel type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/request.TeamsNotificationChannelRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: List Teams Channels
+      tags:
+      - teams-channel
+    post:
+      consumes:
+      - application/json
+      description: Create a new teams notification channel
+      parameters:
+      - description: Teams channel to add
+        in: body
+        name: TeamsChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.TeamsNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/request.TeamsNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Create Teams Channel
+      tags:
+      - teams-channel
+  /notification-channel/teams/{id}:
+    delete:
+      description: Delete a teams notification channel
+      parameters:
+      - description: Teams channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Delete Teams Channel
+      tags:
+      - teams-channel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing teams notification channel
+      parameters:
+      - description: Teams channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Teams channel to update
+        in: body
+        name: TeamsChannel
+        required: true
+        schema:
+          $ref: '#/definitions/request.TeamsNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.TeamsNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Update Teams Channel
+      tags:
+      - teams-channel
   /notifications:
     post:
       consumes:

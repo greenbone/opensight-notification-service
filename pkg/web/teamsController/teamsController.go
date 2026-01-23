@@ -156,6 +156,9 @@ func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 
 func (tc *TeamsController) validateFields(channel request.TeamsNotificationChannelRequest) map[string]string {
 	errors := make(map[string]string)
+	if channel.ChannelName == "" {
+		errors["channelName"] = "A channelName is required."
+	}
 	if channel.WebhookUrl == "" {
 		errors["webhookUrl"] = "A WebhookUrl is required."
 	} else {
