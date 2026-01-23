@@ -31,10 +31,10 @@ func NewJob(
 		for _, channel := range mailChannels {
 			if err := checkChannelConnectivity(service, channel); err != nil {
 				_, err := notificationService.CreateNotification(context.Background(), models.Notification{
-					Origin:    "notification-service",
+					Origin:    "Communication service",
 					Timestamp: time.Now().UTC().Format(time.RFC3339),
-					Title:     "Mail server not reachable",
-					Detail:    fmt.Sprintf("Mail server:%s not reachable: %s", *channel.Domain, err),
+					Title:     "Mailserver not reachable",
+					Detail:    fmt.Sprintf("Mailserver:%s not reachable: %s", *channel.Domain, err),
 					Level:     "info",
 					CustomFields: map[string]any{
 						"Domain":   Value(channel.Domain),
