@@ -157,14 +157,14 @@ func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 func (tc *TeamsController) validateFields(channel request.TeamsNotificationChannelRequest) map[string]string {
 	errors := make(map[string]string)
 	if channel.ChannelName == "" {
-		errors["channelName"] = "A channelName is required."
+		errors["channelName"] = "A channel name is required."
 	}
 	if channel.WebhookUrl == "" {
-		errors["webhookUrl"] = "A WebhookUrl is required."
+		errors["webhookUrl"] = "A Webhook URL is required."
 	} else {
 		var re = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
 		if !re.MatchString(channel.WebhookUrl) {
-			errors["webhookUrl"] = "Invalid Teams WebhookUrl format."
+			errors["webhookUrl"] = "Invalid teams webhook URL format."
 		}
 	}
 

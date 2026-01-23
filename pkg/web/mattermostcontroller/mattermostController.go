@@ -157,14 +157,14 @@ func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 func (v *MattermostController) validateFields(channel request.MattermostNotificationChannelRequest) map[string]string {
 	errors := make(map[string]string)
 	if channel.ChannelName == "" {
-		errors["channelName"] = "A channelName is required."
+		errors["channelName"] = "A channel name is required."
 	}
 	if channel.WebhookUrl == "" {
-		errors["webhookUrl"] = "A WebhookUrl is required."
+		errors["webhookUrl"] = "A webhook URL is required."
 	} else {
 		var re = regexp.MustCompile(`^https://[\w.-]+/hooks/[a-zA-Z0-9]+$`)
 		if !re.MatchString(channel.WebhookUrl) {
-			errors["webhookUrl"] = "Invalid Mattermost WebhookUrl format."
+			errors["webhookUrl"] = "Invalid mattermost webhook URL format."
 		}
 	}
 
