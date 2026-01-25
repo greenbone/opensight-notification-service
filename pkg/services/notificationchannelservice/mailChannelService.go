@@ -13,7 +13,7 @@ import (
 var (
 	ErrMailChannelLimitReached = errors.New("mail channel limit reached")
 	ErrListMailChannels        = errors.New("failed to list mail channels")
-	ErrMailChannelBadRequest   = errors.New("bad request for mail channel")
+	ErrGetMailChannel          = errors.New("unable to get notification channel id and type")
 )
 
 type MailChannelService struct {
@@ -74,7 +74,7 @@ func (s *NotificationChannelService) CheckNotificationChannelEntityConnectivity(
 ) error {
 	channel, err := s.GetNotificationChannelByIdAndType(ctx, id, models.ChannelTypeMail)
 	if err != nil {
-		return err
+		return errors.Join(ErrGetMailChannel, err)
 	}
 
 	if *mailServer.Password == "" && *mailServer.Username != "" {

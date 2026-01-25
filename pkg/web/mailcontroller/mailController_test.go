@@ -12,6 +12,8 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
 	mailmocks "github.com/greenbone/opensight-notification-service/pkg/port/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -43,7 +45,11 @@ func getValidNotificationChannel() models.NotificationChannel {
 }
 
 func setupRouter(service *mocks.NotificationChannelService, mailService *mailmocks.MailChannelService) *gin.Engine {
+	registry := errmap.NewRegistry()
+	ConfigureMappings(registry)
+
 	engine := testhelper.NewTestWebEngine()
+	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
 	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin)
 	return engine
@@ -68,6 +74,11 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 			wantStatusCode: http.StatusCreated,
 		},
 		{
+			name:           "empty request",
+			input:          `{}`,
+			wantStatusCode: http.StatusBadRequest,
+		},
+		{
 			name:           "invalid input (missing required)",
 			input:          struct{ Foo string }{"bar"},
 			wantStatusCode: http.StatusBadRequest,
@@ -75,7 +86,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 		{
 			name:           "internal error",
 			input:          mailValid,
-			mockErr:        errors.New("db error"),
+			mockErr:        assert.AnError,
 			wantStatusCode: http.StatusInternalServerError,
 		},
 		{
@@ -336,29 +347,33 @@ func TestMailController_DeleteMailChannel(t *testing.T) {
 }
 
 func TestValidateEmailAddress(t *testing.T) {
-	mc := MailController{}
+	channel := request.MailNotificationChannelRequest{
+		Domain:      "example.com",
+		Port:        587,
+		ChannelName: "Test Channel",
+	}
 
 	t.Run("valid email", func(t *testing.T) {
-		err := mc.validateEmailAddress("test@example.com")
-		assert.NoError(t, err)
+		channel.SenderEmailAddress = "test@example.com"
+		err := channel.Validate()
+		assert.Empty(t, err["senderEmailAddress"])
 	})
 
 	t.Run("empty email", func(t *testing.T) {
-		err := mc.validateEmailAddress("")
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "empty")
+		channel.SenderEmailAddress = ""
+		err := channel.Validate()
+		assert.Contains(t, err["senderEmailAddress"], "required")
 	})
 
 	t.Run("invalid email", func(t *testing.T) {
-		err := mc.validateEmailAddress("invalid-email")
+		channel.SenderEmailAddress = "invalid-email"
+		err := channel.Validate()
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid email address")
+		assert.Contains(t, err["senderEmailAddress"], "invalid")
 	})
 }
 
 func TestValidateFields(t *testing.T) {
-	mc := &MailController{}
-
 	validChannel := request.MailNotificationChannelRequest{
 		Domain:             "example.com",
 		Port:               587,
@@ -367,49 +382,38 @@ func TestValidateFields(t *testing.T) {
 	}
 
 	t.Run("all valid fields", func(t *testing.T) {
-		errMap := mc.validateFields(validChannel)
+		errMap := validChannel.Validate()
 		assert.Nil(t, errMap)
 	})
 
 	t.Run("missing domain", func(t *testing.T) {
 		ch := validChannel
 		ch.Domain = ""
-		errMap := mc.validateFields(ch)
-		assert.NotNil(t, errMap)
-		assert.Contains(t, errMap, "domain")
+		err := ch.Validate()
+		assert.Contains(t, err["domain"], "required")
 	})
 
 	t.Run("invalid port", func(t *testing.T) {
 		ch := validChannel
 		ch.Port = 0
-		errMap := mc.validateFields(ch)
-		assert.NotNil(t, errMap)
-		assert.Contains(t, errMap, "port")
+		err := ch.Validate()
+		assert.Contains(t, err["port"], "required")
 	})
 
-	t.Run("invalid email", func(t *testing.T) {
-		ch := validChannel
-		ch.SenderEmailAddress = "not-an-email"
-		errMap := mc.validateFields(ch)
-		assert.NotNil(t, errMap)
-		assert.Contains(t, errMap, "senderEmailAddress")
-	})
-
-	t.Run("missing channel name", func(t *testing.T) {
+	t.Run("missing channelName", func(t *testing.T) {
 		ch := validChannel
 		ch.ChannelName = ""
-		errMap := mc.validateFields(ch)
-		assert.NotNil(t, errMap)
-		assert.Contains(t, errMap, "channelName")
+		err := ch.Validate()
+		assert.Contains(t, err["channelName"], "required")
 	})
 
 	t.Run("multiple errors", func(t *testing.T) {
-		ch := request.MailNotificationChannelRequest{}
-		errMap := mc.validateFields(ch)
-		assert.NotNil(t, errMap)
-		assert.Contains(t, errMap, "domain")
-		assert.Contains(t, errMap, "port")
-		assert.Contains(t, errMap, "senderEmailAddress")
-		assert.Contains(t, errMap, "channelName")
+		invalidChannel := request.MailNotificationChannelRequest{}
+		err := invalidChannel.Validate()
+		assert.NotNil(t, err)
+		assert.Contains(t, err["domain"], "required")
+		assert.Contains(t, err["port"], "required")
+		assert.Contains(t, err["senderEmailAddress"], "required")
+		assert.Contains(t, err["channelName"], "required")
 	})
 }
