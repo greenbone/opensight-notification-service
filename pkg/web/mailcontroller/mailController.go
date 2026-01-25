@@ -174,7 +174,7 @@ func (mc *MailController) CheckMailServer(c *gin.Context) {
 
 	var mailServer dtos.CheckMailServerEntityRequest
 	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMailChannelBadRequest)
+		_ = c.Error(err)
 		return
 	}
 	if err := mailServer.Validate(); err != nil {
@@ -186,12 +186,6 @@ func (mc *MailController) CheckMailServer(c *gin.Context) {
 	if err != nil {
 		_ = c.Error(err)
 		return
-		/*
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-					"type":  "greenbone/generic-error",
-					"title": err.Error()},
-				)
-		*/
 	}
 
 	c.Status(http.StatusNoContent)
