@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/logs"
-	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
-
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
@@ -46,30 +44,5 @@ func ErrConflictToResponse(err errs.ErrConflict) errorResponses.ErrorResponse {
 		Type:   errorResponses.ErrorTypeGeneric,
 		Title:  err.Message,
 		Errors: err.Errors,
-	}
-}
-
-func NotificationChannelErrorHandler(gc *gin.Context, title string, errs map[string]string, err error) {
-	if len(errs) > 0 && title != "" {
-		gc.JSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse(title, "", errs))
-		return
-	}
-
-	switch {
-	case errors.Is(err, notificationchannelservice.ErrMailChannelBadRequest) ||
-		errors.Is(err, notificationchannelservice.ErrMattermostChannelBadRequest):
-		gc.JSON(http.StatusBadRequest,
-			errorResponses.NewErrorValidationResponse("Invalid mail channel data.", "", nil))
-	case errors.Is(err, notificationchannelservice.ErrListMailChannels) ||
-		errors.Is(err, notificationchannelservice.ErrListMattermostChannels):
-		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
-	case errors.Is(err, notificationchannelservice.ErrMailChannelLimitReached):
-		gc.JSON(http.StatusConflict, errorResponses.NewErrorValidationResponse("Mail channel limit reached.", "",
-			map[string]string{"channelName": "Mail channel already exists."}))
-	case errors.Is(err, notificationchannelservice.ErrMattermostChannelLimitReached):
-		gc.JSON(http.StatusUnprocessableEntity, errorResponses.NewErrorValidationResponse("Mattermost channel limit reached.", "",
-			map[string]string{"channelName": "Mattermost channel creation limit reached."}))
-	default:
-		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
 	}
 }
