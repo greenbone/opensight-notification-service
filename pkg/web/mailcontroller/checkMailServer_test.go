@@ -7,17 +7,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
+	svc "github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func setup(t *testing.T) (*gin.Engine, *mocks.NotificationChannelService) {
+	registry := errmap.NewRegistry()
+	ConfigureMappings(registry)
+
 	engine := testhelper.NewTestWebEngine()
+	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
 	notificationChannelServicer := mocks.NewNotificationChannelService(t)
-
 	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
+
 	return engine, notificationChannelServicer
 }
 
@@ -41,6 +47,21 @@ func TestCheckMailServer(t *testing.T) {
 			Expect().
 			StatusCode(http.StatusNoContent).
 			NoContent()
+	})
+
+	t.Run("none request body", func(t *testing.T) {
+		engine, _ := setup(t)
+
+		httpassert.New(t, engine).
+			Post("/notification-channel/mail/check").
+			Content(`-`).
+			Expect().
+			StatusCode(http.StatusBadRequest).
+			Json(`{
+				"type": "greenbone/validation-error",
+				"title": "unable to parse the request",
+				"details":"unexpected EOF"
+			}`)
 	})
 
 	t.Run("minimal required fields", func(t *testing.T) {
@@ -90,7 +111,7 @@ func TestCheckMailServer(t *testing.T) {
 		engine, notificationChannelServicer := setup(t)
 
 		notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).
-			Return(assert.AnError)
+			Return(svc.ErrMailServerUnreachable)
 
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
@@ -104,7 +125,7 @@ func TestCheckMailServer(t *testing.T) {
 			StatusCode(http.StatusUnprocessableEntity).
 			Json(`{
 				"type": "greenbone/generic-error",
-				"title": "assert.AnError general error for testing"
+				"title": "Server is unreachable"
 			}`)
 	})
 }

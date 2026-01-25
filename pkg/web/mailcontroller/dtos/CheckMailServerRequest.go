@@ -2,7 +2,6 @@ package dtos
 
 import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 )
 
 type CheckMailServerRequest struct {
@@ -25,8 +24,8 @@ func (v CheckMailServerRequest) ToModel() models.NotificationChannel {
 	}
 }
 
-func (v CheckMailServerRequest) Validate() helper.ValidateErrors {
-	errors := make(helper.ValidateErrors)
+func (v CheckMailServerRequest) Validate() models.ValidationErrors {
+	errors := make(models.ValidationErrors)
 
 	if v.Domain == "" {
 		errors["domain"] = "required"
@@ -71,8 +70,8 @@ func (v CheckMailServerEntityRequest) ToModel() models.NotificationChannel {
 	}
 }
 
-func (v CheckMailServerEntityRequest) Validate() helper.ValidateErrors {
-	errors := make(helper.ValidateErrors)
+func (v CheckMailServerEntityRequest) Validate() models.ValidationErrors {
+	errors := make(models.ValidationErrors)
 
 	if v.Domain == "" {
 		errors["domain"] = "required"
