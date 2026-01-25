@@ -38,7 +38,6 @@ func InterpretErrors(errorType gin.ErrorType, r errmap.ErrorRegistry) gin.Handle
 
 			// Unknown error
 			c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
-			return
 		}
 	}
 }
