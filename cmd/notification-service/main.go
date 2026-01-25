@@ -18,11 +18,12 @@ import (
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
-	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
@@ -124,8 +125,14 @@ func run(config config.Config) error {
 	}
 	scheduler.Start()
 
+	registry := errmap.NewRegistry()
+	mailcontroller.ConfigureMappings(registry)
+	mattermostcontroller.ConfigureMappings(registry)
+	notificationcontroller.ConfigureMappings(registry)
+
 	router := web.NewWebEngine(config.Http)
-	router.Use(helper.ValidationErrorHandler(gin.ErrorTypePrivate))
+	router.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
+
 	rootRouter := router.Group("/")
 	notificationServiceRouter := router.Group("/api/notification-service")
 	docsRouter := router.Group("/docs/notification-service")
