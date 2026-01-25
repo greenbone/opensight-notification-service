@@ -174,7 +174,7 @@ func (mc *MailController) CheckMailServer(c *gin.Context) {
 
 	var mailServer dtos.CheckMailServerEntityRequest
 	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		_ = c.Error(err)
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMailChannelBadRequest)
 		return
 	}
 	if err := mailServer.Validate(); err != nil {
