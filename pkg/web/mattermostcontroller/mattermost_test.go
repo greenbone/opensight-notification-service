@@ -8,6 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/response"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
+	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
@@ -17,20 +20,27 @@ import (
 )
 
 func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *mocks.MattermostChannelService) {
-	gin.SetMode(gin.TestMode)
-	r := gin.Default()
+	registry := errmap.NewRegistry()
+	ConfigureMappings(registry)
+
+	engine := testhelper.NewTestWebEngine()
+	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
+
 	notificationService := &mocks.NotificationChannelService{}
 	mattermostService := &mocks.MattermostChannelService{}
+
 	ctrl := &MattermostController{
 		service:                  notificationService,
 		mattermostChannelService: mattermostService,
 	}
-	group := r.Group("/notification-channel/mattermost")
+
+	group := engine.Group("/notification-channel/mattermost")
 	group.POST("", ctrl.CreateMattermostChannel)
 	group.GET("", ctrl.ListMattermostChannelsByType)
 	group.PUT(":id", ctrl.UpdateMattermostChannel)
 	group.DELETE(":id", ctrl.DeleteMattermostChannel)
-	return r, notificationService, mattermostService
+
+	return engine, notificationService, mattermostService
 }
 
 func TestCreateMattermostChannel_Success(t *testing.T) {

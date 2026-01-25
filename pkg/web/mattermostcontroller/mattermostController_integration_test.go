@@ -11,6 +11,8 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -100,13 +102,18 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 		repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 		svc := notificationchannelservice.NewNotificationChannelService(repo)
 		mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 1)
-		gin.SetMode(gin.TestMode)
-		router := gin.New()
-		NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
+
+		registry := errmap.NewRegistry()
+		ConfigureMappings(registry)
+
+		engine := testhelper.NewTestWebEngine()
+		engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
+
+		NewMattermostController(engine, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
+
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
+		request := httpassert.New(t, engine)
 		createMattermostNotification(t, request, "mattermost1", valid)
 
 		request.Post("/notification-channel/mattermost").
@@ -138,10 +145,15 @@ func createMattermostNotification(t *testing.T, request httpassert.Request, chan
 func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
-	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20)
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
-	NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
 
-	return router, db
+	registry := errmap.NewRegistry()
+	ConfigureMappings(registry)
+
+	engine := testhelper.NewTestWebEngine()
+	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
+
+	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20)
+	NewMattermostController(engine, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
+
+	return engine, db
 }

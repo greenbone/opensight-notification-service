@@ -8,8 +8,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
-	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
-	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
@@ -23,7 +21,10 @@ func NewMattermostController(
 	service port.NotificationChannelService, mattermostChannelService port.MattermostChannelService,
 	auth gin.HandlerFunc,
 ) *MattermostController {
-	ctrl := &MattermostController{service: service, mattermostChannelService: mattermostChannelService}
+	ctrl := &MattermostController{
+		service:                  service,
+		mattermostChannelService: mattermostChannelService,
+	}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
 }
@@ -52,20 +53,21 @@ func (mc *MattermostController) registerRoutes(router gin.IRouter, auth gin.Hand
 //	@Router			/notification-channel/mattermost [post]
 func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
 	var channel request.MattermostNotificationChannelRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMattermostChannelBadRequest)
+
+	err := c.ShouldBindJSON(&channel)
+	if err != nil {
+		_ = c.Error(err)
 		return
 	}
 
-	if err := mc.validateFields(channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Mandatory fields of mattermost configuration cannot be empty",
-			err, nil)
+	if err := channel.Validate(); err != nil {
+		_ = c.Error(err)
 		return
 	}
 
 	mattermostChannel, err := mc.mattermostChannelService.CreateMattermostChannel(c, channel)
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -85,11 +87,11 @@ func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
 //	@Router			/notification-channel/mattermost [get]
 func (mc *MattermostController) ListMattermostChannelsByType(c *gin.Context) {
 	channels, err := mc.service.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
-
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		_ = c.Error(err)
 		return
 	}
+
 	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMattermost(channels))
 }
 
@@ -110,24 +112,25 @@ func (mc *MattermostController) ListMattermostChannelsByType(c *gin.Context) {
 //	@Router			/notification-channel/mattermost/{id} [put]
 func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
+
 	var channel request.MattermostNotificationChannelRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMattermostChannelBadRequest)
+		_ = c.Error(err)
 		return
 	}
 
-	if err := mc.validateFields(channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Mandatory fields of mattermost configuration cannot be empty",
-			err, nil)
+	if err := channel.Validate(); err != nil {
+		_ = c.Error(err)
 		return
 	}
 
 	notificationChannel := mapper.MapMattermostToNotificationChannel(channel)
 	updated, err := mc.service.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		_ = c.Error(err)
 		return
 	}
+
 	response := mapper.MapNotificationChannelToMattermost(updated)
 	c.JSON(http.StatusOK, response)
 }
@@ -146,21 +149,9 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
 	if err := mc.service.DeleteNotificationChannel(c, id); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		_ = c.Error(err)
 		return
 	}
 
 	c.Status(http.StatusNoContent)
-}
-
-func (v *MattermostController) validateFields(channel request.MattermostNotificationChannelRequest) map[string]string {
-	errors := make(map[string]string)
-	if channel.WebhookUrl == "" {
-		errors["webhookUrl"] = "A WebhookUrl is required."
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-	return nil
 }
