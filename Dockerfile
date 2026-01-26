@@ -41,7 +41,8 @@ FROM busybox
 COPY --from=builder --chown=1001:1001 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # service files
-COPY --from=builder /src/api /api
-COPY --from=builder /src/bin/notification-service /bin/
+COPY --from=builder --chown=1001:1001 /src/api /api
+COPY --from=builder --chown=1001:1001 /src/bin/notification-service /bin/
 
+USER 1001
 ENTRYPOINT ["./bin/notification-service"]
