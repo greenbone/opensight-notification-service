@@ -1,6 +1,5 @@
 FROM golang:1.25.5-alpine  AS builder
-RUN apk add --no-cache make ca-certificates && \
-    update-ca-certificates
+RUN apk add --no-cache make
 
 # swagger docs generation will fail if cgo is used
 ENV CGO_ENABLED=0
@@ -37,12 +36,8 @@ RUN make test
 RUN make build
 
 FROM busybox
-
-COPY --from=builder --chown=1001:1001 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
 # service files
-COPY --from=builder --chown=1001:1001 /src/api /api
-COPY --from=builder --chown=1001:1001 /src/bin/notification-service /bin/
+COPY --from=builder /src/api /api
+COPY --from=builder /src/bin/notification-service /bin/
 
-USER 1001
 ENTRYPOINT ["./bin/notification-service"]
