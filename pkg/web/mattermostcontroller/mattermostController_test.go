@@ -22,8 +22,8 @@ func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *moc
 	notificationService := &mocks.NotificationChannelService{}
 	mattermostService := &mocks.MattermostChannelService{}
 	ctrl := &MattermostController{
-		service:                  notificationService,
-		mattermostChannelService: mattermostService,
+		notificationChannelServicer: notificationService,
+		mattermostChannelService:    mattermostService,
 	}
 	group := r.Group("/notification-channel/mattermost")
 	group.POST("", ctrl.CreateMattermostChannel)

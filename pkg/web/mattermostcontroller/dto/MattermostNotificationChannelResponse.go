@@ -1,6 +1,6 @@
-package response
+package dto
 
-type TeamsNotificationChannelResponse struct {
+type MattermostNotificationChannelResponse struct {
 	Id          *string `json:"id,omitempty"`
 	ChannelName string  `json:"channelName"`
 	WebhookUrl  string  `json:"webhookUrl"`

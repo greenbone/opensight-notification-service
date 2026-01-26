@@ -1,30 +1,35 @@
 package mattermostcontroller
 
 import (
+	"errors"
 	"net/http"
 	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/dto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
+var ErrMattermostChannelBadRequest = errors.New("bad request for mattermost channel")
+
 type MattermostController struct {
-	service                  port.NotificationChannelService
-	mattermostChannelService port.MattermostChannelService
+	notificationChannelServicer notificationchannelservice.NotificationChannelService
+	mattermostChannelService    notificationchannelservice.MattermostChannelService
 }
 
 func NewMattermostController(
 	router gin.IRouter,
-	service port.NotificationChannelService, mattermostChannelService port.MattermostChannelService,
+	notificationChannelServicer notificationchannelservice.NotificationChannelService,
+	mattermostChannelService notificationchannelservice.MattermostChannelService,
 	auth gin.HandlerFunc,
 ) *MattermostController {
-	ctrl := &MattermostController{service: service, mattermostChannelService: mattermostChannelService}
+	ctrl := &MattermostController{
+		notificationChannelServicer: notificationChannelServicer,
+		mattermostChannelService:    mattermostChannelService,
+	}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
 }
@@ -36,7 +41,7 @@ func (mc *MattermostController) registerRoutes(router gin.IRouter, auth gin.Hand
 	group.GET("", mc.ListMattermostChannelsByType)
 	group.PUT("/:id", mc.UpdateMattermostChannel)
 	group.DELETE("/:id", mc.DeleteMattermostChannel)
-	group.POST("/:id/check", mc.SendMattermostTestMessage)
+	group.POST("/check", mc.SendMattermostTestMessage)
 }
 
 // CreateMattermostChannel
@@ -53,9 +58,9 @@ func (mc *MattermostController) registerRoutes(router gin.IRouter, auth gin.Hand
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/mattermost [post]
 func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
-	var channel request.MattermostNotificationChannelRequest
+	var channel dto.MattermostNotificationChannelRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMattermostChannelBadRequest)
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrMattermostChannelBadRequest)
 		return
 	}
 
@@ -86,13 +91,13 @@ func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/mattermost [get]
 func (mc *MattermostController) ListMattermostChannelsByType(c *gin.Context) {
-	channels, err := mc.service.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
+	channels, err := mc.notificationChannelServicer.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
 
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMattermost(channels))
+	c.JSON(http.StatusOK, dto.MapNotificationChannelsToMattermost(channels))
 }
 
 // UpdateMattermostChannel
@@ -112,9 +117,9 @@ func (mc *MattermostController) ListMattermostChannelsByType(c *gin.Context) {
 //	@Router			/notification-channel/mattermost/{id} [put]
 func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
-	var channel request.MattermostNotificationChannelRequest
+	var channel dto.MattermostNotificationChannelRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMattermostChannelBadRequest)
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrMattermostChannelBadRequest)
 		return
 	}
 
@@ -124,13 +129,13 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 		return
 	}
 
-	notificationChannel := mapper.MapMattermostToNotificationChannel(channel)
-	updated, err := mc.service.UpdateNotificationChannel(c, id, notificationChannel)
+	notificationChannel := dto.MapMattermostToNotificationChannel(channel)
+	updated, err := mc.notificationChannelServicer.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	response := mapper.MapNotificationChannelToMattermost(updated)
+	response := dto.MapNotificationChannelToMattermost(updated)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -147,7 +152,7 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 //		@Router			/notification-channel/mattermost/{id} [delete]
 func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
-	if err := mc.service.DeleteNotificationChannel(c, id); err != nil {
+	if err := mc.notificationChannelServicer.DeleteNotificationChannel(c, id); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
@@ -166,16 +171,20 @@ func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 //	@Param			id	path	string	true	"Mattermost channel ID"
 //	@Success		204 "Mattermost server test message sent successfully"
 //	@Failure		400			{object}	map[string]string
-//	@Router			/notification-channel/mattermost/{id}/check [post]
+//	@Router			/notification-channel/mattermost/check [post]
 func (mc *MattermostController) SendMattermostTestMessage(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Mattermost channel ID is required", nil,
-			notificationchannelservice.ErrMattermostChannelBadRequest)
+	var channel dto.MattermostNotificationChannelCheckRequest
+	if err := c.ShouldBindJSON(&channel); err != nil {
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrMattermostChannelBadRequest)
 		return
 	}
 
-	if err := mc.mattermostChannelService.SendMattermostTestMessage(c, id); err != nil {
+	if err := channel.Validate(); err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	if err := mc.mattermostChannelService.SendMattermostTestMessage(channel.WebhookUrl); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "Failed to send test message to mattermost server", nil, err)
 		return
 	}
@@ -183,22 +192,22 @@ func (mc *MattermostController) SendMattermostTestMessage(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (v *MattermostController) validateFields(channel request.MattermostNotificationChannelRequest) map[string]string {
-	errors := make(map[string]string)
+func (v *MattermostController) validateFields(channel dto.MattermostNotificationChannelRequest) map[string]string {
+	errs := make(map[string]string)
 	if channel.ChannelName == "" {
-		errors["channelName"] = "A channel name is required."
+		errs["channelName"] = "A channel name is required."
 	}
 	if channel.WebhookUrl == "" {
-		errors["webhookUrl"] = "A webhook URL is required."
+		errs["webhookUrl"] = "A webhook URL is required."
 	} else {
 		var re = regexp.MustCompile(`^https://[\w.-]+/hooks/[a-zA-Z0-9]+$`)
 		if !re.MatchString(channel.WebhookUrl) {
-			errors["webhookUrl"] = "Invalid mattermost webhook URL format."
+			errs["webhookUrl"] = "Invalid mattermost webhook URL format."
 		}
 	}
 
-	if len(errors) > 0 {
-		return errors
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }

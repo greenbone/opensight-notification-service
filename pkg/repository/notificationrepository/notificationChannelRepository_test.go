@@ -12,7 +12,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

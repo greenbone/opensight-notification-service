@@ -106,7 +106,7 @@ func run(config config.Config) error {
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
-	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, config.ChannelLimit.EMailLimit)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, notificationChannelRepository, config.ChannelLimit.EMailLimit)
 	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.ChannelLimit.MattermostLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
@@ -117,7 +117,7 @@ func run(config config.Config) error {
 	}
 	_, err = scheduler.NewJob(
 		gocron.DurationJob(1*time.Hour),
-		gocron.NewTask(checkmailconnectivity.NewJob(notificationService, notificationChannelService)),
+		gocron.NewTask(checkmailconnectivity.NewJob(notificationService, notificationChannelService, mailChannelService)),
 	)
 	if err != nil {
 		return fmt.Errorf("error creating mail connectivity check job: %w", err)
@@ -137,7 +137,7 @@ func run(config config.Config) error {
 	//instantiate controllers
 	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
 	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
-	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
+	mailcontroller.AddCheckMailServerController(notificationServiceRouter, mailChannelService, authMiddleware)
 	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 

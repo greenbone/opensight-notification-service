@@ -14,10 +14,9 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dto"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
@@ -96,7 +95,7 @@ func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepository, *sqlx.DB) {
+func SetupNotificationChannelTestEnv(t *testing.T) (notificationrepository.NotificationChannelRepository, *sqlx.DB) {
 	encryptMgr := security.NewEncryptManager()
 	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
 		Password:     "password",
@@ -112,8 +111,8 @@ func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepo
 	return repo, db
 }
 
-func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
-	return request.MailNotificationChannelRequest{
+func GetValidMailNotificationChannel() dto.MailNotificationChannelRequest {
+	return dto.MailNotificationChannelRequest{
 		ChannelName:              "mail1",
 		Domain:                   "example.com",
 		Port:                     25,

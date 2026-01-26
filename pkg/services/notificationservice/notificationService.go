@@ -9,25 +9,36 @@ import (
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 )
 
-type NotificationService struct {
-	store port.NotificationRepository
+type NotificationService interface {
+	ListNotifications(
+		ctx context.Context,
+		resultSelector query.ResultSelector,
+	) (notifications []models.Notification, totalResult uint64, err error)
+	CreateNotification(
+		ctx context.Context,
+		notificationIn models.Notification,
+	) (notification models.Notification, err error)
 }
 
-func NewNotificationService(store port.NotificationRepository) *NotificationService {
-	return &NotificationService{store: store}
+type notificationService struct {
+	store notificationrepository.NotificationRepository
 }
 
-func (s *NotificationService) ListNotifications(
+func NewNotificationService(store notificationrepository.NotificationRepository) NotificationService {
+	return &notificationService{store: store}
+}
+
+func (s *notificationService) ListNotifications(
 	ctx context.Context,
 	resultSelector query.ResultSelector,
 ) (notifications []models.Notification, totalResult uint64, err error) {
 	return s.store.ListNotifications(ctx, resultSelector)
 }
 
-func (s *NotificationService) CreateNotification(
+func (s notificationService) CreateNotification(
 	ctx context.Context,
 	notificationIn models.Notification,
 ) (notification models.Notification, err error) {

@@ -1,45 +1,94 @@
 package notificationchannelservice
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
 
-	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
-	"github.com/greenbone/opensight-notification-service/pkg/response"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/dto"
 )
 
 var (
 	ErrTeamsChannelLimitReached = errors.New("teams channel limit reached")
 	ErrListTeamsChannels        = errors.New("failed to list teams channels")
-	ErrTeamsChannelBadRequest   = errors.New("bad request for teams channel")
-	ErrTeamsChannelNameExists   = errors.New("teams channel name already exists")
+
+	ErrTeamsChannelNameExists = errors.New("teams channel name already exists")
 )
 
-type TeamsChannelService struct {
-	notificationChannelService port.NotificationChannelService
+type TeamsChannelService interface {
+	SendTeamsTestMessage(webhookUrl string) error
+	CreateTeamsChannel(
+		c context.Context,
+		channel dto.TeamsNotificationChannelRequest,
+	) (dto.TeamsNotificationChannelResponse, error)
+}
+
+type teamsChannelService struct {
+	notificationChannelService NotificationChannelService
 	teamsChannelLimit          int
 }
 
 func NewTeamsChannelService(
-	notificationChannelService port.NotificationChannelService,
+	notificationChannelService NotificationChannelService,
 	teamsChannelLimit int,
-) *TeamsChannelService {
-	return &TeamsChannelService{
+) TeamsChannelService {
+	return &teamsChannelService{
 		notificationChannelService: notificationChannelService,
 		teamsChannelLimit:          teamsChannelLimit,
 	}
 }
 
-func (m *TeamsChannelService) teamsChannelLimitReached(c context.Context, channelName string) error {
-	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
+func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
+	body, err := json.Marshal(map[string]string{
+		"text": "Hello This is a test message",
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("failed to send test message to Teams webhook: %s", resp.Status)
+	}
+
+	return nil
+}
+
+func (t *teamsChannelService) CreateTeamsChannel(
+	c context.Context,
+	channel dto.TeamsNotificationChannelRequest,
+) (dto.TeamsNotificationChannelResponse, error) {
+	if errResp := t.teamsChannelLimitReached(c, channel.ChannelName); errResp != nil {
+		return dto.TeamsNotificationChannelResponse{}, errResp
+	}
+
+	notificationChannel := dto.MapTeamsToNotificationChannel(channel)
+	created, err := t.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
+	if err != nil {
+		return dto.TeamsNotificationChannelResponse{}, err
+	}
+
+	return dto.MapNotificationChannelToTeams(created), nil
+}
+
+func (t *teamsChannelService) teamsChannelLimitReached(c context.Context, channelName string) error {
+	channels, err := t.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
 	if err != nil {
 		return errors.Join(ErrListTeamsChannels, err)
 	}
 
-	if len(channels) >= m.teamsChannelLimit {
+	if len(channels) >= t.teamsChannelLimit {
 		return ErrTeamsChannelLimitReached
 	}
 
@@ -50,21 +99,4 @@ func (m *TeamsChannelService) teamsChannelLimitReached(c context.Context, channe
 	}
 
 	return nil
-}
-
-func (m *TeamsChannelService) CreateTeamsChannel(
-	c context.Context,
-	channel request.TeamsNotificationChannelRequest,
-) (response.TeamsNotificationChannelResponse, error) {
-	if errResp := m.teamsChannelLimitReached(c, channel.ChannelName); errResp != nil {
-		return response.TeamsNotificationChannelResponse{}, errResp
-	}
-
-	notificationChannel := mapper.MapTeamsToNotificationChannel(channel)
-	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
-	if err != nil {
-		return response.TeamsNotificationChannelResponse{}, err
-	}
-
-	return mapper.MapNotificationChannelToTeams(created), nil
 }

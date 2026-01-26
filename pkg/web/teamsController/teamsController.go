@@ -1,30 +1,35 @@
 package teamsController
 
 import (
+	"errors"
 	"net/http"
 	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/dto"
 )
 
+var ErrTeamsChannelBadRequest = errors.New("bad request for teams channel")
+
 type TeamsController struct {
-	service             port.NotificationChannelService
-	teamsChannelService port.TeamsChannelService
+	notificationChannelServicer notificationchannelservice.NotificationChannelService
+	teamsChannelService         notificationchannelservice.TeamsChannelService
 }
 
 func NewTeamsController(
 	router gin.IRouter,
-	service port.NotificationChannelService, teamsChannelService port.TeamsChannelService,
+	notificationChannelServicer notificationchannelservice.NotificationChannelService,
+	teamsChannelService notificationchannelservice.TeamsChannelService,
 	auth gin.HandlerFunc,
 ) *TeamsController {
-	ctrl := &TeamsController{service: service, teamsChannelService: teamsChannelService}
+	ctrl := &TeamsController{
+		notificationChannelServicer: notificationChannelServicer,
+		teamsChannelService:         teamsChannelService,
+	}
 	ctrl.registerRoutes(router, auth)
 	return ctrl
 }
@@ -36,6 +41,8 @@ func (tc *TeamsController) registerRoutes(router gin.IRouter, auth gin.HandlerFu
 	group.GET("", tc.ListTeamsChannelsByType)
 	group.PUT("/:id", tc.UpdateTeamsChannel)
 	group.DELETE("/:id", tc.DeleteTeamsChannel)
+	group.POST("/check", tc.SendTeamsTestMessage)
+
 }
 
 // CreateTeamsChannel
@@ -52,9 +59,9 @@ func (tc *TeamsController) registerRoutes(router gin.IRouter, auth gin.HandlerFu
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/teams [post]
 func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
-	var channel request.TeamsNotificationChannelRequest
+	var channel dto.TeamsNotificationChannelRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrTeamsChannelBadRequest)
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
 		return
 	}
 
@@ -85,13 +92,13 @@ func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/teams [get]
 func (tc *TeamsController) ListTeamsChannelsByType(c *gin.Context) {
-	channels, err := tc.service.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
+	channels, err := tc.notificationChannelServicer.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
 
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToTeams(channels))
+	c.JSON(http.StatusOK, dto.MapNotificationChannelsToTeams(channels))
 }
 
 // UpdateTeamsChannel
@@ -111,9 +118,9 @@ func (tc *TeamsController) ListTeamsChannelsByType(c *gin.Context) {
 //	@Router			/notification-channel/teams/{id} [put]
 func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 	id := c.Param("id")
-	var channel request.TeamsNotificationChannelRequest
+	var channel dto.TeamsNotificationChannelRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrTeamsChannelBadRequest)
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
 		return
 	}
 
@@ -123,13 +130,13 @@ func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 		return
 	}
 
-	notificationChannel := mapper.MapTeamsToNotificationChannel(channel)
-	updated, err := tc.service.UpdateNotificationChannel(c, id, notificationChannel)
+	notificationChannel := dto.MapTeamsToNotificationChannel(channel)
+	updated, err := tc.notificationChannelServicer.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	response := mapper.MapNotificationChannelToTeams(updated)
+	response := dto.MapNotificationChannelToTeams(updated)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -146,7 +153,7 @@ func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 //		@Router			/notification-channel/teams/{id} [delete]
 func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 	id := c.Param("id")
-	if err := tc.service.DeleteNotificationChannel(c, id); err != nil {
+	if err := tc.notificationChannelServicer.DeleteNotificationChannel(c, id); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
@@ -154,22 +161,54 @@ func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (tc *TeamsController) validateFields(channel request.TeamsNotificationChannelRequest) map[string]string {
-	errors := make(map[string]string)
+func (tc *TeamsController) validateFields(channel dto.TeamsNotificationChannelRequest) map[string]string {
+	errs := make(map[string]string)
 	if channel.ChannelName == "" {
-		errors["channelName"] = "A channel name is required."
+		errs["channelName"] = "A channel name is required."
 	}
 	if channel.WebhookUrl == "" {
-		errors["webhookUrl"] = "A Webhook URL is required."
+		errs["webhookUrl"] = "A Webhook URL is required."
 	} else {
 		var re = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
 		if !re.MatchString(channel.WebhookUrl) {
-			errors["webhookUrl"] = "Invalid teams webhook URL format."
+			errs["webhookUrl"] = "Invalid teams webhook URL format."
 		}
 	}
 
-	if len(errors) > 0 {
-		return errors
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
+}
+
+// SendTeamsTestMessage
+//
+//	@Summary		Check Teams server
+//	@Description	Check if a Teams server is able to send a test message
+//	@Tags			Teams-channel
+//	@Accept			json
+//	@Produce		json
+//	@Security		KeycloakAuth
+//	@Param			id	path	string	true	"Teams channel ID"
+//	@Success		204 "Teams server test message sent successfully"
+//	@Failure		400			{object}	map[string]string
+//	@Router			/notification-channel/Teams/check [post]
+func (tc *TeamsController) SendTeamsTestMessage(c *gin.Context) {
+	var channel dto.TeamsNotificationChannelCheckRequest
+	if err := c.ShouldBindJSON(&channel); err != nil {
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
+		return
+	}
+
+	if err := channel.Validate(); err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	if err := tc.teamsChannelService.SendTeamsTestMessage(channel.WebhookUrl); err != nil {
+		restErrorHandler.NotificationChannelErrorHandler(c, "Failed to send test message to Teams server", nil, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

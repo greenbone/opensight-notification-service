@@ -5,20 +5,21 @@
 package healthcontroller
 
 import (
-	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller/dtos"
 	"net/http"
 
+	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller/dtos"
+
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
 
 	app "github.com/greenbone/opensight-notification-service"
 )
 
 type HealthController struct {
-	healthService port.HealthService
+	healthService healthservice.HealthService
 }
 
-func NewHealthController(router gin.IRouter, healthService port.HealthService) *HealthController {
+func NewHealthController(router gin.IRouter, healthService healthservice.HealthService) *HealthController {
 	ctrl := HealthController{
 		healthService: healthService,
 	}
@@ -35,30 +36,30 @@ func (c *HealthController) registerRoutes(router gin.IRouter) {
 	router.GET("/api/notification-service/version", c.readVersion)
 }
 
-//	@Summary		Service health status Started
-//	@Description	Endpoint for 'started' health probes
-//	@Tags			health
-//	@Success		200	"Started"
-//	@Router			/health/started [get]
+// @Summary		Service health status Started
+// @Description	Endpoint for 'started' health probes
+// @Tags			health
+// @Success		200	"Started"
+// @Router			/health/started [get]
 func (c *HealthController) Started(gc *gin.Context) {
 	gc.Status(http.StatusOK)
 }
 
-//	@Summary		Service health status Alive
-//	@Description	Endpoint for 'alive' health probes
-//	@Tags			health
-//	@Success		200	"Alive"
-//	@Router			/health/alive [get]
+// @Summary		Service health status Alive
+// @Description	Endpoint for 'alive' health probes
+// @Tags			health
+// @Success		200	"Alive"
+// @Router			/health/alive [get]
 func (c *HealthController) Alive(gc *gin.Context) {
 	gc.Status(http.StatusOK)
 }
 
-//	@Summary		Service health status Ready
-//	@Description	Indicates if the service is ready to serve traffic
-//	@Tags			health
-//	@Success		200	"Ready"
-//	@Failure		404	"Not ready"
-//	@Router			/health/ready [get]
+// @Summary		Service health status Ready
+// @Description	Indicates if the service is ready to serve traffic
+// @Tags			health
+// @Success		200	"Ready"
+// @Failure		404	"Not ready"
+// @Router			/health/ready [get]
 func (c *HealthController) Ready(gc *gin.Context) {
 	if c.healthService.Ready(gc.Request.Context()) {
 		gc.Status(http.StatusOK)

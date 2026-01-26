@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package dtos
+package notificationcontroller
 
 import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"

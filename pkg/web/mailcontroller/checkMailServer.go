@@ -7,17 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
 type CheckMailServerController struct {
-	notificationChannelServicer notificationchannelservice.NotificationChannelServicer
+	notificationChannelServicer notificationchannelservice.MailChannelService
 }
 
 func AddCheckMailServerController(
 	router gin.IRouter,
-	notificationChannelServicer notificationchannelservice.NotificationChannelServicer,
+	notificationChannelServicer notificationchannelservice.MailChannelService,
 	auth gin.HandlerFunc,
 ) *CheckMailServerController {
 	ctrl := &CheckMailServerController{
@@ -46,9 +46,9 @@ func AddCheckMailServerController(
 //	@Failure		422 "Mail server error"
 //	@Router			/notifications/mail/check [post]
 func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
-	var mailServer dtos.CheckMailServerRequest
+	var mailServer dto.CheckMailServerRequest
 	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMailChannelBadRequest)
+		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrMailChannelBadRequest)
 		return
 	}
 	if err := mailServer.Validate(); err != nil {
