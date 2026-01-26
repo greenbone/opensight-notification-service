@@ -165,12 +165,11 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	mailSvc := notificationchannelservice.NewMailChannelService(svc, 1)
 
 	registry := errmap.NewRegistry()
-	ConfigureMappings(registry)
 
 	engine := testhelper.NewTestWebEngine()
 	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
-	NewMailController(engine, svc, mailSvc, testhelper.MockAuthMiddlewareWithAdmin)
+	NewMailController(engine, svc, mailSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 	return engine, db
 }

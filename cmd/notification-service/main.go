@@ -126,9 +126,6 @@ func run(config config.Config) error {
 	scheduler.Start()
 
 	registry := errmap.NewRegistry()
-	mailcontroller.ConfigureMappings(registry)
-	mattermostcontroller.ConfigureMappings(registry)
-	notificationcontroller.ConfigureMappings(registry)
 
 	router := web.NewWebEngine(config.Http)
 	router.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
@@ -143,9 +140,9 @@ func run(config config.Config) error {
 
 	//instantiate controllers
 	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
-	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
-	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
-	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware)
+	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware, registry)
+	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware, registry)
+	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware, registry)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

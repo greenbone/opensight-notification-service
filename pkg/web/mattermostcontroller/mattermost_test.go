@@ -21,7 +21,6 @@ import (
 
 func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *mocks.MattermostChannelService) {
 	registry := errmap.NewRegistry()
-	ConfigureMappings(registry)
 
 	engine := testhelper.NewTestWebEngine()
 	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
@@ -29,16 +28,7 @@ func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *moc
 	notificationService := &mocks.NotificationChannelService{}
 	mattermostService := &mocks.MattermostChannelService{}
 
-	ctrl := &MattermostController{
-		service:                  notificationService,
-		mattermostChannelService: mattermostService,
-	}
-
-	group := engine.Group("/notification-channel/mattermost")
-	group.POST("", ctrl.CreateMattermostChannel)
-	group.GET("", ctrl.ListMattermostChannelsByType)
-	group.PUT(":id", ctrl.UpdateMattermostChannel)
-	group.DELETE(":id", ctrl.DeleteMattermostChannel)
+	NewMattermostController(engine, notificationService, mattermostService, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 	return engine, notificationService, mattermostService
 }

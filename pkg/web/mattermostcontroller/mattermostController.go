@@ -4,10 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	svc "github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
@@ -20,12 +23,15 @@ func NewMattermostController(
 	router gin.IRouter,
 	service port.NotificationChannelService, mattermostChannelService port.MattermostChannelService,
 	auth gin.HandlerFunc,
+	registry *errmap.Registry,
 ) *MattermostController {
 	ctrl := &MattermostController{
 		service:                  service,
 		mattermostChannelService: mattermostChannelService,
 	}
 	ctrl.registerRoutes(router, auth)
+	ctrl.configureMappings(registry)
+
 	return ctrl
 }
 
@@ -36,6 +42,19 @@ func (mc *MattermostController) registerRoutes(router gin.IRouter, auth gin.Hand
 	group.GET("", mc.ListMattermostChannelsByType)
 	group.PUT("/:id", mc.UpdateMattermostChannel)
 	group.DELETE("/:id", mc.DeleteMattermostChannel)
+}
+
+func (mc *MattermostController) configureMappings(r *errmap.Registry) {
+	r.Register(
+		svc.ErrMattermostChannelLimitReached,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Mattermost channel limit reached."),
+	)
+	r.Register(
+		svc.ErrListMattermostChannels,
+		http.StatusInternalServerError,
+		errorResponses.ErrorInternalResponse,
+	)
 }
 
 // CreateMattermostChannel

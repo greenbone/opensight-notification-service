@@ -5,10 +5,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/request"
+	svc "github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -22,12 +25,16 @@ func NewMailController(
 	router gin.IRouter,
 	service port.NotificationChannelService, mailChannelService port.MailChannelService,
 	auth gin.HandlerFunc,
+	registry errmap.ErrorRegistry,
 ) *MailController {
 	ctrl := &MailController{
 		Service:            service,
 		MailChannelService: mailChannelService,
 	}
+
 	ctrl.registerRoutes(router, auth)
+	ctrl.configureMappings(registry)
+
 	return ctrl
 }
 
@@ -39,6 +46,20 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 	group.PUT("/:id", mc.UpdateMailChannel)
 	group.DELETE("/:id", mc.DeleteMailChannel)
 	group.POST("/:id/check", mc.CheckMailServer)
+}
+
+func (mc *MailController) configureMappings(r errmap.ErrorRegistry) {
+	r.Register(
+		svc.ErrMailChannelLimitReached,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Mail channel limit reached."),
+	)
+
+	r.Register(
+		svc.ErrListMailChannels,
+		http.StatusInternalServerError,
+		errorResponses.ErrorInternalResponse,
+	)
 }
 
 // CreateMailChannel

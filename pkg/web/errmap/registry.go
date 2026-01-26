@@ -8,6 +8,7 @@ import (
 
 type ErrorRegistry interface {
 	Lookup(err error) (Result, bool)
+	Register(err error, status int, response errorResponses.ErrorResponse)
 }
 type Result struct {
 	Status   int

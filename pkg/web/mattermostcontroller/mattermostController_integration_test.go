@@ -104,12 +104,11 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 		mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 1)
 
 		registry := errmap.NewRegistry()
-		ConfigureMappings(registry)
 
 		engine := testhelper.NewTestWebEngine()
 		engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
-		NewMattermostController(engine, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
+		NewMattermostController(engine, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 		defer db.Close()
 
@@ -147,13 +146,12 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 
 	registry := errmap.NewRegistry()
-	ConfigureMappings(registry)
 
 	engine := testhelper.NewTestWebEngine()
 	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
 	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20)
-	NewMattermostController(engine, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin)
+	NewMattermostController(engine, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 	return engine, db
 }

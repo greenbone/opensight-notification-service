@@ -46,12 +46,11 @@ func getValidNotificationChannel() models.NotificationChannel {
 
 func setupRouter(service *mocks.NotificationChannelService, mailService *mailmocks.MailChannelService) *gin.Engine {
 	registry := errmap.NewRegistry()
-	ConfigureMappings(registry)
 
 	engine := testhelper.NewTestWebEngine()
 	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
-	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin)
+	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin, registry)
 	return engine
 }
 

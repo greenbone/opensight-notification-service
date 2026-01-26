@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -18,6 +20,7 @@ func AddCheckMailServerController(
 	router gin.IRouter,
 	notificationChannelServicer notificationchannelservice.NotificationChannelServicer,
 	auth gin.HandlerFunc,
+	registry errmap.ErrorRegistry,
 ) *CheckMailServerController {
 	ctrl := &CheckMailServerController{
 		notificationChannelServicer: notificationChannelServicer,
@@ -28,7 +31,28 @@ func AddCheckMailServerController(
 
 	group.POST("/check", ctrl.CheckMailServer)
 
+	ctrl.configureMappings(registry)
+
 	return ctrl
+}
+
+func (mc *CheckMailServerController) configureMappings(r errmap.ErrorRegistry) {
+	r.Register(
+		notificationchannelservice.ErrGetMailChannel,
+		http.StatusInternalServerError,
+		errorResponses.ErrorInternalResponse,
+	)
+	r.Register(
+		notificationchannelservice.ErrCreateMailFailed,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Unable to create mail client"),
+	)
+
+	r.Register(
+		notificationchannelservice.ErrMailServerUnreachable,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Server is unreachable"),
+	)
 }
 
 // CheckMailServer

@@ -16,13 +16,12 @@ import (
 
 func setup(t *testing.T) (*gin.Engine, *mocks.NotificationChannelService) {
 	registry := errmap.NewRegistry()
-	ConfigureMappings(registry)
 
 	engine := testhelper.NewTestWebEngine()
 	engine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
 	notificationChannelServicer := mocks.NewNotificationChannelService(t)
-	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
+	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 	return engine, notificationChannelServicer
 }
