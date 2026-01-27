@@ -100,7 +100,7 @@ func (r *notificationChannelRepository) CreateNotificationChannel(
 ) (models.NotificationChannel, error) {
 	insertRow := toNotificationChannelRow(channelIn)
 
-	rowWithEncryption, err := r.withEncryptedValues(insertRow)
+	rowWithEncryption, err := r.encrypt(insertRow)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
@@ -130,7 +130,7 @@ func (r *notificationChannelRepository) CreateNotificationChannel(
 		return models.NotificationChannel{}, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	return r.withPasswordDecrypted(row).ToModel(), nil
+	return r.decrypt(row).ToModel(), nil
 }
 
 func (r *notificationChannelRepository) GetNotificationChannelByIdAndType(
@@ -145,7 +145,7 @@ func (r *notificationChannelRepository) GetNotificationChannelByIdAndType(
 		return models.NotificationChannel{}, fmt.Errorf("select by id failed: %w", err)
 	}
 
-	return row.ToModel(), nil
+	return r.decrypt(row).ToModel(), nil
 }
 
 func (r *notificationChannelRepository) ListNotificationChannelsByType(
@@ -161,7 +161,7 @@ func (r *notificationChannelRepository) ListNotificationChannelsByType(
 
 	result := make([]models.NotificationChannel, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, r.withPasswordDecrypted(row).ToModel())
+		result = append(result, r.decrypt(row).ToModel())
 	}
 
 	return result, nil
@@ -176,7 +176,7 @@ func (r *notificationChannelRepository) UpdateNotificationChannel(
 	rowIn := toNotificationChannelRow(in)
 	rowIn.Id = &id
 
-	rowWithEncryption, err := r.withEncryptedValues(rowIn)
+	rowWithEncryption, err := r.encrypt(rowIn)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
@@ -206,7 +206,7 @@ func (r *notificationChannelRepository) UpdateNotificationChannel(
 		return in, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	return r.withPasswordDecrypted(row).ToModel(), nil
+	return r.decrypt(row).ToModel(), nil
 }
 
 func (r *notificationChannelRepository) withEncryptedValues(row notificationChannelRow) (notificationChannelRow, error) {
