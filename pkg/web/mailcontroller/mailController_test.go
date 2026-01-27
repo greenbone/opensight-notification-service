@@ -15,6 +15,7 @@ import (
 )
 
 func getValidNotificationChannel() models.NotificationChannel {
+	id := "mail-id-1"
 	name := "mail1"
 	domain := "example.com"
 	port := 25
@@ -26,6 +27,7 @@ func getValidNotificationChannel() models.NotificationChannel {
 	maxInclude := 5
 	sender := "sender@example.com"
 	return models.NotificationChannel{
+		Id:                       &id,
 		ChannelName:              &name,
 		Domain:                   &domain,
 		Port:                     &port,
@@ -54,7 +56,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 	tests := []struct {
 		name           string
 		input          any
-		mockReturn     maildto.MailNotificationChannelRequest
+		mockReturn     maildto.MailNotificationChannelResponse
 		mockErr        error
 		wantStatusCode int
 	}{
@@ -82,7 +84,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 		},
 		{
 			name: "invalid sender email",
-			input: func() maildto.MailNotificationChannelRequest {
+			input: func() maildto.MailNotificationChannelResponse {
 				invalid := mailValid
 				invalid.SenderEmailAddress = "not-an-email"
 				return invalid

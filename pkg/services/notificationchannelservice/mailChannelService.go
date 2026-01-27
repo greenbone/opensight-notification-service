@@ -18,7 +18,7 @@ type MailChannelService interface {
 	CreateMailChannel(
 		c context.Context,
 		channel maildto.MailNotificationChannelRequest,
-	) (maildto.MailNotificationChannelRequest, error)
+	) (maildto.MailNotificationChannelResponse, error)
 	CheckNotificationChannelConnectivity(
 		ctx context.Context,
 		mailServer models.NotificationChannel,
@@ -51,15 +51,15 @@ func NewMailChannelService(
 func (m *mailChannelService) CreateMailChannel(
 	c context.Context,
 	channel maildto.MailNotificationChannelRequest,
-) (maildto.MailNotificationChannelRequest, error) {
+) (maildto.MailNotificationChannelResponse, error) {
 	if errResp := m.mailChannelAlreadyExists(c); errResp != nil {
-		return maildto.MailNotificationChannelRequest{}, errResp
+		return maildto.MailNotificationChannelResponse{}, errResp
 	}
 
 	notificationChannel := maildto.MapMailToNotificationChannel(channel)
 	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
-		return maildto.MailNotificationChannelRequest{}, err
+		return maildto.MailNotificationChannelResponse{}, err
 	}
 
 	return maildto.MapNotificationChannelToMail(created), nil

@@ -160,22 +160,22 @@ func (_c *MailChannelService_CheckNotificationChannelEntityConnectivity_Call) Ru
 }
 
 // CreateMailChannel provides a mock function for the type MailChannelService
-func (_mock *MailChannelService) CreateMailChannel(c context.Context, channel maildto.MailNotificationChannelRequest) (maildto.MailNotificationChannelRequest, error) {
+func (_mock *MailChannelService) CreateMailChannel(c context.Context, channel maildto.MailNotificationChannelRequest) (maildto.MailNotificationChannelResponse, error) {
 	ret := _mock.Called(c, channel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateMailChannel")
 	}
 
-	var r0 maildto.MailNotificationChannelRequest
+	var r0 maildto.MailNotificationChannelResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, maildto.MailNotificationChannelRequest) (maildto.MailNotificationChannelRequest, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, maildto.MailNotificationChannelRequest) (maildto.MailNotificationChannelResponse, error)); ok {
 		return returnFunc(c, channel)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, maildto.MailNotificationChannelRequest) maildto.MailNotificationChannelRequest); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, maildto.MailNotificationChannelRequest) maildto.MailNotificationChannelResponse); ok {
 		r0 = returnFunc(c, channel)
 	} else {
-		r0 = ret.Get(0).(maildto.MailNotificationChannelRequest)
+		r0 = ret.Get(0).(maildto.MailNotificationChannelResponse)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, maildto.MailNotificationChannelRequest) error); ok {
 		r1 = returnFunc(c, channel)
@@ -215,12 +215,12 @@ func (_c *MailChannelService_CreateMailChannel_Call) Run(run func(c context.Cont
 	return _c
 }
 
-func (_c *MailChannelService_CreateMailChannel_Call) Return(mailNotificationChannelRequest maildto.MailNotificationChannelRequest, err error) *MailChannelService_CreateMailChannel_Call {
-	_c.Call.Return(mailNotificationChannelRequest, err)
+func (_c *MailChannelService_CreateMailChannel_Call) Return(mailNotificationChannelResponse maildto.MailNotificationChannelResponse, err error) *MailChannelService_CreateMailChannel_Call {
+	_c.Call.Return(mailNotificationChannelResponse, err)
 	return _c
 }
 
-func (_c *MailChannelService_CreateMailChannel_Call) RunAndReturn(run func(c context.Context, channel maildto.MailNotificationChannelRequest) (maildto.MailNotificationChannelRequest, error)) *MailChannelService_CreateMailChannel_Call {
+func (_c *MailChannelService_CreateMailChannel_Call) RunAndReturn(run func(c context.Context, channel maildto.MailNotificationChannelRequest) (maildto.MailNotificationChannelResponse, error)) *MailChannelService_CreateMailChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }
