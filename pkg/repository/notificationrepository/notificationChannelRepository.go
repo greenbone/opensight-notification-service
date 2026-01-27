@@ -17,7 +17,10 @@ type NotificationChannelRepository struct {
 	encryptManager port.EncryptManager
 }
 
-func NewNotificationChannelRepository(db *sqlx.DB, encryptService port.EncryptManager) (port.NotificationChannelRepository, error) {
+func NewNotificationChannelRepository(
+	db *sqlx.DB,
+	encryptService port.EncryptManager,
+) (port.NotificationChannelRepository, error) {
 	if db == nil {
 		return nil, errors.New("nil db reference")
 	}
@@ -75,7 +78,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 ) (models.NotificationChannel, error) {
 	insertRow := toNotificationChannelRow(channelIn)
 
-	rowWithEncryption, err := r.withEncryptedValues(insertRow)
+	rowWithEncryption, err := r.encrypt(insertRow)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
@@ -105,7 +108,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 		return models.NotificationChannel{}, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	return r.withPasswordDecrypted(row).ToModel(), nil
+	return r.decrypt(row).ToModel(), nil
 }
 
 func (r *NotificationChannelRepository) GetNotificationChannelByIdAndType(
@@ -120,7 +123,7 @@ func (r *NotificationChannelRepository) GetNotificationChannelByIdAndType(
 		return models.NotificationChannel{}, fmt.Errorf("select by id failed: %w", err)
 	}
 
-	return row.ToModel(), nil
+	return r.decrypt(row).ToModel(), nil
 }
 
 func (r *NotificationChannelRepository) ListNotificationChannelsByType(
@@ -136,7 +139,7 @@ func (r *NotificationChannelRepository) ListNotificationChannelsByType(
 
 	result := make([]models.NotificationChannel, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, r.withPasswordDecrypted(row).ToModel())
+		result = append(result, r.decrypt(row).ToModel())
 	}
 
 	return result, nil
@@ -151,7 +154,7 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 	rowIn := toNotificationChannelRow(in)
 	rowIn.Id = &id
 
-	rowWithEncryption, err := r.withEncryptedValues(rowIn)
+	rowWithEncryption, err := r.encrypt(rowIn)
 	if err != nil {
 		return models.NotificationChannel{}, fmt.Errorf("could not encrypt password: %w", err)
 	}
@@ -181,10 +184,10 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 		return in, fmt.Errorf("could not commit transaction: %w", err)
 	}
 
-	return r.withPasswordDecrypted(row).ToModel(), nil
+	return r.decrypt(row).ToModel(), nil
 }
 
-func (r *NotificationChannelRepository) withEncryptedValues(row notificationChannelRow) (notificationChannelRow, error) {
+func (r *NotificationChannelRepository) encrypt(row notificationChannelRow) (notificationChannelRow, error) {
 	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
 		encryptedPasswd, err := r.encryptManager.Encrypt(*row.Password)
 		if err != nil {
@@ -208,7 +211,7 @@ func (r *NotificationChannelRepository) withEncryptedValues(row notificationChan
 	return row, nil
 }
 
-func (r *NotificationChannelRepository) withPasswordDecrypted(row notificationChannelRow) notificationChannelRow {
+func (r *NotificationChannelRepository) decrypt(row notificationChannelRow) notificationChannelRow {
 	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
 		dPasswd := *row.Password
 		dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd))
