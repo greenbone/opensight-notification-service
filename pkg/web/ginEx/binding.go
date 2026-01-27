@@ -48,7 +48,7 @@ func BindAndValidateBody(c *gin.Context, bodyDto any) bool {
 
 	if value, ok := bodyDto.(Validate); ok {
 		err := value.Validate()
-		if err != nil || len(err) == 0 {
+		if err != nil && len(err) > 0 {
 			_ = c.Error(err)
 			return false
 		}

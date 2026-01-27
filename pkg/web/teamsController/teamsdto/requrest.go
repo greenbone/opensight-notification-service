@@ -4,7 +4,6 @@ import (
 	"regexp"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 )
 
 // TeamsNotificationChannelRequest teams notification channel request
@@ -36,8 +35,8 @@ type TeamsNotificationChannelCheckRequest struct {
 	WebhookUrl string `json:"webhookUrl"`
 }
 
-func (r *TeamsNotificationChannelCheckRequest) Validate() helper.ValidateErrors {
-	errors := make(helper.ValidateErrors)
+func (r *TeamsNotificationChannelCheckRequest) Validate() models.ValidationErrors {
+	errors := make(models.ValidationErrors)
 
 	if r.WebhookUrl == "" {
 		errors["webhookUrl"] = "webhook URL is required"

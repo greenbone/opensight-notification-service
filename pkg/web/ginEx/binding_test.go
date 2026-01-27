@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBindBody_BindingErrors(t *testing.T) {
@@ -86,7 +87,7 @@ func TestBindBody_Validate(t *testing.T) {
 
 	var s sample
 	result := BindAndValidateBody(c, &s)
-	assert.False(t, result)
+	require.False(t, result)
 
 	lastErr := c.Errors.Last().Err
 	assert.Contains(t, lastErr.Error(), "validation error")

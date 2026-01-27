@@ -20,14 +20,18 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 
 	valid := testhelper.GetValidTeamsNotificationChannel()
 
-	t.Run("Perform the Create operations", func(t *testing.T) {
+	t.Run("Perform the Create operation", func(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 		request := httpassert.New(t, router)
 
 		var teamsId string
 		request.Post("/notification-channel/teams").
-			JsonContentObject(valid).
+			Content(`{
+				"channelName": "teams1",
+				"webhookUrl": "https://webhookurl.com/webhook/id1",
+				"description": "This ns a test teams channel"
+			}`).
 			Expect().
 			StatusCode(http.StatusCreated).
 			JsonPath("$", httpassert.HasSize(4)).

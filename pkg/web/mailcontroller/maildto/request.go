@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/rs/zerolog/log"
 )
 
@@ -30,8 +29,8 @@ func (v CheckMailServerRequest) ToModel() models.NotificationChannel {
 	}
 }
 
-func (v CheckMailServerRequest) Validate() helper.ValidateErrors {
-	errors := make(helper.ValidateErrors)
+func (v CheckMailServerRequest) Validate() models.ValidationErrors {
+	errors := make(models.ValidationErrors)
 
 	if v.Domain == "" {
 		errors["domain"] = "A Mailhub is required."
@@ -73,23 +72,23 @@ func (v CheckMailServerEntityRequest) ToModel() models.NotificationChannel {
 	}
 }
 
-func (v CheckMailServerEntityRequest) Validate() helper.ValidateErrors {
-	errors := make(helper.ValidateErrors)
+func (v CheckMailServerEntityRequest) Validate() models.ValidationErrors {
+	errs := make(models.ValidationErrors)
 
 	if v.Domain == "" {
-		errors["domain"] = "required"
+		errs["domain"] = "required"
 	}
 	if v.Port == 0 {
-		errors["port"] = "required"
+		errs["port"] = "required"
 	}
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errors["username"] = "required"
+			errs["username"] = "required"
 		}
 	}
 
-	return errors
+	return errs
 }
 
 // MailNotificationChannelRequest mail notification channel request

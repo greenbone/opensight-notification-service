@@ -13,7 +13,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
@@ -24,7 +23,6 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
-	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
@@ -130,7 +128,6 @@ func run(config config.Config) error {
 	registry := errmap.NewRegistry()
 
 	router := web.NewWebEngine(config.Http, registry)
-	router.Use(helper.ValidationErrorHandler(gin.ErrorTypePrivate))
 	rootRouter := router.Group("/")
 	notificationServiceRouter := router.Group("/api/notification-service")
 	docsRouter := router.Group("/docs/notification-service")

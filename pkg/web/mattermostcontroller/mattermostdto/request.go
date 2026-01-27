@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/rs/zerolog/log"
 )
 
@@ -16,7 +15,7 @@ type MattermostNotificationChannelRequest struct {
 	Description string `json:"description"`
 }
 
-func (m *MattermostNotificationChannelRequest) Validate() models.ValidationErrors {
+func (m MattermostNotificationChannelRequest) Validate() models.ValidationErrors {
 	errors := make(models.ValidationErrors)
 
 	if strings.TrimSpace(m.ChannelName) == "" {
@@ -37,8 +36,8 @@ type MattermostNotificationChannelCheckRequest struct {
 	WebhookUrl string `json:"webhookUrl"`
 }
 
-func (r *MattermostNotificationChannelCheckRequest) Validate() helper.ValidateErrors {
-	errors := make(helper.ValidateErrors)
+func (r *MattermostNotificationChannelCheckRequest) Validate() models.ValidationErrors {
+	errors := make(models.ValidationErrors)
 
 	if r.WebhookUrl == "" {
 		errors["webhookUrl"] = "webhook URL is required"
