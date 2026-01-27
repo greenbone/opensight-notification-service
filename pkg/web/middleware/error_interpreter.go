@@ -1,15 +1,14 @@
 package middleware
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 )
 
 func InterpretErrors(errorType gin.ErrorType, r errmap.ErrorRegistry) gin.HandlerFunc {
@@ -19,8 +18,9 @@ func InterpretErrors(errorType gin.ErrorType, r errmap.ErrorRegistry) gin.Handle
 
 			actual := errorValue.Unwrap()
 
-			if isBindingError(actual) {
-				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse("unable to parse the request", errorValue.Error(), nil))
+			bindingError := ginEx.BindingError{}
+			if errors.As(actual, &bindingError) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse("unable to parse the request", bindingError.Error(), nil))
 				return
 			}
 
@@ -40,14 +40,4 @@ func InterpretErrors(errorType gin.ErrorType, r errmap.ErrorRegistry) gin.Handle
 			c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
 		}
 	}
-}
-
-func isBindingError(err error) bool {
-	var syntaxErr *json.SyntaxError
-	var unmarshalErr *json.UnmarshalTypeError
-
-	return errors.As(err, &syntaxErr) ||
-		errors.As(err, &unmarshalErr) ||
-		errors.Is(err, io.EOF) ||
-		errors.Is(err, io.ErrUnexpectedEOF)
 }

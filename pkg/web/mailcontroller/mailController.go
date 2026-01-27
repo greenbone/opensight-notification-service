@@ -12,6 +12,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/request"
 	svc "github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -77,19 +78,13 @@ func (mc *MailController) configureMappings(r errmap.ErrorRegistry) {
 //	@Router			/notification-channel/mail [post]
 func (mc *MailController) CreateMailChannel(c *gin.Context) {
 	var channel request.MailNotificationChannelRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	if err := channel.Validate(); err != nil {
-		_ = c.Error(err)
+	if !ginEx.BindBody(c, &channel) {
 		return
 	}
 
 	mailChannel, err := mc.MailChannelService.CreateMailChannel(c, channel)
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -110,7 +105,7 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 	channels, err := mc.Service.ListNotificationChannelsByType(c, models.ChannelTypeMail)
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -133,22 +128,16 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 //	@Router			/notification-channel/mail/{id} [put]
 func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 	id := c.Param("id")
+
 	var channel request.MailNotificationChannelRequest
-
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	if err := channel.Validate(); err != nil {
-		_ = c.Error(err)
+	if !ginEx.BindBody(c, &channel) {
 		return
 	}
 
 	notificationChannel := mapper.MapMailToNotificationChannel(channel)
 	updated, err := mc.Service.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -170,7 +159,7 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := mc.Service.DeleteNotificationChannel(c, id); err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -194,18 +183,13 @@ func (mc *MailController) CheckMailServer(c *gin.Context) {
 	id := c.Param("id")
 
 	var mailServer dtos.CheckMailServerEntityRequest
-	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		_ = c.Error(err)
-		return
-	}
-	if err := mailServer.Validate(); err != nil {
-		_ = c.Error(err)
+	if !ginEx.BindBody(c, &mailServer) {
 		return
 	}
 
 	err := mc.Service.CheckNotificationChannelEntityConnectivity(context.Background(), id, mailServer.ToModel())
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 

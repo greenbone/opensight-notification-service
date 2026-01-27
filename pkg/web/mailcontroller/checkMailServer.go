@@ -8,6 +8,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -70,18 +71,14 @@ func (mc *CheckMailServerController) configureMappings(r errmap.ErrorRegistry) {
 //	@Router			/notifications/mail/check [post]
 func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
 	var mailServer dtos.CheckMailServerRequest
-	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		_ = c.Error(err)
-		return
-	}
-	if err := mailServer.Validate(); err != nil {
-		_ = c.Error(err)
+
+	if !ginEx.BindBody(c, &mailServer) {
 		return
 	}
 
 	err := mc.notificationChannelServicer.CheckNotificationChannelConnectivity(context.Background(), mailServer.ToModel())
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 

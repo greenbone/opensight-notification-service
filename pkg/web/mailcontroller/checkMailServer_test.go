@@ -59,7 +59,7 @@ func TestCheckMailServer(t *testing.T) {
 			Json(`{
 				"type": "greenbone/validation-error",
 				"title": "unable to parse the request",
-				"details":"unexpected EOF"
+				"details":"error parsing body"
 			}`)
 	})
 

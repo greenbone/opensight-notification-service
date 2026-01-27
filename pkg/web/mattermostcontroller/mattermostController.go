@@ -11,6 +11,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/request"
 	svc "github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
@@ -73,20 +74,13 @@ func (mc *MattermostController) configureMappings(r *errmap.Registry) {
 func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
 	var channel request.MattermostNotificationChannelRequest
 
-	err := c.ShouldBindJSON(&channel)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	if err := channel.Validate(); err != nil {
-		_ = c.Error(err)
+	if !ginEx.BindBody(c, &channel) {
 		return
 	}
 
 	mattermostChannel, err := mc.mattermostChannelService.CreateMattermostChannel(c, channel)
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -107,7 +101,7 @@ func (mc *MattermostController) CreateMattermostChannel(c *gin.Context) {
 func (mc *MattermostController) ListMattermostChannelsByType(c *gin.Context) {
 	channels, err := mc.service.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -133,20 +127,14 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
 
 	var channel request.MattermostNotificationChannelRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	if err := channel.Validate(); err != nil {
-		_ = c.Error(err)
+	if !ginEx.BindBody(c, &channel) {
 		return
 	}
 
 	notificationChannel := mapper.MapMattermostToNotificationChannel(channel)
 	updated, err := mc.service.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -168,7 +156,7 @@ func (mc *MattermostController) UpdateMattermostChannel(c *gin.Context) {
 func (mc *MattermostController) DeleteMattermostChannel(c *gin.Context) {
 	id := c.Param("id")
 	if err := mc.service.DeleteNotificationChannel(c, id); err != nil {
-		_ = c.Error(err)
+		ginEx.AddError(c, err)
 		return
 	}
 
