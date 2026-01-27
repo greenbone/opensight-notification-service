@@ -58,6 +58,11 @@ func (tc *TeamsController) configureMappings(r *errmap.Registry) {
 		http.StatusInternalServerError,
 		errorResponses.ErrorInternalResponse,
 	)
+	r.Register(
+		notificationchannelservice.ErrTeamsChannelNameExists,
+		http.StatusBadRequest,
+		errorResponses.NewErrorGenericResponse("Teams channel name already exists."),
+	)
 }
 
 // CreateTeamsChannel

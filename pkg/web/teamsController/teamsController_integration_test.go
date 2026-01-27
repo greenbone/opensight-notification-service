@@ -30,7 +30,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			Content(`{
 				"channelName": "teams1",
 				"webhookUrl": "https://webhookurl.com/webhook/id1",
-				"description": "This ns a test teams channel"
+				"description": "This is a test teams channel"
 			}`).
 			Expect().
 			StatusCode(http.StatusCreated).
@@ -130,7 +130,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusBadRequest).
-			JsonPath("$.title", "Channel name should be unique.")
+			JsonPath("$.title", "Teams channel name already exists.")
 	})
 }
 

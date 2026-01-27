@@ -67,7 +67,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonPath("$[0].description", "This is a test mattermost channel")
 	})
 
-	t.Run("Perform the Update operations", func(t *testing.T) {
+	t.Run("Perform the Update operation", func(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 		request := httpassert.New(t, router)
@@ -88,7 +88,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonPath("$.description", "This is a test mattermost channel")
 	})
 
-	t.Run("Perform the Delete operations", func(t *testing.T) {
+	t.Run("Perform the Delete operation", func(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 		request := httpassert.New(t, router)
@@ -139,20 +139,6 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			JsonPath("$.title", "Channel name should be unique.")
-	})
-
-	t.Run("Validate test message on mattermost", func(t *testing.T) {
-		router, db := setupTestRouter(t)
-		defer db.Close()
-		request := httpassert.New(t, router)
-
-		valid.WebhookUrl = "https://mattermost.greenbone.net/hooks/tc833f1cwfgyidacixja6t8mae"
-		mattermostId := createMattermostNotification(t, request, "mattermost1", valid)
-
-		request.Postf("/notification-channel/mattermost/%s/check", mattermostId).
-			JsonContentObject(valid).
-			Expect().
-			StatusCode(http.StatusNoContent)
 	})
 }
 

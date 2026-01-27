@@ -65,7 +65,9 @@ type sample struct {
 }
 
 func (s sample) Validate() models.ValidationErrors {
-	return models.ValidationErrors{}
+	return models.ValidationErrors{
+		"a": "b",
+	}
 }
 
 func TestBindBody_Validate(t *testing.T) {
@@ -75,14 +77,7 @@ func TestBindBody_Validate(t *testing.T) {
 	c.Request = httptest.NewRequest(
 		http.MethodPost,
 		"/",
-		bytes.NewBufferString(`{
-				"domain": "example.com",
-				"port": 123,
-				"isAuthenticationRequired": true,
-				"isTlsEnforced": false,
-				"username": "testUser",
-				"password": "123"
-			}`),
+		bytes.NewBufferString(`{}`),
 	)
 
 	var s sample

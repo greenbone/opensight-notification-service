@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -107,7 +107,7 @@ func TestCheckMailServer(t *testing.T) {
 		engine, notificationChannelServicer := setup(t)
 
 		notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).
-			Return(assert.AnError)
+			Return(notificationchannelservice.ErrMailServerUnreachable)
 
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
@@ -121,7 +121,7 @@ func TestCheckMailServer(t *testing.T) {
 			StatusCode(http.StatusUnprocessableEntity).
 			Json(`{
 				"type": "greenbone/generic-error",
-				"title": "assert.AnError general error for testing"
+				"title": "Server is unreachable"
 			}`)
 	})
 }
