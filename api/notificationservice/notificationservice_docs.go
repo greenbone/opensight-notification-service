@@ -378,15 +378,6 @@ const docTemplatenotificationservice = `{
                     "mattermost-channel"
                 ],
                 "summary": "Check mattermost server",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Mattermost channel ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "204": {
                         "description": "Mattermost server test message sent successfully"
