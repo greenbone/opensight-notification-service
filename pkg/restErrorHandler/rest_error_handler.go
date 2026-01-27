@@ -44,38 +44,3 @@ func ErrConflictToResponse(err errs.ErrConflict) errorResponses.ErrorResponse {
 		Errors: err.Errors,
 	}
 }
-
-// TODO: 26.01.2026 stolksdorf - eduardo's branch will fix this
-func NotificationChannelErrorHandler(gc *gin.Context, title string, errs map[string]string, err error) {
-	//	if len(errs) > 0 && title != "" {
-	//		gc.JSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse(title, "", errs))
-	//		return
-	//	}
-	//
-	//	switch {
-	//	case errors.Is(err, mailcontroller.ErrMailChannelBadRequest) ||
-	//		errors.Is(err, mattermostcontroller.ErrMattermostChannelBadRequest) ||
-	//		errors.Is(err, teamsController.ErrTeamsChannelBadRequest):
-	//		gc.JSON(http.StatusBadRequest,
-	//			errorResponses.NewErrorValidationResponse("Invalid mail channel data.", "", nil))
-	//	case errors.Is(err, notificationchannelservice.ErrListMailChannels) ||
-	//		errors.Is(err, notificationchannelservice.ErrListMattermostChannels) ||
-	//		errors.Is(err, notificationchannelservice.ErrListTeamsChannels):
-	//		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
-	//	case errors.Is(err, notificationchannelservice.ErrMattermostChannelNameExists) ||
-	//		errors.Is(err, notificationchannelservice.ErrTeamsChannelNameExists):
-	//		gc.JSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse("Channel name should be unique.", "",
-	//			map[string]string{"channelName": "Channel name should be unique."}))
-	//	case errors.Is(err, notificationchannelservice.ErrMailChannelLimitReached):
-	//		gc.JSON(http.StatusUnprocessableEntity, errorResponses.NewErrorValidationResponse("Mail channel limit reached.", "",
-	//			map[string]string{"channelName": "Mail channel already exists."}))
-	//	case errors.Is(err, notificationchannelservice.ErrMattermostChannelLimitReached):
-	//		gc.JSON(http.StatusUnprocessableEntity, errorResponses.NewErrorValidationResponse("Mattermost channel limit reached.", "",
-	//			map[string]string{"channelName": "Mattermost channel creation limit reached."}))
-	//	case errors.Is(err, notificationchannelservice.ErrTeamsChannelLimitReached):
-	//		gc.JSON(http.StatusUnprocessableEntity, errorResponses.NewErrorValidationResponse("Teams channel limit reached.", "",
-	//			map[string]string{"channelName": "Teams channel creation limit reached."}))
-	//	default:
-	//		gc.JSON(http.StatusInternalServerError, errorResponses.ErrorInternalResponse)
-	//	}
-}

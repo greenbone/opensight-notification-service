@@ -9,6 +9,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
@@ -42,9 +43,10 @@ func getValidNotificationChannel() models.NotificationChannel {
 }
 
 func setupRouter(service *mocks.NotificationChannelService, mailService *mocks.MailChannelService) *gin.Engine {
-	engine := testhelper.NewTestWebEngine()
+	registry := errmap.NewRegistry()
+	engine := testhelper.NewTestWebEngine(registry)
 
-	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin)
+	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin, registry)
 	return engine
 }
 

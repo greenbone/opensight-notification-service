@@ -18,7 +18,9 @@ import (
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController"
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
@@ -108,6 +110,7 @@ func run(config config.Config) error {
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
 	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, notificationChannelRepository, config.ChannelLimit.EMailLimit)
 	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.ChannelLimit.MattermostLimit)
+	teamsChannelService := notificationchannelservice.NewTeamsChannelService(notificationChannelService, config.ChannelLimit.TeamsLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler
@@ -124,7 +127,9 @@ func run(config config.Config) error {
 	}
 	scheduler.Start()
 
-	router := web.NewWebEngine(config.Http)
+	registry := errmap.NewRegistry()
+
+	router := web.NewWebEngine(config.Http, registry)
 	router.Use(helper.ValidationErrorHandler(gin.ErrorTypePrivate))
 	rootRouter := router.Group("/")
 	notificationServiceRouter := router.Group("/api/notification-service")
@@ -136,9 +141,10 @@ func run(config config.Config) error {
 
 	//instantiate controllers
 	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
-	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
-	mailcontroller.AddCheckMailServerController(notificationServiceRouter, mailChannelService, authMiddleware)
-	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware)
+	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware, registry)
+	mailcontroller.AddCheckMailServerController(notificationServiceRouter, mailChannelService, authMiddleware, registry)
+	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware, registry)
+	teamsController.AddTeamsController(router, notificationChannelRepository, teamsChannelService, authMiddleware, registry)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

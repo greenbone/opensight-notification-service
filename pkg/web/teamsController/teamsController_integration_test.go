@@ -1,6 +1,3 @@
-//go:build integration
-// +build integration
-
 package teamsController
 
 import (
@@ -10,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
@@ -100,8 +98,10 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 		repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 		svc := notificationchannelservice.NewNotificationChannelService(repo)
 		teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 1)
-		router := testhelper.NewTestWebEngine()
-		NewTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin)
+
+		registry := errmap.NewRegistry()
+		router := testhelper.NewTestWebEngine(registry)
+		AddTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
 		defer db.Close()
 
 		request := httpassert.New(t, router)
@@ -157,8 +157,9 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 	teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 20)
-	router := testhelper.NewTestWebEngine()
-	NewTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin)
+	registry := errmap.NewRegistry()
+	router := testhelper.NewTestWebEngine(registry)
+	AddTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 	return router, db
 }

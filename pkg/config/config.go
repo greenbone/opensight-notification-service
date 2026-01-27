@@ -23,6 +23,7 @@ type Config struct {
 type ChannelLimits struct {
 	EMailLimit      int `envconfig:"EMAIL_LIMIT" default:"1"`
 	MattermostLimit int `envconfig:"MATTERMOST_LIMIT" default:"20"`
+	TeamsLimit      int `envconfig:"TEAMS_LIMIT" default:"20"`
 }
 
 type Http struct {

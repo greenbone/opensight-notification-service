@@ -15,8 +15,7 @@ import (
 var (
 	ErrTeamsChannelLimitReached = errors.New("teams channel limit reached")
 	ErrListTeamsChannels        = errors.New("failed to list teams channels")
-
-	ErrTeamsChannelNameExists = errors.New("teams channel name already exists")
+	ErrTeamsChannelNameExists   = errors.New("teams channel name already exists")
 )
 
 type TeamsChannelService interface {

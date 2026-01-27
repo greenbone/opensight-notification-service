@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
@@ -17,11 +18,12 @@ import (
 )
 
 func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *mocks.MattermostChannelService) {
-	r := testhelper.NewTestWebEngine()
+	registry := errmap.NewRegistry()
+	r := testhelper.NewTestWebEngine(registry)
 
 	notificationService := &mocks.NotificationChannelService{}
 	mattermostService := &mocks.MattermostChannelService{}
-	NewMattermostController(r, notificationService, mattermostService, testhelper.MockAuthMiddlewareWithAdmin)
+	NewMattermostController(r, notificationService, mattermostService, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 	return r, notificationService, mattermostService
 }

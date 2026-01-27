@@ -5,8 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -19,6 +21,7 @@ func AddCheckMailServerController(
 	router gin.IRouter,
 	notificationChannelServicer notificationchannelservice.MailChannelService,
 	auth gin.HandlerFunc,
+	registry errmap.ErrorRegistry,
 ) *CheckMailServerController {
 	ctrl := &CheckMailServerController{
 		notificationChannelServicer: notificationChannelServicer,
@@ -29,7 +32,28 @@ func AddCheckMailServerController(
 
 	group.POST("/check", ctrl.CheckMailServer)
 
+	ctrl.configureMappings(registry)
+
 	return ctrl
+}
+
+func (mc *CheckMailServerController) configureMappings(r errmap.ErrorRegistry) {
+	r.Register(
+		notificationchannelservice.ErrGetMailChannel,
+		http.StatusInternalServerError,
+		errorResponses.ErrorInternalResponse,
+	)
+	r.Register(
+		notificationchannelservice.ErrCreateMailFailed,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Unable to create mail client"),
+	)
+
+	r.Register(
+		notificationchannelservice.ErrMailServerUnreachable,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Server is unreachable"),
+	)
 }
 
 // CheckMailServer
@@ -47,21 +71,13 @@ func AddCheckMailServerController(
 //	@Router			/notifications/mail/check [post]
 func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
 	var mailServer maildto.CheckMailServerRequest
-	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrMailChannelBadRequest)
-		return
-	}
-	if err := mailServer.Validate(); err != nil {
-		_ = c.Error(err)
+	if !ginEx.BindAndValidateBody(c, &mailServer) {
 		return
 	}
 
 	err := mc.notificationChannelServicer.CheckNotificationChannelConnectivity(context.Background(), mailServer.ToModel())
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"type":  "greenbone/generic-error",
-			"title": err.Error()},
-		)
+		ginEx.AddError(c, err)
 		return
 	}
 

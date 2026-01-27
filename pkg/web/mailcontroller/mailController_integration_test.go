@@ -1,6 +1,3 @@
-//go:build integration
-// +build integration
-
 package mailcontroller
 
 import (
@@ -11,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -161,9 +159,10 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 	mailSvc := notificationchannelservice.NewMailChannelService(svc, repo, 1)
 
-	router := testhelper.NewTestWebEngine()
+	registry := errmap.NewRegistry()
+	router := testhelper.NewTestWebEngine(registry)
 
-	NewMailController(router, svc, mailSvc, testhelper.MockAuthMiddlewareWithAdmin)
+	NewMailController(router, svc, mailSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
 
 	return router, db
 }

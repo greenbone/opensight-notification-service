@@ -7,17 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func setup(t *testing.T) (*gin.Engine, *mocks.MailChannelService) {
-	engine := testhelper.NewTestWebEngine()
+	registry := errmap.NewRegistry()
+	engine := testhelper.NewTestWebEngine(registry)
 
 	notificationChannelServicer := mocks.NewMailChannelService(t)
 
-	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
+	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin, registry)
 	return engine, notificationChannelServicer
 }
 
@@ -41,6 +43,21 @@ func TestCheckMailServer(t *testing.T) {
 			Expect().
 			StatusCode(http.StatusNoContent).
 			NoContent()
+	})
+
+	t.Run("none request body", func(t *testing.T) {
+		engine, _ := setup(t)
+
+		httpassert.New(t, engine).
+			Post("/notification-channel/mail/check").
+			Content(`-`).
+			Expect().
+			StatusCode(http.StatusBadRequest).
+			Json(`{
+				"type": "greenbone/validation-error",
+				"title": "unable to parse the request",
+				"details":"error parsing body"
+			}`)
 	})
 
 	t.Run("minimal required fields", func(t *testing.T) {

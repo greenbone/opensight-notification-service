@@ -14,6 +14,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -107,7 +108,8 @@ func TestListNotifications(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockNotificationService := mocks.NewNotificationService(t)
 
-			engine := testhelper.NewTestWebEngine()
+			registry := errmap.NewRegistry()
+			engine := testhelper.NewTestWebEngine(registry)
 			AddNotificationController(engine, mockNotificationService, testhelper.MockAuthMiddleware)
 
 			if tt.want.serviceCall {
@@ -188,7 +190,8 @@ func TestCreateNotification(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockNotificationService := mocks.NewNotificationService(t)
 
-			engine := testhelper.NewTestWebEngine()
+			registry := errmap.NewRegistry()
+			engine := testhelper.NewTestWebEngine(registry)
 			AddNotificationController(engine, mockNotificationService, testhelper.MockAuthMiddleware)
 
 			if tt.want.notificationServiceArg != nil {

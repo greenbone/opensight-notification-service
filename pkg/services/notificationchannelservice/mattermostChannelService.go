@@ -31,6 +31,16 @@ type mattermostChannelService struct {
 	mattermostChannelLimit     int
 }
 
+func NewMattermostChannelService(
+	notificationChannelService NotificationChannelService,
+	mattermostChannelLimit int,
+) MattermostChannelService {
+	return &mattermostChannelService{
+		notificationChannelService: notificationChannelService,
+		mattermostChannelLimit:     mattermostChannelLimit,
+	}
+}
+
 func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) error {
 	body, err := json.Marshal(map[string]string{
 		"text": "Hello This is a test message",
@@ -69,16 +79,6 @@ func (m *mattermostChannelService) CreateMattermostChannel(
 	}
 
 	return mattermostdto.MapNotificationChannelToMattermost(created), nil
-}
-
-func NewMattermostChannelService(
-	notificationChannelService NotificationChannelService,
-	mattermostChannelLimit int,
-) MattermostChannelService {
-	return &mattermostChannelService{
-		notificationChannelService: notificationChannelService,
-		mattermostChannelLimit:     mattermostChannelLimit,
-	}
 }
 
 func (m *mattermostChannelService) mattermostChannelValidations(c context.Context, channelName string) error {

@@ -3,12 +3,13 @@ package teamsController
 import (
 	"errors"
 	"net/http"
-	"regexp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 )
@@ -20,29 +21,43 @@ type TeamsController struct {
 	teamsChannelService         notificationchannelservice.TeamsChannelService
 }
 
-func NewTeamsController(
+func AddTeamsController(
 	router gin.IRouter,
 	notificationChannelServicer notificationchannelservice.NotificationChannelService,
 	teamsChannelService notificationchannelservice.TeamsChannelService,
 	auth gin.HandlerFunc,
+	registry *errmap.Registry,
+
 ) *TeamsController {
 	ctrl := &TeamsController{
 		notificationChannelServicer: notificationChannelServicer,
 		teamsChannelService:         teamsChannelService,
 	}
-	ctrl.registerRoutes(router, auth)
+
+	group := router.Group("/notification-channel/teams").
+		Use(middleware.AuthorizeRoles(auth, "admin")...)
+
+	group.POST("", ctrl.CreateTeamsChannel)
+	group.GET("", ctrl.ListTeamsChannels)
+	group.PUT("/:id", ctrl.UpdateTeamsChannel)
+	group.DELETE("/:id", ctrl.DeleteTeamsChannel)
+	group.POST("/check", ctrl.SendTeamsTestMessage)
+
+	ctrl.configureMappings(registry)
 	return ctrl
 }
 
-func (tc *TeamsController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
-	group := router.Group("/notification-channel/teams").
-		Use(middleware.AuthorizeRoles(auth, "admin")...)
-	group.POST("", tc.CreateTeamsChannel)
-	group.GET("", tc.ListTeamsChannelsByType)
-	group.PUT("/:id", tc.UpdateTeamsChannel)
-	group.DELETE("/:id", tc.DeleteTeamsChannel)
-	group.POST("/check", tc.SendTeamsTestMessage)
-
+func (tc *TeamsController) configureMappings(r *errmap.Registry) {
+	r.Register(
+		notificationchannelservice.ErrTeamsChannelLimitReached,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Teams channel limit reached."),
+	)
+	r.Register(
+		notificationchannelservice.ErrListTeamsChannels,
+		http.StatusInternalServerError,
+		errorResponses.ErrorInternalResponse,
+	)
 }
 
 // CreateTeamsChannel
@@ -60,27 +75,20 @@ func (tc *TeamsController) registerRoutes(router gin.IRouter, auth gin.HandlerFu
 //	@Router			/notification-channel/teams [post]
 func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
 	var channel teamsdto.TeamsNotificationChannelRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
-		return
-	}
-
-	if err := tc.validateFields(channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Mandatory fields of teams configuration cannot be empty",
-			err, nil)
+	if !ginEx.BindAndValidateBody(c, &channel) {
 		return
 	}
 
 	teamsChannel, err := tc.teamsChannelService.CreateTeamsChannel(c, channel)
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
 
 	c.JSON(http.StatusCreated, teamsChannel)
 }
 
-// ListTeamsChannelsByType
+// ListTeamsChannels
 //
 //	@Summary		List Teams Channels
 //	@Description	List teams notification channels by type
@@ -91,13 +99,13 @@ func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
 //	@Success		200		{array}		teamsdto.TeamsNotificationChannelRequest
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/teams [get]
-func (tc *TeamsController) ListTeamsChannelsByType(c *gin.Context) {
+func (tc *TeamsController) ListTeamsChannels(c *gin.Context) {
 	channels, err := tc.notificationChannelServicer.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
-
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
+
 	c.JSON(http.StatusOK, teamsdto.MapNotificationChannelsToTeams(channels))
 }
 
@@ -119,21 +127,14 @@ func (tc *TeamsController) ListTeamsChannelsByType(c *gin.Context) {
 func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 	id := c.Param("id")
 	var channel teamsdto.TeamsNotificationChannelRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
-		return
-	}
-
-	if err := tc.validateFields(channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Mandatory fields of teams configuration cannot be empty",
-			err, nil)
+	if !ginEx.BindAndValidateBody(c, &channel) {
 		return
 	}
 
 	notificationChannel := teamsdto.MapTeamsToNotificationChannel(channel)
 	updated, err := tc.notificationChannelServicer.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
 	response := teamsdto.MapNotificationChannelToTeams(updated)
@@ -154,31 +155,11 @@ func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 	id := c.Param("id")
 	if err := tc.notificationChannelServicer.DeleteNotificationChannel(c, id); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
 
 	c.Status(http.StatusNoContent)
-}
-
-func (tc *TeamsController) validateFields(channel teamsdto.TeamsNotificationChannelRequest) map[string]string {
-	errs := make(map[string]string)
-	if channel.ChannelName == "" {
-		errs["channelName"] = "A channel name is required."
-	}
-	if channel.WebhookUrl == "" {
-		errs["webhookUrl"] = "A Webhook URL is required."
-	} else {
-		var re = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
-		if !re.MatchString(channel.WebhookUrl) {
-			errs["webhookUrl"] = "Invalid teams webhook URL format."
-		}
-	}
-
-	if len(errs) > 0 {
-		return errs
-	}
-	return nil
 }
 
 // SendTeamsTestMessage
@@ -195,18 +176,12 @@ func (tc *TeamsController) validateFields(channel teamsdto.TeamsNotificationChan
 //	@Router			/notification-channel/Teams/check [post]
 func (tc *TeamsController) SendTeamsTestMessage(c *gin.Context) {
 	var channel teamsdto.TeamsNotificationChannelCheckRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
-		return
-	}
-
-	if err := channel.Validate(); err != nil {
-		_ = c.Error(err)
+	if !ginEx.BindAndValidateBody(c, &channel) {
 		return
 	}
 
 	if err := tc.teamsChannelService.SendTeamsTestMessage(channel.WebhookUrl); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Failed to send test message to Teams server", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
 
