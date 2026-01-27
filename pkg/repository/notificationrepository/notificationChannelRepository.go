@@ -209,7 +209,7 @@ func (r *notificationChannelRepository) UpdateNotificationChannel(
 	return r.decrypt(row).ToModel(), nil
 }
 
-func (r *notificationChannelRepository) withEncryptedValues(row notificationChannelRow) (notificationChannelRow, error) {
+func (r *notificationChannelRepository) encrypt(row notificationChannelRow) (notificationChannelRow, error) {
 	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
 		encryptedPasswd, err := r.encryptManager.Encrypt(*row.Password)
 		if err != nil {
@@ -233,7 +233,7 @@ func (r *notificationChannelRepository) withEncryptedValues(row notificationChan
 	return row, nil
 }
 
-func (r *notificationChannelRepository) withPasswordDecrypted(row notificationChannelRow) notificationChannelRow {
+func (r *notificationChannelRepository) decrypt(row notificationChannelRow) notificationChannelRow {
 	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
 		dPasswd := *row.Password
 		dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd))
