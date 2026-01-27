@@ -7,13 +7,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
-	"github.com/greenbone/opensight-notification-service/pkg/response"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
 )
 
 func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *mocks.MattermostChannelService) {
@@ -35,12 +34,12 @@ func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *moc
 
 func TestCreateMattermostChannel_Success(t *testing.T) {
 	r, _, mattermostService := setupTestController()
-	input := request.MattermostNotificationChannelRequest{
+	input := mattermostdto.MattermostNotificationChannelRequest{
 		ChannelName: "test-channel",
 		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "desc",
 	}
-	output := response.MattermostNotificationChannelResponse{
+	output := mattermostdto.MattermostNotificationChannelResponse{
 		ChannelName: "test-channel",
 		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "desc",
@@ -106,7 +105,7 @@ func TestListMattermostChannelsByType_Error(t *testing.T) {
 func TestUpdateMattermostChannel_Success(t *testing.T) {
 	r, notificationService, _ := setupTestController()
 	id := "1"
-	input := request.MattermostNotificationChannelRequest{
+	input := mattermostdto.MattermostNotificationChannelRequest{
 		ChannelName: "test",
 		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "desc"}

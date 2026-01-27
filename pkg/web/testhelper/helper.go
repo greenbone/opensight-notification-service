@@ -16,7 +16,9 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
@@ -111,8 +113,8 @@ func SetupNotificationChannelTestEnv(t *testing.T) (notificationrepository.Notif
 	return repo, db
 }
 
-func GetValidMailNotificationChannel() dto.MailNotificationChannelRequest {
-	return dto.MailNotificationChannelRequest{
+func GetValidMailNotificationChannel() maildto.MailNotificationChannelRequest {
+	return maildto.MailNotificationChannelRequest{
 		ChannelName:              "mail1",
 		Domain:                   "example.com",
 		Port:                     25,
@@ -126,16 +128,16 @@ func GetValidMailNotificationChannel() dto.MailNotificationChannelRequest {
 	}
 }
 
-func GetValidMattermostNotificationChannel() request.MattermostNotificationChannelRequest {
-	return request.MattermostNotificationChannelRequest{
+func GetValidMattermostNotificationChannel() mattermostdto.MattermostNotificationChannelRequest {
+	return mattermostdto.MattermostNotificationChannelRequest{
 		ChannelName: "mattermost1",
 		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "This is a test mattermost channel",
 	}
 }
 
-func GetValidTeamsNotificationChannel() request.TeamsNotificationChannelRequest {
-	return request.TeamsNotificationChannelRequest{
+func GetValidTeamsNotificationChannel() teamsdto.TeamsNotificationChannelRequest {
+	return teamsdto.TeamsNotificationChannelRequest{
 		ChannelName: "teams1",
 		WebhookUrl:  "https://webhookurl.com/webhook/id1",
 		Description: "This is a test teams channel",

@@ -10,7 +10,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
-	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/dto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 )
 
 var ErrTeamsChannelBadRequest = errors.New("bad request for teams channel")
@@ -53,13 +53,13 @@ func (tc *TeamsController) registerRoutes(router gin.IRouter, auth gin.HandlerFu
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			TeamsChannel	body		request.TeamsNotificationChannelRequest	true	"Teams channel to add"
-//	@Success		201			{object}	request.TeamsNotificationChannelRequest
+//	@Param			TeamsChannel	body		teamsdto.TeamsNotificationChannelRequest	true	"Teams channel to add"
+//	@Success		201			{object}	teamsdto.TeamsNotificationChannelRequest
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/teams [post]
 func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
-	var channel dto.TeamsNotificationChannelRequest
+	var channel teamsdto.TeamsNotificationChannelRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
 		return
@@ -88,7 +88,7 @@ func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			type	query		string	false	"Channel type"
-//	@Success		200		{array}		request.TeamsNotificationChannelRequest
+//	@Success		200		{array}		teamsdto.TeamsNotificationChannelRequest
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/teams [get]
 func (tc *TeamsController) ListTeamsChannelsByType(c *gin.Context) {
@@ -98,7 +98,7 @@ func (tc *TeamsController) ListTeamsChannelsByType(c *gin.Context) {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	c.JSON(http.StatusOK, dto.MapNotificationChannelsToTeams(channels))
+	c.JSON(http.StatusOK, teamsdto.MapNotificationChannelsToTeams(channels))
 }
 
 // UpdateTeamsChannel
@@ -110,15 +110,15 @@ func (tc *TeamsController) ListTeamsChannelsByType(c *gin.Context) {
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			id			path		string						true	"Teams channel ID"
-//	@Param			TeamsChannel	body		request.TeamsNotificationChannelRequest	true	"Teams channel to update"
-//	@Success		200			{object}	request.TeamsNotificationChannelRequest
+//	@Param			TeamsChannel	body		teamsdto.TeamsNotificationChannelRequest	true	"Teams channel to update"
+//	@Success		200			{object}	teamsdto.TeamsNotificationChannelRequest
 //	@Failure		400			{object}	map[string]string
 //	@Failure		404 		{object}    map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/teams/{id} [put]
 func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 	id := c.Param("id")
-	var channel dto.TeamsNotificationChannelRequest
+	var channel teamsdto.TeamsNotificationChannelRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
 		return
@@ -130,13 +130,13 @@ func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 		return
 	}
 
-	notificationChannel := dto.MapTeamsToNotificationChannel(channel)
+	notificationChannel := teamsdto.MapTeamsToNotificationChannel(channel)
 	updated, err := tc.notificationChannelServicer.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
 		return
 	}
-	response := dto.MapNotificationChannelToTeams(updated)
+	response := teamsdto.MapNotificationChannelToTeams(updated)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -161,7 +161,7 @@ func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (tc *TeamsController) validateFields(channel dto.TeamsNotificationChannelRequest) map[string]string {
+func (tc *TeamsController) validateFields(channel teamsdto.TeamsNotificationChannelRequest) map[string]string {
 	errs := make(map[string]string)
 	if channel.ChannelName == "" {
 		errs["channelName"] = "A channel name is required."
@@ -194,7 +194,7 @@ func (tc *TeamsController) validateFields(channel dto.TeamsNotificationChannelRe
 //	@Failure		400			{object}	map[string]string
 //	@Router			/notification-channel/Teams/check [post]
 func (tc *TeamsController) SendTeamsTestMessage(c *gin.Context) {
-	var channel dto.TeamsNotificationChannelCheckRequest
+	var channel teamsdto.TeamsNotificationChannelCheckRequest
 	if err := c.ShouldBindJSON(&channel); err != nil {
 		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, ErrTeamsChannelBadRequest)
 		return

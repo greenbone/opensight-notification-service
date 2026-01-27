@@ -1,4 +1,4 @@
-package dto
+package mattermostdto
 
 import "github.com/greenbone/opensight-notification-service/pkg/web/helper"
 

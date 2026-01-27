@@ -1,4 +1,4 @@
-package dto
+package teamsdto
 
 import "github.com/greenbone/opensight-notification-service/pkg/web/helper"
 

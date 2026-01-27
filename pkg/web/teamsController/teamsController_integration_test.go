@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -134,7 +134,7 @@ func createTeamsNotification(
 	t *testing.T,
 	request httpassert.Request,
 	channelName string,
-	valid request.TeamsNotificationChannelRequest,
+	valid teamsdto.TeamsNotificationChannelRequest,
 ) string {
 	var teamsId string
 	valid.ChannelName = channelName

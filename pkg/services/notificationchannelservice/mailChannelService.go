@@ -6,7 +6,7 @@ import (
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 )
 
 var (
@@ -17,8 +17,8 @@ var (
 type MailChannelService interface {
 	CreateMailChannel(
 		c context.Context,
-		channel dto.MailNotificationChannelRequest,
-	) (dto.MailNotificationChannelRequest, error)
+		channel maildto.MailNotificationChannelRequest,
+	) (maildto.MailNotificationChannelRequest, error)
 	CheckNotificationChannelConnectivity(
 		ctx context.Context,
 		mailServer models.NotificationChannel,
@@ -50,19 +50,19 @@ func NewMailChannelService(
 
 func (m *mailChannelService) CreateMailChannel(
 	c context.Context,
-	channel dto.MailNotificationChannelRequest,
-) (dto.MailNotificationChannelRequest, error) {
+	channel maildto.MailNotificationChannelRequest,
+) (maildto.MailNotificationChannelRequest, error) {
 	if errResp := m.mailChannelAlreadyExists(c); errResp != nil {
-		return dto.MailNotificationChannelRequest{}, errResp
+		return maildto.MailNotificationChannelRequest{}, errResp
 	}
 
-	notificationChannel := dto.MapMailToNotificationChannel(channel)
+	notificationChannel := maildto.MapMailToNotificationChannel(channel)
 	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
-		return dto.MailNotificationChannelRequest{}, err
+		return maildto.MailNotificationChannelRequest{}, err
 	}
 
-	return dto.MapNotificationChannelToMail(created), nil
+	return maildto.MapNotificationChannelToMail(created), nil
 }
 
 func (m *mailChannelService) CheckNotificationChannelConnectivity(

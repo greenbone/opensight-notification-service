@@ -18,8 +18,13 @@ func TestSaltManager_UpdateKeys(t *testing.T) {
 	mgr := NewEncryptManager()
 	mgr.UpdateKeys(cfg)
 
-	assert.Equal(t, mgr.activeKey.Password, cfg.Password)
-	assert.Equal(t, mgr.activeKey.PasswordSalt, cfg.PasswordSalt)
+	em, ok := mgr.(*encryptManager)
+	if !ok {
+		t.Fatalf("mgr is not of type *encryptManager")
+	}
+
+	assert.Equal(t, em.activeKey.Password, cfg.Password)
+	assert.Equal(t, em.activeKey.PasswordSalt, cfg.PasswordSalt)
 }
 
 func TestSaltManager_Encrypt_Decrypt(t *testing.T) {

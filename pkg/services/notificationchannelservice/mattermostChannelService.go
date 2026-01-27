@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/dto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
 )
 
 var (
@@ -22,8 +22,8 @@ type MattermostChannelService interface {
 	SendMattermostTestMessage(webhookUrl string) error
 	CreateMattermostChannel(
 		c context.Context,
-		channel dto.MattermostNotificationChannelRequest,
-	) (dto.MattermostNotificationChannelResponse, error)
+		channel mattermostdto.MattermostNotificationChannelRequest,
+	) (mattermostdto.MattermostNotificationChannelResponse, error)
 }
 
 type mattermostChannelService struct {
@@ -56,19 +56,19 @@ func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) 
 
 func (m *mattermostChannelService) CreateMattermostChannel(
 	c context.Context,
-	channel dto.MattermostNotificationChannelRequest,
-) (dto.MattermostNotificationChannelResponse, error) {
+	channel mattermostdto.MattermostNotificationChannelRequest,
+) (mattermostdto.MattermostNotificationChannelResponse, error) {
 	if errResp := m.mattermostChannelValidations(c, channel.ChannelName); errResp != nil {
-		return dto.MattermostNotificationChannelResponse{}, errResp
+		return mattermostdto.MattermostNotificationChannelResponse{}, errResp
 	}
 
-	notificationChannel := dto.MapMattermostToNotificationChannel(channel)
+	notificationChannel := mattermostdto.MapMattermostToNotificationChannel(channel)
 	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
-		return dto.MattermostNotificationChannelResponse{}, err
+		return mattermostdto.MattermostNotificationChannelResponse{}, err
 	}
 
-	return dto.MapNotificationChannelToMattermost(created), nil
+	return mattermostdto.MapNotificationChannelToMattermost(created), nil
 }
 
 func NewMattermostChannelService(

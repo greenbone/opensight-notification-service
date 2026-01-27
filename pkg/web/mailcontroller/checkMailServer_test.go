@@ -6,16 +6,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
-	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-func setup(t *testing.T) (*gin.Engine, *mocks.NotificationChannelService) {
+func setup(t *testing.T) (*gin.Engine, *mocks.MailChannelService) {
 	engine := testhelper.NewTestWebEngine()
 
-	notificationChannelServicer := mocks.NewNotificationChannelService(t)
+	notificationChannelServicer := mocks.NewMailChannelService(t)
 
 	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
 	return engine, notificationChannelServicer

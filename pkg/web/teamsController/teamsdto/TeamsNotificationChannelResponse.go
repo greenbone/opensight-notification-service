@@ -1,4 +1,4 @@
-package dto
+package teamsdto
 
 type TeamsNotificationChannelResponse struct {
 	Id          *string `json:"id,omitempty"`

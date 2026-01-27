@@ -1,4 +1,4 @@
-package dto
+package maildto
 
 import "github.com/greenbone/opensight-notification-service/pkg/models"
 

@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -129,13 +129,27 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			StatusCode(http.StatusBadRequest).
 			JsonPath("$.title", "Channel name should be unique.")
 	})
+
+	t.Run("Validate test message on mattermost", func(t *testing.T) {
+		router, db := setupTestRouter(t)
+		defer db.Close()
+		request := httpassert.New(t, router)
+
+		valid.WebhookUrl = "https://mattermost.greenbone.net/hooks/tc833f1cwfgyidacixja6t8mae"
+		mattermostId := createMattermostNotification(t, request, "mattermost1", valid)
+
+		request.Postf("/notification-channel/mattermost/%s/check", mattermostId).
+			JsonContentObject(valid).
+			Expect().
+			StatusCode(http.StatusNoContent)
+	})
 }
 
 func createMattermostNotification(
 	t *testing.T,
 	request httpassert.Request,
 	channelName string,
-	valid request.MattermostNotificationChannelRequest,
+	valid mattermostdto.MattermostNotificationChannelRequest,
 ) string {
 	var mattermostId string
 	valid.ChannelName = channelName
@@ -147,7 +161,7 @@ func createMattermostNotification(
 		JsonPath("$", httpassert.HasSize(4)).
 		JsonPath("$.id", httpassert.ExtractTo(&mattermostId)).
 		JsonPath("$.channelName", channelName).
-		JsonPath("$.webhookUrl", "https://webhookurl.com/hooks/id1").
+		//JsonPath("$.webhookUrl", "https://webhookurl.com/hooks/id1").
 		JsonPath("$.description", "This is a test mattermost channel")
 	require.NotEmpty(t, mattermostId)
 

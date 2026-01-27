@@ -7,11 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
-	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
-	mailmocks "github.com/greenbone/opensight-notification-service/pkg/port/mocks"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
 )
@@ -41,7 +39,7 @@ func getValidNotificationChannel() models.NotificationChannel {
 	}
 }
 
-func setupRouter(service *mocks.NotificationChannelService, mailService *mailmocks.MailChannelService) *gin.Engine {
+func setupRouter(service *mocks.NotificationChannelService, mailService *mocks.MailChannelService) *gin.Engine {
 	engine := testhelper.NewTestWebEngine()
 
 	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin)
@@ -50,13 +48,13 @@ func setupRouter(service *mocks.NotificationChannelService, mailService *mailmoc
 
 func TestMailController_CreateMailChannel(t *testing.T) {
 	valid := getValidNotificationChannel()
-	mailValid := mapper.MapNotificationChannelToMail(valid)
+	mailValid := maildto.MapNotificationChannelToMail(valid)
 	created := mailValid // Simulate returned object
 
 	tests := []struct {
 		name           string
 		input          any
-		mockReturn     request.MailNotificationChannelRequest
+		mockReturn     maildto.MailNotificationChannelRequest
 		mockErr        error
 		wantStatusCode int
 	}{
@@ -84,7 +82,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 		},
 		{
 			name: "invalid sender email",
-			input: func() request.MailNotificationChannelRequest {
+			input: func() maildto.MailNotificationChannelRequest {
 				invalid := mailValid
 				invalid.SenderEmailAddress = "not-an-email"
 				return invalid
@@ -96,7 +94,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := mocks.NewNotificationChannelService(t)
-			mockMailService := mailmocks.NewMailChannelService(t)
+			mockMailService := mocks.NewMailChannelService(t)
 			router := setupRouter(mockService, mockMailService)
 
 			if tt.wantStatusCode == http.StatusCreated || tt.wantStatusCode == http.StatusInternalServerError {
@@ -244,7 +242,7 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := mocks.NewNotificationChannelService(t)
-			mockMailService := mailmocks.NewMailChannelService(t)
+			mockMailService := mocks.NewMailChannelService(t)
 			router := setupRouter(mockService, mockMailService)
 
 			if tt.wantStatusCode == http.StatusOK || tt.wantStatusCode == http.StatusInternalServerError {

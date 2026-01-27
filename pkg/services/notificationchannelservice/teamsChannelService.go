@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/dto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 )
 
 var (
@@ -23,8 +23,8 @@ type TeamsChannelService interface {
 	SendTeamsTestMessage(webhookUrl string) error
 	CreateTeamsChannel(
 		c context.Context,
-		channel dto.TeamsNotificationChannelRequest,
-	) (dto.TeamsNotificationChannelResponse, error)
+		channel teamsdto.TeamsNotificationChannelRequest,
+	) (teamsdto.TeamsNotificationChannelResponse, error)
 }
 
 type teamsChannelService struct {
@@ -67,19 +67,19 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 
 func (t *teamsChannelService) CreateTeamsChannel(
 	c context.Context,
-	channel dto.TeamsNotificationChannelRequest,
-) (dto.TeamsNotificationChannelResponse, error) {
+	channel teamsdto.TeamsNotificationChannelRequest,
+) (teamsdto.TeamsNotificationChannelResponse, error) {
 	if errResp := t.teamsChannelLimitReached(c, channel.ChannelName); errResp != nil {
-		return dto.TeamsNotificationChannelResponse{}, errResp
+		return teamsdto.TeamsNotificationChannelResponse{}, errResp
 	}
 
-	notificationChannel := dto.MapTeamsToNotificationChannel(channel)
+	notificationChannel := teamsdto.MapTeamsToNotificationChannel(channel)
 	created, err := t.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
-		return dto.TeamsNotificationChannelResponse{}, err
+		return teamsdto.TeamsNotificationChannelResponse{}, err
 	}
 
-	return dto.MapNotificationChannelToTeams(created), nil
+	return teamsdto.MapNotificationChannelToTeams(created), nil
 }
 
 func (t *teamsChannelService) teamsChannelLimitReached(c context.Context, channelName string) error {

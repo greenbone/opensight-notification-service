@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTestRepo(t *testing.T) (context.Context, port.NotificationChannelRepository) {
+func setupTestRepo(t *testing.T) (context.Context, NotificationChannelRepository) {
 	encryptMgr := security.NewEncryptManager()
 	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
 		Password:     "password",

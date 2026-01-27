@@ -1,4 +1,4 @@
-package dto
+package mattermostdto
 
 type MattermostNotificationChannelResponse struct {
 	Id          *string `json:"id,omitempty"`

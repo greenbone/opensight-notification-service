@@ -13,13 +13,13 @@ import (
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/mocks"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
 )
