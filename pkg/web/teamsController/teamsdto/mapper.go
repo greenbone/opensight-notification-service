@@ -5,7 +5,7 @@ import "github.com/greenbone/opensight-notification-service/pkg/models"
 // MapNotificationChannelToTeams maps NotificationChannel to TeamsNotificationChannelRequest.
 func MapNotificationChannelToTeams(channel models.NotificationChannel) TeamsNotificationChannelResponse {
 	return TeamsNotificationChannelResponse{
-		Id:          channel.Id,
+		Id:          *channel.Id,
 		ChannelName: *channel.ChannelName,
 		WebhookUrl:  *channel.WebhookUrl,
 		Description: *channel.Description,

@@ -44,7 +44,7 @@ func toNotificationRow(n models.Notification) (notificationRow, error) {
 
 	customFieldsSerialized, err := json.Marshal(n.CustomFields)
 	if err != nil {
-		return empty, err // TODO: return validation error ?
+		return empty, err
 	}
 
 	notificationRow := notificationRow{

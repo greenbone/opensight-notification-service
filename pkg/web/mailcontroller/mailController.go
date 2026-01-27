@@ -205,6 +205,16 @@ func (v *MailController) validateFields(channel maildto.MailNotificationChannelR
 	if channel.Port == 0 {
 		errs["port"] = "A port is required."
 	}
+
+	if channel.IsAuthenticationRequired {
+		if channel.Username != nil && *channel.Username == "" {
+			errs["username"] = "Username is required."
+		}
+		if channel.Password != nil && *channel.Password == "" {
+			errs["password"] = "Password is required."
+		}
+	}
+
 	v.validateEmailAddress(channel.SenderEmailAddress, errs)
 	if channel.ChannelName == "" {
 		errs["channelName"] = "A Channel Name is required."

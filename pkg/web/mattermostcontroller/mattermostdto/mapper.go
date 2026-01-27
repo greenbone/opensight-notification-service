@@ -5,7 +5,7 @@ import "github.com/greenbone/opensight-notification-service/pkg/models"
 // MapNotificationChannelToMattermost maps NotificationChannel to MattermostNotificationChannelRequest.
 func MapNotificationChannelToMattermost(channel models.NotificationChannel) MattermostNotificationChannelResponse {
 	return MattermostNotificationChannelResponse{
-		Id:          channel.Id,
+		Id:          *channel.Id,
 		ChannelName: *channel.ChannelName,
 		WebhookUrl:  *channel.WebhookUrl,
 		Description: *channel.Description,

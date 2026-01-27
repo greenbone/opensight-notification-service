@@ -29,18 +29,18 @@ func (v CheckMailServerRequest) Validate() helper.ValidateErrors {
 	errors := make(helper.ValidateErrors)
 
 	if v.Domain == "" {
-		errors["domain"] = "required"
+		errors["domain"] = "A Mailhub is required."
 	}
 	if v.Port == 0 {
-		errors["port"] = "required"
+		errors["port"] = "A port is required."
 	}
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errors["username"] = "required"
+			errors["username"] = "Username is required."
 		}
 		if v.Password == "" {
-			errors["password"] = "required"
+			errors["password"] = "Password is required."
 		}
 	}
 

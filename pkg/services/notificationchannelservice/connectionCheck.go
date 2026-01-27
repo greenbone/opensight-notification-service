@@ -39,7 +39,5 @@ func ConnectionCheckMail(ctx context.Context, mailServer models.NotificationChan
 		return fmt.Errorf("failed to reach mail server: %w", err)
 	}
 
-	// TODO: 21.01.2026 stolksdorf - username and password are not validated
-
 	return nil
 }

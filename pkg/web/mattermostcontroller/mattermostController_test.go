@@ -9,6 +9,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
@@ -16,19 +17,12 @@ import (
 )
 
 func setupTestController() (*gin.Engine, *mocks.NotificationChannelService, *mocks.MattermostChannelService) {
-	gin.SetMode(gin.TestMode)
-	r := gin.Default()
+	r := testhelper.NewTestWebEngine()
+
 	notificationService := &mocks.NotificationChannelService{}
 	mattermostService := &mocks.MattermostChannelService{}
-	ctrl := &MattermostController{
-		notificationChannelServicer: notificationService,
-		mattermostChannelService:    mattermostService,
-	}
-	group := r.Group("/notification-channel/mattermost")
-	group.POST("", ctrl.CreateMattermostChannel)
-	group.GET("", ctrl.ListMattermostChannelsByType)
-	group.PUT(":id", ctrl.UpdateMattermostChannel)
-	group.DELETE(":id", ctrl.DeleteMattermostChannel)
+	NewMattermostController(r, notificationService, mattermostService, testhelper.MockAuthMiddlewareWithAdmin)
+
 	return r, notificationService, mattermostService
 }
 
@@ -43,7 +37,7 @@ func TestCreateMattermostChannel_Success(t *testing.T) {
 		ChannelName: "test-channel",
 		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "desc",
-		Id:          helper.ToPtr("1"),
+		Id:          "1",
 	}
 	mattermostService.On("CreateMattermostChannel", mock.Anything, input).Return(output, nil)
 
