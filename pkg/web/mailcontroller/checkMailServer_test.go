@@ -80,8 +80,8 @@ func TestCheckMailServer(t *testing.T) {
 				"type": "greenbone/validation-error",
 				"title": "",
 				"errors": {
-					"username": "Username is required.",
-					"password": "Password is required."
+					"username": "An Username is required.",
+					"password": "A Password is required."
 				}
 			}`)
 	})

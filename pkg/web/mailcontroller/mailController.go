@@ -208,10 +208,10 @@ func (v *MailController) validateFields(channel maildto.MailNotificationChannelR
 
 	if channel.IsAuthenticationRequired {
 		if channel.Username != nil && *channel.Username == "" {
-			errs["username"] = "Username is required."
+			errs["username"] = "An Username is required."
 		}
 		if channel.Password != nil && *channel.Password == "" {
-			errs["password"] = "Password is required."
+			errs["password"] = "A Password is required."
 		}
 	}
 

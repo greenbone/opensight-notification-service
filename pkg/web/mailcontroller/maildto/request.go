@@ -37,10 +37,10 @@ func (v CheckMailServerRequest) Validate() helper.ValidateErrors {
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errors["username"] = "Username is required."
+			errors["username"] = "An Username is required."
 		}
 		if v.Password == "" {
-			errors["password"] = "Password is required."
+			errors["password"] = "A Password is required."
 		}
 	}
 
