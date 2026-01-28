@@ -1,9 +1,8 @@
 package teamsdto
 
 import (
-	"regexp"
-
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/policy"
 )
 
 // TeamsNotificationChannelRequest teams notification channel request
@@ -18,11 +17,11 @@ func (m *TeamsNotificationChannelRequest) Validate() models.ValidationErrors {
 	if m.ChannelName == "" {
 		errs["channelName"] = "A channel name is required."
 	}
+
 	if m.WebhookUrl == "" {
 		errs["webhookUrl"] = "A Webhook URL is required."
 	} else {
-		var re = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
-		if !re.MatchString(m.WebhookUrl) {
+		if _, err := policy.TeamsWebhookUrlPolicy(m.WebhookUrl); err != nil {
 			errs["webhookUrl"] = "Invalid teams webhook URL format."
 		}
 	}
@@ -39,10 +38,9 @@ func (r *TeamsNotificationChannelCheckRequest) Validate() models.ValidationError
 	errs := make(models.ValidationErrors)
 
 	if r.WebhookUrl == "" {
-		errs["webhookUrl"] = "webhook URL is required"
+		errs["webhookUrl"] = "A Webhook URL is required."
 	} else {
-		var re = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
-		if !re.MatchString(r.WebhookUrl) {
+		if _, err := policy.TeamsWebhookUrlPolicy(r.WebhookUrl); err != nil {
 			errs["webhookUrl"] = "Invalid teams webhook URL format."
 		}
 	}
