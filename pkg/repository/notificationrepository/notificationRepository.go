@@ -12,26 +12,39 @@ import (
 	pgquery "github.com/greenbone/opensight-golang-libraries/pkg/postgres/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/jmoiron/sqlx"
 )
 
-type NotificationRepository struct {
+type NotificationRepository interface {
+	ListNotifications(
+		ctx context.Context,
+		resultSelector query.ResultSelector,
+	) (notifications []models.Notification, totalResults uint64, err error)
+	CreateNotification(
+		ctx context.Context,
+		notificationIn models.Notification,
+	) (notification models.Notification, err error)
+}
+
+type notificationRepository struct {
 	client *sqlx.DB
 }
 
-func NewNotificationRepository(db *sqlx.DB) (port.NotificationRepository, error) {
+func NewNotificationRepository(db *sqlx.DB) (NotificationRepository, error) {
 	if db == nil {
 		return nil, errors.New("nil db reference")
 	}
-	client := &NotificationRepository{
+	client := &notificationRepository{
 		client: db,
 	}
 	return client, nil
 }
 
-func (r *NotificationRepository) ListNotifications(ctx context.Context, resultSelector query.ResultSelector) (notifications []models.Notification, totalResults uint64, err error) {
+func (r *notificationRepository) ListNotifications(
+	ctx context.Context,
+	resultSelector query.ResultSelector,
+) (notifications []models.Notification, totalResults uint64, err error) {
 	querySettings := pgquery.Settings{
 		FilterFieldMapping:      notificationFieldMapping(),
 		SortingTieBreakerColumn: "id",
@@ -70,7 +83,10 @@ func (r *NotificationRepository) ListNotifications(ctx context.Context, resultSe
 	return
 }
 
-func (r *NotificationRepository) CreateNotification(ctx context.Context, notificationIn models.Notification) (notification models.Notification, err error) {
+func (r *notificationRepository) CreateNotification(
+	ctx context.Context,
+	notificationIn models.Notification,
+) (notification models.Notification, err error) {
 	insertRow, err := toNotificationRow(notificationIn)
 	if err != nil {
 		return notification, fmt.Errorf("invalid argument for inserting notification into database: %w", err)

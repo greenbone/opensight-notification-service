@@ -11,25 +11,28 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
-	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller/dtos"
 	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 )
 
 type NotificationController struct {
-	notificationService port.NotificationService
+	notificationService notificationservice.NotificationService
 }
 
-func AddNotificationController(router gin.IRouter, notificationService port.NotificationService, auth gin.HandlerFunc) {
+func AddNotificationController(
+	router gin.IRouter,
+	notificationService notificationservice.NotificationService,
+	auth gin.HandlerFunc,
+) {
 	ctrl := &NotificationController{
 		notificationService: notificationService,
 	}
@@ -85,7 +88,7 @@ func (c *NotificationController) CreateNotification(gc *gin.Context) {
 func (c *NotificationController) ListNotifications(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
-	resultSelector, err := helper.PrepareResultSelector(gc, dtos.NotificationsRequestOptions, dtos.AllowedNotificationsSortFields, helper.ResultSelectorDefaults(dtos.DefaultSortingRequest))
+	resultSelector, err := helper.PrepareResultSelector(gc, NotificationsRequestOptions, AllowedNotificationsSortFields, helper.ResultSelectorDefaults(DefaultSortingRequest))
 	if err != nil {
 		restErrorHandler.ErrorHandler(gc, "could not prepare result selector", err)
 		return
@@ -116,7 +119,7 @@ func (c *NotificationController) ListNotifications(gc *gin.Context) {
 func (c *NotificationController) GetOptions(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
-	requestOptions := lo.Map(dtos.NotificationsRequestOptions, web.ToFilterOption)
+	requestOptions := lo.Map(NotificationsRequestOptions, web.ToFilterOption)
 	response := query.ResponseWithMetadata[[]query.FilterOption]{
 		Data: requestOptions,
 	}

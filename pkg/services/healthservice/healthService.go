@@ -11,19 +11,23 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type HealthService struct {
+type HealthService interface {
+	Ready(ctx context.Context) (ready bool)
+}
+
+type healthService struct {
 	pgClient *sqlx.DB
 }
 
-func NewHealthService(pgClient *sqlx.DB) *HealthService {
-	return &HealthService{
+func NewHealthService(pgClient *sqlx.DB) HealthService {
+	return &healthService{
 		pgClient: pgClient,
 	}
 }
 
 // Ready indicates if the service is ready to serve traffic.
 // Check that databases are up and ready to serve data
-func (s *HealthService) Ready(ctx context.Context) (ready bool) {
+func (s *healthService) Ready(ctx context.Context) (ready bool) {
 	// check postgres health
 	err := s.pgClient.Ping()
 	if err != nil {

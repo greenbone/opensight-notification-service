@@ -4,77 +4,83 @@ import (
 	"context"
 	"errors"
 
-	"github.com/greenbone/opensight-notification-service/pkg/mapper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
+	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 )
 
 var (
 	ErrMailChannelLimitReached = errors.New("mail channel limit reached")
 	ErrListMailChannels        = errors.New("failed to list mail channels")
-	ErrMailChannelBadRequest   = errors.New("bad request for mail channel")
+	ErrGetMailChannel          = errors.New("unable to get notification channel id and type")
 )
 
-type MailChannelService struct {
-	notificationChannelService port.NotificationChannelService
+type MailChannelService interface {
+	CreateMailChannel(
+		c context.Context,
+		channel maildto.MailNotificationChannelRequest,
+	) (maildto.MailNotificationChannelResponse, error)
+	CheckNotificationChannelConnectivity(
+		ctx context.Context,
+		mailServer models.NotificationChannel,
+	) error
+	CheckNotificationChannelEntityConnectivity(
+		ctx context.Context,
+		id string,
+		mailServer models.NotificationChannel,
+	) error
+}
+
+type mailChannelService struct {
+	notificationChannelService NotificationChannelService
+	store                      notificationrepository.NotificationChannelRepository
 	emailLimit                 int
 }
 
 func NewMailChannelService(
-	notificationChannelService port.NotificationChannelService,
+	notificationChannelService NotificationChannelService,
+	store notificationrepository.NotificationChannelRepository,
 	emailLimit int,
-) *MailChannelService {
-	return &MailChannelService{
+) MailChannelService {
+	return &mailChannelService{
 		notificationChannelService: notificationChannelService,
+		store:                      store,
 		emailLimit:                 emailLimit,
 	}
 }
 
-func (m *MailChannelService) mailChannelAlreadyExists(c context.Context) error {
-	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMail)
-	if err != nil {
-		return errors.Join(ErrListMailChannels, err)
-	}
-
-	if len(channels) >= m.emailLimit {
-		return ErrMailChannelLimitReached
-	}
-	return nil
-}
-
-func (m *MailChannelService) CreateMailChannel(
+func (m *mailChannelService) CreateMailChannel(
 	c context.Context,
-	channel request.MailNotificationChannelRequest,
-) (request.MailNotificationChannelRequest, error) {
+	channel maildto.MailNotificationChannelRequest,
+) (maildto.MailNotificationChannelResponse, error) {
 	if errResp := m.mailChannelAlreadyExists(c); errResp != nil {
-		return request.MailNotificationChannelRequest{}, errResp
+		return maildto.MailNotificationChannelResponse{}, errResp
 	}
 
-	notificationChannel := mapper.MapMailToNotificationChannel(channel)
+	notificationChannel := maildto.MapMailToNotificationChannel(channel)
 	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
 	if err != nil {
-		return request.MailNotificationChannelRequest{}, err
+		return maildto.MailNotificationChannelResponse{}, err
 	}
 
-	return mapper.MapNotificationChannelToMail(created), nil
+	return maildto.MapNotificationChannelToMail(created), nil
 }
 
-func (s *NotificationChannelService) CheckNotificationChannelConnectivity(
+func (m *mailChannelService) CheckNotificationChannelConnectivity(
 	ctx context.Context,
 	mailServer models.NotificationChannel,
 ) error {
 	return ConnectionCheckMail(ctx, mailServer)
 }
 
-func (s *NotificationChannelService) CheckNotificationChannelEntityConnectivity(
+func (m *mailChannelService) CheckNotificationChannelEntityConnectivity(
 	ctx context.Context,
 	id string,
 	mailServer models.NotificationChannel,
 ) error {
-	channel, err := s.GetNotificationChannelByIdAndType(ctx, id, models.ChannelTypeMail)
+	channel, err := m.store.GetNotificationChannelByIdAndType(ctx, id, models.ChannelTypeMail)
 	if err != nil {
-		return err
+		return errors.Join(ErrGetMailChannel, err)
 	}
 
 	if *mailServer.Password == "" && *mailServer.Username != "" {
@@ -84,4 +90,16 @@ func (s *NotificationChannelService) CheckNotificationChannelEntityConnectivity(
 	}
 
 	return ConnectionCheckMail(ctx, mailServer)
+}
+
+func (m *mailChannelService) mailChannelAlreadyExists(c context.Context) error {
+	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMail)
+	if err != nil {
+		return errors.Join(ErrListMailChannels, err)
+	}
+
+	if len(channels) >= m.emailLimit {
+		return ErrMailChannelLimitReached
+	}
+	return nil
 }

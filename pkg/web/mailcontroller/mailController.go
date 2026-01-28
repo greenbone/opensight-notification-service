@@ -3,32 +3,50 @@ package mailcontroller
 import (
 	"context"
 	"net/http"
-	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/mapper"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
-	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
-	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/dtos"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
 type MailController struct {
-	Service            port.NotificationChannelService
-	MailChannelService port.MailChannelService
+	Service            notificationchannelservice.NotificationChannelService
+	MailChannelService notificationchannelservice.MailChannelService
 }
 
 func NewMailController(
 	router gin.IRouter,
-	service port.NotificationChannelService, mailChannelService port.MailChannelService,
+	service notificationchannelservice.NotificationChannelService,
+	mailChannelService notificationchannelservice.MailChannelService,
 	auth gin.HandlerFunc,
+	registry errmap.ErrorRegistry,
 ) *MailController {
-	ctrl := &MailController{Service: service, MailChannelService: mailChannelService}
+	ctrl := &MailController{
+		Service:            service,
+		MailChannelService: mailChannelService,
+	}
 	ctrl.registerRoutes(router, auth)
+	ctrl.configureMappings(registry)
 	return ctrl
+}
+
+func (mc *MailController) configureMappings(r errmap.ErrorRegistry) {
+	r.Register(
+		notificationchannelservice.ErrMailChannelLimitReached,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Mail channel limit reached."),
+	)
+
+	r.Register(
+		notificationchannelservice.ErrListMailChannels,
+		http.StatusInternalServerError,
+		errorResponses.ErrorInternalResponse,
+	)
 }
 
 func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
@@ -49,31 +67,24 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			MailChannel	body		request.MailNotificationChannelRequest	true	"Mail channel to add"
-//	@Success		201			{object}	request.MailNotificationChannelRequest
+//	@Param			MailChannel	body		maildto.MailNotificationChannelRequest	true	"Mail channel to add"
+//	@Success		201			{object}	maildto.MailNotificationChannelRequest
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/mail [post]
 func (mc *MailController) CreateMailChannel(c *gin.Context) {
-	var channel request.MailNotificationChannelRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMailChannelBadRequest)
-		return
-	}
-
-	if err := mc.validateFields(channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Mandatory fields of mail configuration cannot be empty",
-			err, nil)
+	var channel maildto.MailNotificationChannelRequest
+	if !ginEx.BindAndValidateBody(c, &channel) {
 		return
 	}
 
 	mailChannel, err := mc.MailChannelService.CreateMailChannel(c, channel)
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, mailChannel.WithEmptyPassword())
+	c.JSON(http.StatusCreated, mailChannel)
 }
 
 // ListMailChannelsByType
@@ -84,17 +95,17 @@ func (mc *MailController) CreateMailChannel(c *gin.Context) {
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			type	query		string	false	"Channel type"
-//	@Success		200		{array}		request.MailNotificationChannelRequest
+//	@Success		200		{array}		maildto.MailNotificationChannelRequest
 //	@Failure		500		{object}	map[string]string
 //	@Router			/notification-channel/mail [get]
 func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 	channels, err := mc.Service.ListNotificationChannelsByType(c, models.ChannelTypeMail)
-
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, mapper.MapNotificationChannelsToMailWithEmptyPassword(channels))
+
+	c.JSON(http.StatusOK, maildto.MapNotificationChannelsToMail(channels))
 }
 
 // UpdateMailChannel
@@ -106,33 +117,27 @@ func (mc *MailController) ListMailChannelsByType(c *gin.Context) {
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			id			path		string						true	"Mail channel ID"
-//	@Param			MailChannel	body		request.MailNotificationChannelRequest	true	"Mail channel to update"
-//	@Success		200			{object}	request.MailNotificationChannelRequest
+//	@Param			MailChannel	body		maildto.MailNotificationChannelRequest	true	"Mail channel to update"
+//	@Success		200			{object}	maildto.MailNotificationChannelRequest
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/mail/{id} [put]
 func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 	id := c.Param("id")
-	var channel request.MailNotificationChannelRequest
-	if err := c.ShouldBindJSON(&channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMailChannelBadRequest)
+	var channel maildto.MailNotificationChannelRequest
+	if !ginEx.BindAndValidateBody(c, &channel) {
 		return
 	}
 
-	if err := mc.validateFields(channel); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "Mandatory fields of mail configuration cannot be empty",
-			err, nil)
-		return
-	}
-
-	notificationChannel := mapper.MapMailToNotificationChannel(channel)
+	notificationChannel := maildto.MapMailToNotificationChannel(channel)
 	updated, err := mc.Service.UpdateNotificationChannel(c, id, notificationChannel)
 	if err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
-	mailChannel := mapper.MapNotificationChannelToMail(updated)
-	c.JSON(http.StatusOK, mailChannel.WithEmptyPassword())
+
+	mailChannel := maildto.MapNotificationChannelToMail(updated)
+	c.JSON(http.StatusOK, mailChannel)
 }
 
 // DeleteMailChannel
@@ -147,8 +152,9 @@ func (mc *MailController) UpdateMailChannel(c *gin.Context) {
 //	@Router			/notification-channel/mail/{id} [delete]
 func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 	id := c.Param("id")
+
 	if err := mc.Service.DeleteNotificationChannel(c, id); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, err)
+		ginEx.AddError(c, err)
 		return
 	}
 
@@ -163,7 +169,7 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			MailServerConfig	body		dtos.CheckMailServerEntityRequest	true	"Mail server to check"
+//	@Param			MailServerConfig	body		maildto.CheckMailServerEntityRequest	true	"Mail server to check"
 //	@Success		204 "Mail server reachable"
 //	@Failure		400			{object}	map[string]string
 //	@Failure		422 "Mail server error"
@@ -171,55 +177,16 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 func (mc *MailController) CheckMailServer(c *gin.Context) {
 	id := c.Param("id")
 
-	var mailServer dtos.CheckMailServerEntityRequest
-	if err := c.ShouldBindJSON(&mailServer); err != nil {
-		restErrorHandler.NotificationChannelErrorHandler(c, "", nil, notificationchannelservice.ErrMailChannelBadRequest)
-		return
-	}
-	if err := mailServer.Validate(); err != nil {
-		_ = c.Error(err)
+	var mailServer maildto.CheckMailServerEntityRequest
+	if !ginEx.BindAndValidateBody(c, &mailServer) {
 		return
 	}
 
-	err := mc.Service.CheckNotificationChannelEntityConnectivity(context.Background(), id, mailServer.ToModel())
+	err := mc.MailChannelService.CheckNotificationChannelEntityConnectivity(context.Background(), id, mailServer.ToModel())
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"type":  "greenbone/generic-error",
-			"title": err.Error()},
-		)
+		ginEx.AddError(c, err)
 		return
 	}
 
 	c.Status(http.StatusNoContent)
-}
-
-func (v *MailController) validateFields(channel request.MailNotificationChannelRequest) map[string]string {
-	errors := make(map[string]string)
-	if channel.Domain == "" {
-		errors["domain"] = "A Mailhub is required."
-	}
-	if channel.Port == 0 {
-		errors["port"] = "A port is required."
-	}
-	if channel.SenderEmailAddress == "" {
-		errors["senderEmailAddress"] = "A sender is required."
-	} else {
-		v.validateEmailAddress(channel.SenderEmailAddress, errors)
-	}
-	if channel.ChannelName == "" {
-		errors["channelName"] = "A Channel Name is required."
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-	return nil
-}
-
-func (v *MailController) validateEmailAddress(channel string, errors map[string]string) {
-	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	matched, _ := regexp.MatchString(emailRegex, channel)
-	if !matched {
-		errors["senderEmailAddress"] = "A sender is required."
-	}
 }

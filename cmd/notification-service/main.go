@@ -13,16 +13,16 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController"
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
-	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
@@ -106,8 +106,9 @@ func run(config config.Config) error {
 
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
-	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, config.ChannelLimit.EMailLimit)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, notificationChannelRepository, config.ChannelLimit.EMailLimit)
 	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.ChannelLimit.MattermostLimit)
+	teamsChannelService := notificationchannelservice.NewTeamsChannelService(notificationChannelService, config.ChannelLimit.TeamsLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler
@@ -117,15 +118,16 @@ func run(config config.Config) error {
 	}
 	_, err = scheduler.NewJob(
 		gocron.DurationJob(1*time.Hour),
-		gocron.NewTask(checkmailconnectivity.NewJob(notificationService, notificationChannelService)),
+		gocron.NewTask(checkmailconnectivity.NewJob(notificationService, notificationChannelService, mailChannelService)),
 	)
 	if err != nil {
 		return fmt.Errorf("error creating mail connectivity check job: %w", err)
 	}
 	scheduler.Start()
 
-	router := web.NewWebEngine(config.Http)
-	router.Use(helper.ValidationErrorHandler(gin.ErrorTypePrivate))
+	registry := errmap.NewRegistry()
+
+	router := web.NewWebEngine(config.Http, registry)
 	rootRouter := router.Group("/")
 	notificationServiceRouter := router.Group("/api/notification-service")
 	docsRouter := router.Group("/docs/notification-service")
@@ -136,9 +138,10 @@ func run(config config.Config) error {
 
 	//instantiate controllers
 	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
-	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware)
-	mailcontroller.AddCheckMailServerController(notificationServiceRouter, notificationChannelService, authMiddleware)
-	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware)
+	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware, registry)
+	mailcontroller.AddCheckMailServerController(notificationServiceRouter, mailChannelService, authMiddleware, registry)
+	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware, registry)
+	teamsController.AddTeamsController(router, notificationChannelRepository, teamsChannelService, authMiddleware, registry)
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

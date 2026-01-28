@@ -1,39 +1,5 @@
 basePath: /api/notification-service
 definitions:
-  dtos.CheckMailServerEntityRequest:
-    properties:
-      domain:
-        type: string
-      isAuthenticationRequired:
-        default: false
-        type: boolean
-      isTlsEnforced:
-        default: false
-        type: boolean
-      password:
-        type: string
-      port:
-        type: integer
-      username:
-        type: string
-    type: object
-  dtos.CheckMailServerRequest:
-    properties:
-      domain:
-        type: string
-      isAuthenticationRequired:
-        default: false
-        type: boolean
-      isTlsEnforced:
-        default: false
-        type: boolean
-      password:
-        type: string
-      port:
-        type: integer
-      username:
-        type: string
-    type: object
   filter.CompareOperator:
     enum:
     - beginsWith
@@ -172,6 +138,76 @@ definitions:
         - integer
         - enum
         - bool
+    type: object
+  maildto.CheckMailServerEntityRequest:
+    properties:
+      domain:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    type: object
+  maildto.CheckMailServerRequest:
+    properties:
+      domain:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    type: object
+  maildto.MailNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      isAuthenticationRequired:
+        default: false
+        type: boolean
+      isTlsEnforced:
+        default: false
+        type: boolean
+      maxEmailAttachmentSizeMb:
+        type: integer
+      maxEmailIncludeSizeMb:
+        type: integer
+      password:
+        type: string
+      port:
+        type: integer
+      senderEmailAddress:
+        type: string
+      username:
+        type: string
+    type: object
+  mattermostdto.MattermostNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      description:
+        type: string
+      webhookUrl:
+        type: string
     type: object
   models.Notification:
     properties:
@@ -312,42 +348,6 @@ definitions:
       sorting:
         $ref: '#/definitions/sorting.Request'
     type: object
-  request.MailNotificationChannelRequest:
-    properties:
-      channelName:
-        type: string
-      domain:
-        type: string
-      id:
-        type: string
-      isAuthenticationRequired:
-        default: false
-        type: boolean
-      isTlsEnforced:
-        default: false
-        type: boolean
-      maxEmailAttachmentSizeMb:
-        type: integer
-      maxEmailIncludeSizeMb:
-        type: integer
-      password:
-        type: string
-      port:
-        type: integer
-      senderEmailAddress:
-        type: string
-      username:
-        type: string
-    type: object
-  request.MattermostNotificationChannelRequest:
-    properties:
-      channelName:
-        type: string
-      description:
-        type: string
-      webhookUrl:
-        type: string
-    type: object
   sorting.Request:
     properties:
       column:
@@ -365,6 +365,15 @@ definitions:
     - DirectionDescending
     - DirectionAscending
     - NoDirection
+  teamsdto.TeamsNotificationChannelRequest:
+    properties:
+      channelName:
+        type: string
+      description:
+        type: string
+      webhookUrl:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -376,6 +385,33 @@ info:
   title: Notification Service API
   version: "1.0"
 paths:
+  /notification-channel/Teams/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a Teams server is able to send a test message
+      parameters:
+      - description: Teams channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Teams server test message sent successfully
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Check Teams server
+      tags:
+      - Teams-channel
   /notification-channel/mail:
     get:
       description: List mail notification channels by type
@@ -391,7 +427,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/request.MailNotificationChannelRequest'
+              $ref: '#/definitions/maildto.MailNotificationChannelRequest'
             type: array
         "500":
           description: Internal Server Error
@@ -414,14 +450,14 @@ paths:
         name: MailChannel
         required: true
         schema:
-          $ref: '#/definitions/request.MailNotificationChannelRequest'
+          $ref: '#/definitions/maildto.MailNotificationChannelRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/request.MailNotificationChannelRequest'
+            $ref: '#/definitions/maildto.MailNotificationChannelRequest'
         "400":
           description: Bad Request
           schema:
@@ -477,14 +513,14 @@ paths:
         name: MailChannel
         required: true
         schema:
-          $ref: '#/definitions/request.MailNotificationChannelRequest'
+          $ref: '#/definitions/maildto.MailNotificationChannelRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/request.MailNotificationChannelRequest'
+            $ref: '#/definitions/maildto.MailNotificationChannelRequest'
         "400":
           description: Bad Request
           schema:
@@ -517,7 +553,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+              $ref: '#/definitions/mattermostdto.MattermostNotificationChannelRequest'
             type: array
         "500":
           description: Internal Server Error
@@ -540,14 +576,14 @@ paths:
         name: MattermostChannel
         required: true
         schema:
-          $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+          $ref: '#/definitions/mattermostdto.MattermostNotificationChannelRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+            $ref: '#/definitions/mattermostdto.MattermostNotificationChannelRequest'
         "400":
           description: Bad Request
           schema:
@@ -609,14 +645,14 @@ paths:
         name: MattermostChannel
         required: true
         schema:
-          $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+          $ref: '#/definitions/mattermostdto.MattermostNotificationChannelRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/request.MattermostNotificationChannelRequest'
+            $ref: '#/definitions/mattermostdto.MattermostNotificationChannelRequest'
         "400":
           description: Bad Request
           schema:
@@ -640,6 +676,165 @@ paths:
       summary: Update Mattermost Channel
       tags:
       - mattermost-channel
+  /notification-channel/mattermost/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mattermost server is able to send a test message
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mattermost server test message sent successfully
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Check mattermost server
+      tags:
+      - mattermost-channel
+  /notification-channel/teams:
+    get:
+      description: List teams notification channels by type
+      parameters:
+      - description: Channel type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/teamsdto.TeamsNotificationChannelRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: List Teams Channels
+      tags:
+      - teams-channel
+    post:
+      consumes:
+      - application/json
+      description: Create a new teams notification channel
+      parameters:
+      - description: Teams channel to add
+        in: body
+        name: TeamsChannel
+        required: true
+        schema:
+          $ref: '#/definitions/teamsdto.TeamsNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/teamsdto.TeamsNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Create Teams Channel
+      tags:
+      - teams-channel
+  /notification-channel/teams/{id}:
+    delete:
+      description: Delete a teams notification channel
+      parameters:
+      - description: Teams channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Delete Teams Channel
+      tags:
+      - teams-channel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing teams notification channel
+      parameters:
+      - description: Teams channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Teams channel to update
+        in: body
+        name: TeamsChannel
+        required: true
+        schema:
+          $ref: '#/definitions/teamsdto.TeamsNotificationChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/teamsdto.TeamsNotificationChannelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Update Teams Channel
+      tags:
+      - teams-channel
   /notifications:
     post:
       consumes:
@@ -706,7 +901,7 @@ paths:
         name: MailServerConfig
         required: true
         schema:
-          $ref: '#/definitions/dtos.CheckMailServerEntityRequest'
+          $ref: '#/definitions/maildto.CheckMailServerEntityRequest'
       produces:
       - application/json
       responses:
@@ -736,7 +931,7 @@ paths:
         name: MailServerConfig
         required: true
         schema:
-          $ref: '#/definitions/dtos.CheckMailServerRequest'
+          $ref: '#/definitions/maildto.CheckMailServerRequest'
       produces:
       - application/json
       responses:

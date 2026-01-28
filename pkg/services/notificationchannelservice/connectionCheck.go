@@ -2,11 +2,16 @@ package notificationchannelservice
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/wneessen/go-mail"
+)
+
+var (
+	ErrCreateMailFailed      = errors.New("failed to create mail client")
+	ErrMailServerUnreachable = errors.New("mail server is unreachable")
 )
 
 func ConnectionCheckMail(ctx context.Context, mailServer models.NotificationChannel) error {
@@ -32,14 +37,12 @@ func ConnectionCheckMail(ctx context.Context, mailServer models.NotificationChan
 	}()
 
 	if err != nil {
-		return fmt.Errorf("failed to create mail client: %w", err)
+		return errors.Join(err, ErrCreateMailFailed)
 	}
 
 	if err = client.DialWithContext(ctx); err != nil {
-		return fmt.Errorf("failed to reach mail server: %w", err)
+		return errors.Join(err, ErrMailServerUnreachable)
 	}
-
-	// TODO: 21.01.2026 stolksdorf - username and password are not validated
 
 	return nil
 }

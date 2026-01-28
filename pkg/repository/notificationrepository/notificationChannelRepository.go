@@ -7,24 +7,46 @@ import (
 	"strings"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
+	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
-type NotificationChannelRepository struct {
+type NotificationChannelRepository interface {
+	CreateNotificationChannel(
+		ctx context.Context,
+		channelIn models.NotificationChannel,
+	) (models.NotificationChannel, error)
+	GetNotificationChannelByIdAndType(
+		ctx context.Context,
+		id string,
+		channelType models.ChannelType,
+	) (models.NotificationChannel, error)
+	ListNotificationChannelsByType(
+		ctx context.Context,
+		channelType models.ChannelType,
+	) ([]models.NotificationChannel, error)
+	UpdateNotificationChannel(
+		ctx context.Context,
+		id string,
+		in models.NotificationChannel,
+	) (models.NotificationChannel, error)
+	DeleteNotificationChannel(ctx context.Context, id string) error
+}
+
+type notificationChannelRepository struct {
 	client         *sqlx.DB
-	encryptManager port.EncryptManager
+	encryptManager security.EncryptManager
 }
 
 func NewNotificationChannelRepository(
 	db *sqlx.DB,
-	encryptService port.EncryptManager,
-) (port.NotificationChannelRepository, error) {
+	encryptService security.EncryptManager,
+) (NotificationChannelRepository, error) {
 	if db == nil {
 		return nil, errors.New("nil db reference")
 	}
-	client := &NotificationChannelRepository{
+	client := &notificationChannelRepository{
 		client:         db,
 		encryptManager: encryptService,
 	}
@@ -72,7 +94,7 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
 }
 
 // CreateNotificationChannel is now transactional and supports commit/rollback.
-func (r *NotificationChannelRepository) CreateNotificationChannel(
+func (r *notificationChannelRepository) CreateNotificationChannel(
 	ctx context.Context,
 	channelIn models.NotificationChannel,
 ) (models.NotificationChannel, error) {
@@ -111,7 +133,7 @@ func (r *NotificationChannelRepository) CreateNotificationChannel(
 	return r.decrypt(row).ToModel(), nil
 }
 
-func (r *NotificationChannelRepository) GetNotificationChannelByIdAndType(
+func (r *notificationChannelRepository) GetNotificationChannelByIdAndType(
 	ctx context.Context,
 	id string,
 	channelType models.ChannelType,
@@ -126,7 +148,7 @@ func (r *NotificationChannelRepository) GetNotificationChannelByIdAndType(
 	return r.decrypt(row).ToModel(), nil
 }
 
-func (r *NotificationChannelRepository) ListNotificationChannelsByType(
+func (r *notificationChannelRepository) ListNotificationChannelsByType(
 	ctx context.Context,
 	channelType models.ChannelType,
 ) ([]models.NotificationChannel, error) {
@@ -146,7 +168,7 @@ func (r *NotificationChannelRepository) ListNotificationChannelsByType(
 }
 
 // UpdateNotificationChannel is now transactional.
-func (r *NotificationChannelRepository) UpdateNotificationChannel(
+func (r *notificationChannelRepository) UpdateNotificationChannel(
 	ctx context.Context,
 	id string,
 	in models.NotificationChannel,
@@ -187,7 +209,7 @@ func (r *NotificationChannelRepository) UpdateNotificationChannel(
 	return r.decrypt(row).ToModel(), nil
 }
 
-func (r *NotificationChannelRepository) encrypt(row notificationChannelRow) (notificationChannelRow, error) {
+func (r *notificationChannelRepository) encrypt(row notificationChannelRow) (notificationChannelRow, error) {
 	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
 		encryptedPasswd, err := r.encryptManager.Encrypt(*row.Password)
 		if err != nil {
@@ -211,7 +233,7 @@ func (r *NotificationChannelRepository) encrypt(row notificationChannelRow) (not
 	return row, nil
 }
 
-func (r *NotificationChannelRepository) decrypt(row notificationChannelRow) notificationChannelRow {
+func (r *notificationChannelRepository) decrypt(row notificationChannelRow) notificationChannelRow {
 	if row.Password != nil && strings.TrimSpace(*row.Password) != "" {
 		dPasswd := *row.Password
 		dcPassword, err := r.encryptManager.Decrypt([]byte(dPasswd))
@@ -236,7 +258,7 @@ func (r *NotificationChannelRepository) decrypt(row notificationChannelRow) noti
 }
 
 // DeleteNotificationChannel is now transactional.
-func (r *NotificationChannelRepository) DeleteNotificationChannel(ctx context.Context, id string) error {
+func (r *notificationChannelRepository) DeleteNotificationChannel(ctx context.Context, id string) error {
 	tx, err := r.client.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("could not begin transaction: %w", err)

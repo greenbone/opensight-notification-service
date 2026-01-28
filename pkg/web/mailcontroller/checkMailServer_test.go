@@ -6,18 +6,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
-	"github.com/greenbone/opensight-notification-service/pkg/port/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-func setup(t *testing.T) (*gin.Engine, *mocks.NotificationChannelService) {
-	engine := testhelper.NewTestWebEngine()
+func setup(t *testing.T) (*gin.Engine, *mocks.MailChannelService) {
+	registry := errmap.NewRegistry()
+	engine := testhelper.NewTestWebEngine(registry)
 
-	notificationChannelServicer := mocks.NewNotificationChannelService(t)
+	notificationChannelServicer := mocks.NewMailChannelService(t)
 
-	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin)
+	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin, registry)
 	return engine, notificationChannelServicer
 }
 
@@ -43,6 +45,21 @@ func TestCheckMailServer(t *testing.T) {
 			NoContent()
 	})
 
+	t.Run("none request body", func(t *testing.T) {
+		engine, _ := setup(t)
+
+		httpassert.New(t, engine).
+			Post("/notification-channel/mail/check").
+			Content(`-`).
+			Expect().
+			StatusCode(http.StatusBadRequest).
+			Json(`{
+				"type": "greenbone/validation-error",
+				"title": "unable to parse the request",
+				"details":"error parsing body"
+			}`)
+	})
+
 	t.Run("minimal required fields", func(t *testing.T) {
 		engine, _ := setup(t)
 
@@ -55,8 +72,8 @@ func TestCheckMailServer(t *testing.T) {
 				"type": "greenbone/validation-error",
 				"title": "",
 				"errors": {
-					"domain": "required",
-					"port": "required"
+					"domain": "A Mailhub is required.",
+					"port": "A port is required."
 				}
 			}`)
 	})
@@ -80,8 +97,8 @@ func TestCheckMailServer(t *testing.T) {
 				"type": "greenbone/validation-error",
 				"title": "",
 				"errors": {
-					"password": "required",
-					"username": "required"
+					"username": "An Username is required.",
+					"password": "A Password is required."
 				}
 			}`)
 	})
@@ -90,7 +107,7 @@ func TestCheckMailServer(t *testing.T) {
 		engine, notificationChannelServicer := setup(t)
 
 		notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).
-			Return(assert.AnError)
+			Return(notificationchannelservice.ErrMailServerUnreachable)
 
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
@@ -104,7 +121,7 @@ func TestCheckMailServer(t *testing.T) {
 			StatusCode(http.StatusUnprocessableEntity).
 			Json(`{
 				"type": "greenbone/generic-error",
-				"title": "assert.AnError general error for testing"
+				"title": "Server is unreachable"
 			}`)
 	})
 }

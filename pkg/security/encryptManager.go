@@ -15,15 +15,21 @@ type Key struct {
 	PasswordSalt string
 }
 
-type EncryptManager struct {
+type EncryptManager interface {
+	UpdateKeys(keyringConfig config.DatabaseEncryptionKey)
+	Encrypt(plaintext string) ([]byte, error)
+	Decrypt(data []byte) (string, error)
+}
+
+type encryptManager struct {
 	activeKey Key
 }
 
-func NewEncryptManager() *EncryptManager {
-	return &EncryptManager{}
+func NewEncryptManager() EncryptManager {
+	return &encryptManager{}
 }
 
-func (sm *EncryptManager) UpdateKeys(keyringConfig config.DatabaseEncryptionKey) {
+func (sm *encryptManager) UpdateKeys(keyringConfig config.DatabaseEncryptionKey) {
 	if strings.TrimSpace(keyringConfig.Password) == "" {
 		log.Error().Msg("Empty password for keyring")
 	}
@@ -40,7 +46,7 @@ func (sm *EncryptManager) UpdateKeys(keyringConfig config.DatabaseEncryptionKey)
 	log.Info().Msgf("Keyring successfully refreshed in memory")
 }
 
-func (sm *EncryptManager) Encrypt(plaintext string) ([]byte, error) {
+func (sm *encryptManager) Encrypt(plaintext string) ([]byte, error) {
 	if len(strings.TrimSpace(plaintext)) == 0 {
 		return nil, errors.New("plaintext must be a value")
 	}
@@ -61,7 +67,7 @@ func (sm *EncryptManager) Encrypt(plaintext string) ([]byte, error) {
 	return encryptedBytes, nil
 }
 
-func (sm *EncryptManager) Decrypt(data []byte) (string, error) {
+func (sm *encryptManager) Decrypt(data []byte) (string, error) {
 	if len(data) == 0 {
 		return "", errors.New("data must be a value")
 	}

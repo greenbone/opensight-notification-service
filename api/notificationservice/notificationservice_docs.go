@@ -18,6 +18,49 @@ const docTemplatenotificationservice = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/notification-channel/Teams/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a Teams server is able to send a test message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Teams-channel"
+                ],
+                "summary": "Check Teams server",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Teams channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Teams server test message sent successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notification-channel/mail": {
             "get": {
                 "security": [
@@ -47,7 +90,7 @@ const docTemplatenotificationservice = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                                "$ref": "#/definitions/maildto.MailNotificationChannelRequest"
                             }
                         }
                     },
@@ -86,7 +129,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                            "$ref": "#/definitions/maildto.MailNotificationChannelRequest"
                         }
                     }
                 ],
@@ -94,7 +137,7 @@ const docTemplatenotificationservice = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                            "$ref": "#/definitions/maildto.MailNotificationChannelRequest"
                         }
                     },
                     "400": {
@@ -150,7 +193,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                            "$ref": "#/definitions/maildto.MailNotificationChannelRequest"
                         }
                     }
                 ],
@@ -158,7 +201,7 @@ const docTemplatenotificationservice = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/request.MailNotificationChannelRequest"
+                            "$ref": "#/definitions/maildto.MailNotificationChannelRequest"
                         }
                     },
                     "400": {
@@ -246,7 +289,7 @@ const docTemplatenotificationservice = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                                "$ref": "#/definitions/mattermostdto.MattermostNotificationChannelRequest"
                             }
                         }
                     },
@@ -285,7 +328,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                            "$ref": "#/definitions/mattermostdto.MattermostNotificationChannelRequest"
                         }
                     }
                 ],
@@ -293,7 +336,7 @@ const docTemplatenotificationservice = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                            "$ref": "#/definitions/mattermostdto.MattermostNotificationChannelRequest"
                         }
                     },
                     "400": {
@@ -307,6 +350,40 @@ const docTemplatenotificationservice = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-channel/mattermost/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mattermost server is able to send a test message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mattermost-channel"
+                ],
+                "summary": "Check mattermost server",
+                "responses": {
+                    "204": {
+                        "description": "Mattermost server test message sent successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -349,7 +426,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                            "$ref": "#/definitions/mattermostdto.MattermostNotificationChannelRequest"
                         }
                     }
                 ],
@@ -357,7 +434,7 @@ const docTemplatenotificationservice = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/request.MattermostNotificationChannelRequest"
+                            "$ref": "#/definitions/mattermostdto.MattermostNotificationChannelRequest"
                         }
                     },
                     "400": {
@@ -404,6 +481,223 @@ const docTemplatenotificationservice = `{
                     {
                         "type": "string",
                         "description": "Mattermost channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-channel/teams": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "List teams notification channels by type",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "List Teams Channels",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Channel type",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/teamsdto.TeamsNotificationChannelRequest"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Create a new teams notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "Create Teams Channel",
+                "parameters": [
+                    {
+                        "description": "Teams channel to add",
+                        "name": "TeamsChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/teamsdto.TeamsNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/teamsdto.TeamsNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-channel/teams/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Update an existing teams notification channel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "Update Teams Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Teams channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Teams channel to update",
+                        "name": "TeamsChannel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/teamsdto.TeamsNotificationChannelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/teamsdto.TeamsNotificationChannelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Delete a teams notification channel",
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "Delete Teams Channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Teams channel ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -547,7 +841,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtos.CheckMailServerRequest"
+                            "$ref": "#/definitions/maildto.CheckMailServerRequest"
                         }
                     }
                 ],
@@ -595,7 +889,7 @@ const docTemplatenotificationservice = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtos.CheckMailServerEntityRequest"
+                            "$ref": "#/definitions/maildto.CheckMailServerEntityRequest"
                         }
                     }
                 ],
@@ -651,56 +945,6 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
-        "dtos.CheckMailServerEntityRequest": {
-            "type": "object",
-            "properties": {
-                "domain": {
-                    "type": "string"
-                },
-                "isAuthenticationRequired": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "isTlsEnforced": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dtos.CheckMailServerRequest": {
-            "type": "object",
-            "properties": {
-                "domain": {
-                    "type": "string"
-                },
-                "isAuthenticationRequired": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "isTlsEnforced": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "filter.CompareOperator": {
             "type": "string",
             "enum": [
@@ -871,6 +1115,110 @@ const docTemplatenotificationservice = `{
                             "$ref": "#/definitions/filter.ControlType"
                         }
                     ]
+                }
+            }
+        },
+        "maildto.CheckMailServerEntityRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "maildto.CheckMailServerRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "maildto.MailNotificationChannelRequest": {
+            "type": "object",
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "isTlsEnforced": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "maxEmailAttachmentSizeMb": {
+                    "type": "integer"
+                },
+                "maxEmailIncludeSizeMb": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "senderEmailAddress": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "mattermostdto.MattermostNotificationChannelRequest": {
+            "type": "object",
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "webhookUrl": {
+                    "type": "string"
                 }
             }
         },
@@ -1079,60 +1427,6 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "request.MailNotificationChannelRequest": {
-            "type": "object",
-            "properties": {
-                "channelName": {
-                    "type": "string"
-                },
-                "domain": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isAuthenticationRequired": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "isTlsEnforced": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "maxEmailAttachmentSizeMb": {
-                    "type": "integer"
-                },
-                "maxEmailIncludeSizeMb": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "senderEmailAddress": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.MattermostNotificationChannelRequest": {
-            "type": "object",
-            "properties": {
-                "channelName": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "webhookUrl": {
-                    "type": "string"
-                }
-            }
-        },
         "sorting.Request": {
             "type": "object",
             "properties": {
@@ -1156,6 +1450,20 @@ const docTemplatenotificationservice = `{
                 "DirectionAscending",
                 "NoDirection"
             ]
+        },
+        "teamsdto.TeamsNotificationChannelRequest": {
+            "type": "object",
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "webhookUrl": {
+                    "type": "string"
+                }
+            }
         }
     },
     "securityDefinitions": {

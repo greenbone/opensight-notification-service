@@ -14,10 +14,11 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
-	"github.com/greenbone/opensight-notification-service/pkg/port"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
-	"github.com/greenbone/opensight-notification-service/pkg/request"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
@@ -96,7 +97,7 @@ func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepository, *sqlx.DB) {
+func SetupNotificationChannelTestEnv(t *testing.T) (notificationrepository.NotificationChannelRepository, *sqlx.DB) {
 	encryptMgr := security.NewEncryptManager()
 	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
 		Password:     "password",
@@ -112,8 +113,8 @@ func SetupNotificationChannelTestEnv(t *testing.T) (port.NotificationChannelRepo
 	return repo, db
 }
 
-func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
-	return request.MailNotificationChannelRequest{
+func GetValidMailNotificationChannel() maildto.MailNotificationChannelRequest {
+	return maildto.MailNotificationChannelRequest{
 		ChannelName:              "mail1",
 		Domain:                   "example.com",
 		Port:                     25,
@@ -127,10 +128,18 @@ func GetValidMailNotificationChannel() request.MailNotificationChannelRequest {
 	}
 }
 
-func GetValidMattermostNotificationChannel() request.MattermostNotificationChannelRequest {
-	return request.MattermostNotificationChannelRequest{
+func GetValidMattermostNotificationChannel() mattermostdto.MattermostNotificationChannelRequest {
+	return mattermostdto.MattermostNotificationChannelRequest{
 		ChannelName: "mattermost1",
-		WebhookUrl:  "http://webhookurl.com/id1",
+		WebhookUrl:  "https://webhookurl.com/hooks/id1",
 		Description: "This is a test mattermost channel",
+	}
+}
+
+func GetValidTeamsNotificationChannel() teamsdto.TeamsNotificationChannelRequest {
+	return teamsdto.TeamsNotificationChannelRequest{
+		ChannelName: "teams1",
+		WebhookUrl:  "https://webhookurl.com/webhook/id1",
+		Description: "This is a test teams channel",
 	}
 }

@@ -38,7 +38,7 @@ func NewClient(postgres config.Database) (*sqlx.DB, error) {
 	}
 
 	if automigrateErr := autoMigrate(connectionString); automigrateErr != nil {
-		if errors.Is(automigrateErr, migrate.ErrNoChange) { // TODO: handle errNoChange when migration file is unchanged on restart of the app on the same environment
+		if errors.Is(automigrateErr, migrate.ErrNoChange) {
 			log.Debug().Msg("nothing to migrate")
 			return db, nil
 		}

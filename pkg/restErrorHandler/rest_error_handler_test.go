@@ -13,12 +13,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
-
-	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
-
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -47,9 +45,9 @@ func TestErrorHandler(t *testing.T) {
 			wantStatusCode: http.StatusNotFound,
 		},
 		{
-			name:              "conflict error",
+			name:              "UnprocessableEntity error",
 			err:               fmt.Errorf("wrapped: %w", &someConflictError),
-			wantStatusCode:    http.StatusConflict,
+			wantStatusCode:    http.StatusUnprocessableEntity,
 			wantErrorResponse: helper.ToPtr(ErrConflictToResponse(someConflictError)),
 		},
 		{
@@ -63,15 +61,13 @@ func TestErrorHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotResponse := httptest.NewRecorder()
 			gc, _ := gin.CreateTestContext(gotResponse)
-			// pretend a request has happened
 			gc.Request = httptest.NewRequest(http.MethodGet, "/some/path", nil)
 
 			ErrorHandler(gc, "some specific log message", tt.err)
 
-			// compare status code
 			assert.Equal(t, tt.wantStatusCode, gotResponse.Code)
 
-			if tt.wantErrorResponse != nil { // compare responses
+			if tt.wantErrorResponse != nil {
 				gotErrorResponse, err := io.ReadAll(gotResponse.Body)
 				if err != nil {
 					t.Error("could not read response body: %w", err)
