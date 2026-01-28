@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
@@ -38,9 +39,9 @@ func NewJob(
 					Detail:    fmt.Sprintf("Mailserver:%s not reachable: %s", *channel.Domain, err),
 					Level:     "info",
 					CustomFields: map[string]any{
-						"Domain":   Value(channel.Domain),
-						"Port":     Value(channel.Port),
-						"Username": Value(channel.Username),
+						"Domain":   helper.SafeDereference(channel.Domain),
+						"Port":     helper.SafeDereference(channel.Port),
+						"Username": helper.SafeDereference(channel.Username),
 					},
 				})
 				if err != nil {
@@ -50,13 +51,6 @@ func NewJob(
 		}
 		return nil
 	}
-}
-
-func Value[T any](value *T) any {
-	if value == nil {
-		return nil
-	}
-	return *value
 }
 
 func checkChannelConnectivity(

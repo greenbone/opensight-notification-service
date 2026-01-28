@@ -1,14 +1,17 @@
 package mattermostdto
 
-import "github.com/greenbone/opensight-notification-service/pkg/models"
+import (
+	"github.com/greenbone/opensight-notification-service/pkg/helper"
+	"github.com/greenbone/opensight-notification-service/pkg/models"
+)
 
 // MapNotificationChannelToMattermost maps NotificationChannel to MattermostNotificationChannelRequest.
 func MapNotificationChannelToMattermost(channel models.NotificationChannel) MattermostNotificationChannelResponse {
 	return MattermostNotificationChannelResponse{
 		Id:          *channel.Id,
-		ChannelName: *channel.ChannelName,
-		WebhookUrl:  *channel.WebhookUrl,
-		Description: *channel.Description,
+		ChannelName: helper.SafeDereference(channel.ChannelName),
+		WebhookUrl:  helper.SafeDereference(channel.WebhookUrl),
+		Description: helper.SafeDereference(channel.Description),
 	}
 }
 

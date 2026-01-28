@@ -48,8 +48,7 @@ func (mc *MattermostController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrMattermostChannelNameExists,
 		http.StatusBadRequest,
-		// TODO: 27.01.2026 stolksdorf - who do I get the message from notificationchannelservice.ErrMattermostChannelNameExists
-		errorResponses.NewErrorGenericResponse("Channel name should be unique."),
+		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrMattermostChannelNameExists.Error()),
 	)
 }
 

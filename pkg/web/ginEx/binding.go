@@ -26,6 +26,11 @@ type Validate interface {
 	Validate() models.ValidationErrors
 }
 
+// Cleaner can be implemented by a dto that is used in BindAndValidateBody for clean up values before validate
+type Cleaner interface {
+	Cleanup()
+}
+
 func BindAndValidateBody(c *gin.Context, bodyDto any) bool {
 	err := c.ShouldBindJSON(bodyDto)
 	if err != nil {
@@ -44,6 +49,10 @@ func BindAndValidateBody(c *gin.Context, bodyDto any) bool {
 
 		_ = c.Error(err)
 		return false
+	}
+
+	if value, ok := bodyDto.(Cleaner); ok {
+		value.Cleanup()
 	}
 
 	if value, ok := bodyDto.(Validate); ok {

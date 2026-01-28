@@ -68,7 +68,7 @@ func (t *teamsChannelService) CreateTeamsChannel(
 	c context.Context,
 	channel teamsdto.TeamsNotificationChannelRequest,
 ) (teamsdto.TeamsNotificationChannelResponse, error) {
-	if errResp := t.teamsChannelLimitReached(c, channel.ChannelName); errResp != nil {
+	if errResp := t.teamsChannelValidations(c, channel.ChannelName); errResp != nil {
 		return teamsdto.TeamsNotificationChannelResponse{}, errResp
 	}
 
@@ -81,7 +81,7 @@ func (t *teamsChannelService) CreateTeamsChannel(
 	return teamsdto.MapNotificationChannelToTeams(created), nil
 }
 
-func (t *teamsChannelService) teamsChannelLimitReached(c context.Context, channelName string) error {
+func (t *teamsChannelService) teamsChannelValidations(c context.Context, channelName string) error {
 	channels, err := t.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
 	if err != nil {
 		return errors.Join(ErrListTeamsChannels, err)

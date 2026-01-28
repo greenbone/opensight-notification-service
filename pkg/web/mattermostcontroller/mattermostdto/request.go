@@ -15,10 +15,16 @@ type MattermostNotificationChannelRequest struct {
 	Description string `json:"description"`
 }
 
+func (m *MattermostNotificationChannelRequest) Cleanup() {
+	m.ChannelName = strings.TrimSpace(m.ChannelName)
+	m.WebhookUrl = strings.TrimSpace(m.WebhookUrl)
+	m.Description = strings.TrimSpace(m.Description)
+}
+
 func (m MattermostNotificationChannelRequest) Validate() models.ValidationErrors {
 	errors := make(models.ValidationErrors)
 
-	if strings.TrimSpace(m.ChannelName) == "" {
+	if m.ChannelName == "" {
 		errors["webhookUrl"] = "required"
 	}
 
@@ -36,12 +42,22 @@ type MattermostNotificationChannelCheckRequest struct {
 	WebhookUrl string `json:"webhookUrl"`
 }
 
+func (r *MattermostNotificationChannelCheckRequest) Cleanup() {
+	r.WebhookUrl = strings.TrimSpace(r.WebhookUrl)
+}
+
 func (r *MattermostNotificationChannelCheckRequest) Validate() models.ValidationErrors {
-	errors := make(models.ValidationErrors)
+	errs := make(models.ValidationErrors)
 
 	if r.WebhookUrl == "" {
-		errors["webhookUrl"] = "webhook URL is required"
+		errs["webhookUrl"] = "webhook URL is required"
+	} else {
+		_, err := url.Parse(r.WebhookUrl)
+		if err != nil && !strings.Contains(err.Error(), "empty url") {
+			log.Info().Err(err).Msg("invalid webhook url")
+			errs["webhookUrl"] = "invalid"
+		}
 	}
 
-	return errors
+	return errs
 }

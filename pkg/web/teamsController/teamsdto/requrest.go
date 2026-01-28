@@ -36,15 +36,16 @@ type TeamsNotificationChannelCheckRequest struct {
 }
 
 func (r *TeamsNotificationChannelCheckRequest) Validate() models.ValidationErrors {
-	errors := make(models.ValidationErrors)
+	errs := make(models.ValidationErrors)
 
 	if r.WebhookUrl == "" {
-		errors["webhookUrl"] = "webhook URL is required"
+		errs["webhookUrl"] = "webhook URL is required"
+	} else {
+		var re = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
+		if !re.MatchString(r.WebhookUrl) {
+			errs["webhookUrl"] = "Invalid teams webhook URL format."
+		}
 	}
 
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
+	return errs
 }

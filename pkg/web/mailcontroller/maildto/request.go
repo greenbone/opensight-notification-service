@@ -29,6 +29,10 @@ func (v CheckMailServerRequest) ToModel() models.NotificationChannel {
 	}
 }
 
+func (r *CheckMailServerRequest) Cleanup() {
+	r.Domain = strings.TrimSpace(r.Domain)
+}
+
 func (v CheckMailServerRequest) Validate() models.ValidationErrors {
 	errors := make(models.ValidationErrors)
 
@@ -72,6 +76,10 @@ func (v CheckMailServerEntityRequest) ToModel() models.NotificationChannel {
 	}
 }
 
+func (r *CheckMailServerEntityRequest) Cleanup() {
+	r.Domain = strings.TrimSpace(r.Domain)
+}
+
 func (v CheckMailServerEntityRequest) Validate() models.ValidationErrors {
 	errs := make(models.ValidationErrors)
 
@@ -106,10 +114,16 @@ type MailNotificationChannelRequest struct {
 	SenderEmailAddress       string  `json:"senderEmailAddress"`
 }
 
+func (r *MailNotificationChannelRequest) Cleanup() {
+	r.Domain = strings.TrimSpace(r.Domain)
+	r.SenderEmailAddress = strings.TrimSpace(r.SenderEmailAddress)
+	r.ChannelName = strings.TrimSpace(r.ChannelName)
+}
+
 func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
 	errMap := make(models.ValidationErrors)
 
-	if strings.TrimSpace(r.Domain) == "" {
+	if r.Domain == "" {
 		errMap["domain"] = "required"
 	}
 
@@ -117,7 +131,7 @@ func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
 		errMap["port"] = "required"
 	}
 
-	if strings.TrimSpace(r.SenderEmailAddress) == "" {
+	if r.SenderEmailAddress == "" {
 		errMap["senderEmailAddress"] = "required"
 	}
 
@@ -127,7 +141,7 @@ func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
 		errMap["senderEmailAddress"] = "invalid"
 	}
 
-	if strings.TrimSpace(r.ChannelName) == "" {
+	if r.ChannelName == "" {
 		errMap["channelName"] = "required"
 	}
 
