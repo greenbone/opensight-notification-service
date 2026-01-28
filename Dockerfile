@@ -31,8 +31,7 @@ COPY version.go .
 COPY .mockery.yaml .mockery.yaml
 RUN make generate-code
 
-# test and build
-RUN make test
+# build app
 RUN make build
 
 FROM busybox

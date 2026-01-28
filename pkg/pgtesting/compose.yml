@@ -20,4 +20,4 @@ services:
       - "-c" # allow many connections for parallel tests
       - "max_connections=1000"
     ports:
-      - "5632:5432" # avoid clash with the other compose deployments
+      - "9632:5432" # avoid clash with the other compose deployments
