@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	ErrMattermostChannelLimitReached = errors.New("mattermost channel limit reached")
+	ErrMattermostChannelLimitReached = errors.New("Mattermost channel limit reached.")
 	ErrListMattermostChannels        = errors.New("failed to list mattermost channels")
-	ErrMattermostChannelNameExists   = errors.New("mattermost channel name already exists")
+	ErrMattermostChannelNameExists   = errors.New("Mattermost channel name already exists.")
 )
 
 type MattermostChannelService interface {
