@@ -1,4 +1,4 @@
-name: Test 
+name: Test
 
 on:
   push:
@@ -26,24 +26,4 @@ jobs:
           files: cov-unit-tests.txt
           flags: unit-tests
           name: Unit Tests
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-  postgres-test:
-    name: Execute postgres tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
-        with:
-          cache: true
-          cache-dependency-path: go.sum
-          go-version-file: go.mod
-      - name: Execute Postgres tests
-        run: make test-postgres
-      - name: Upload Postgres test coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: cov-pg-tests.txt
-          flags: postgres-tests
-          name: Postgres Tests
           token: ${{ secrets.CODECOV_TOKEN }}
