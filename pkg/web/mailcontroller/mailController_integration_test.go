@@ -157,7 +157,8 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
-	mailSvc := notificationchannelservice.NewMailChannelService(svc, repo, 1)
+	mailService := notificationchannelservice.NewMailService()
+	mailSvc := notificationchannelservice.NewMailChannelService(svc, repo, mailService, 1)
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)

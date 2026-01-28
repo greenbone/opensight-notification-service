@@ -35,17 +35,20 @@ type mailChannelService struct {
 	notificationChannelService NotificationChannelService
 	store                      notificationrepository.NotificationChannelRepository
 	emailLimit                 int
+	mailService                MailService
 }
 
 func NewMailChannelService(
 	notificationChannelService NotificationChannelService,
 	store notificationrepository.NotificationChannelRepository,
+	mailService MailService,
 	emailLimit int,
 ) MailChannelService {
 	return &mailChannelService{
 		notificationChannelService: notificationChannelService,
 		store:                      store,
 		emailLimit:                 emailLimit,
+		mailService:                mailService,
 	}
 }
 
@@ -70,7 +73,7 @@ func (m *mailChannelService) CheckNotificationChannelConnectivity(
 	ctx context.Context,
 	mailServer models.NotificationChannel,
 ) error {
-	return ConnectionCheckMail(ctx, mailServer)
+	return m.mailService.ConnectionCheck(ctx, mailServer)
 }
 
 func (m *mailChannelService) CheckNotificationChannelEntityConnectivity(
@@ -89,7 +92,7 @@ func (m *mailChannelService) CheckNotificationChannelEntityConnectivity(
 		}
 	}
 
-	return ConnectionCheckMail(ctx, mailServer)
+	return m.mailService.ConnectionCheck(ctx, mailServer)
 }
 
 func (m *mailChannelService) mailChannelAlreadyExists(c context.Context) error {
