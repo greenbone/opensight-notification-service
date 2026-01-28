@@ -138,7 +138,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusBadRequest).
-			JsonPath("$.title", "mattermost channel name already exists")
+			JsonPath("$.title", "Mattermost channel name already exists.")
 	})
 }
 

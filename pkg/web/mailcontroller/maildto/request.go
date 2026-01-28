@@ -37,7 +37,7 @@ func (v CheckMailServerRequest) Validate() models.ValidationErrors {
 	errors := make(models.ValidationErrors)
 
 	if v.Domain == "" {
-		errors["domain"] = "A Mailhub is required."
+		errors["domain"] = "A mailhub is required."
 	}
 	if v.Port == 0 {
 		errors["port"] = "A port is required."
@@ -45,10 +45,10 @@ func (v CheckMailServerRequest) Validate() models.ValidationErrors {
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errors["username"] = "An Username is required."
+			errors["username"] = "A username is required."
 		}
 		if v.Password == "" {
-			errors["password"] = "A Password is required."
+			errors["password"] = "A password is required."
 		}
 	}
 
@@ -84,15 +84,15 @@ func (v CheckMailServerEntityRequest) Validate() models.ValidationErrors {
 	errs := make(models.ValidationErrors)
 
 	if v.Domain == "" {
-		errs["domain"] = "required"
+		errs["domain"] = "A mailhub is required."
 	}
-	if v.Port == 0 {
-		errs["port"] = "required"
+	if v.Port < 1 || v.Port > 65535 {
+		errs["port"] = "A port is required."
 	}
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errs["username"] = "required"
+			errs["username"] = "A username is required."
 		}
 	}
 
@@ -124,25 +124,25 @@ func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
 	errMap := make(models.ValidationErrors)
 
 	if r.Domain == "" {
-		errMap["domain"] = "required"
+		errMap["domain"] = "A mailhub is required."
 	}
 
 	if r.Port < 1 || r.Port > 65535 {
-		errMap["port"] = "required"
+		errMap["port"] = "A port is required."
 	}
 
 	if r.SenderEmailAddress == "" {
-		errMap["senderEmailAddress"] = "required"
+		errMap["senderEmailAddress"] = "A sender email is required."
 	}
 
 	_, err := mail.ParseAddress(r.SenderEmailAddress)
 	if err != nil && !strings.Contains(err.Error(), "mail: no address") {
 		log.Info().Msgf("unable to parse email address %s", err.Error())
-		errMap["senderEmailAddress"] = "invalid"
+		errMap["senderEmailAddress"] = "A valid sender email is required."
 	}
 
 	if r.ChannelName == "" {
-		errMap["channelName"] = "required"
+		errMap["channelName"] = "A channel name is required."
 	}
 
 	return errMap

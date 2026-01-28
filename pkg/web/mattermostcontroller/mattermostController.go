@@ -38,7 +38,7 @@ func (mc *MattermostController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrMattermostChannelLimitReached,
 		http.StatusUnprocessableEntity,
-		errorResponses.NewErrorGenericResponse("Mattermost channel limit reached."),
+		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrMattermostChannelLimitReached.Error()),
 	)
 	r.Register(
 		notificationchannelservice.ErrListMattermostChannels,
