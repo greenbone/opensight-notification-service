@@ -51,7 +51,7 @@ func (tc *TeamsController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrTeamsChannelLimitReached,
 		http.StatusUnprocessableEntity,
-		errorResponses.NewErrorGenericResponse("Teams channel limit reached."),
+		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrTeamsChannelLimitReached.Error()),
 	)
 	r.Register(
 		notificationchannelservice.ErrListTeamsChannels,
@@ -61,7 +61,7 @@ func (tc *TeamsController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrTeamsChannelNameExists,
 		http.StatusBadRequest,
-		errorResponses.NewErrorGenericResponse("Teams channel name already exists."),
+		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrTeamsChannelNameExists.Error()),
 	)
 }
 

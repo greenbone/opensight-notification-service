@@ -72,7 +72,7 @@ func TestCheckMailServer(t *testing.T) {
 				"type": "greenbone/validation-error",
 				"title": "",
 				"errors": {
-					"domain": "A Mailhub is required.",
+					"domain": "A mailhub is required.",
 					"port": "A port is required."
 				}
 			}`)
@@ -97,8 +97,8 @@ func TestCheckMailServer(t *testing.T) {
 				"type": "greenbone/validation-error",
 				"title": "",
 				"errors": {
-					"username": "An Username is required.",
-					"password": "A Password is required."
+					"username": "A username is required.",
+					"password": "A password is required."
 				}
 			}`)
 	})

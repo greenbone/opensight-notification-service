@@ -22,7 +22,7 @@ func (m *TeamsNotificationChannelRequest) Validate() models.ValidationErrors {
 		errs["webhookUrl"] = "A Webhook URL is required."
 	} else {
 		if _, err := policy.TeamsWebhookUrlPolicy(m.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Invalid teams webhook URL format."
+			errs["webhookUrl"] = "Please enter a valid webhook URL."
 		}
 	}
 
@@ -41,7 +41,7 @@ func (r *TeamsNotificationChannelCheckRequest) Validate() models.ValidationError
 		errs["webhookUrl"] = "A Webhook URL is required."
 	} else {
 		if _, err := policy.TeamsWebhookUrlPolicy(r.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Invalid teams webhook URL format."
+			errs["webhookUrl"] = "Please enter a valid webhook URL."
 		}
 	}
 
