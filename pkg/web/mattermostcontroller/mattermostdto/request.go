@@ -31,7 +31,7 @@ func (m MattermostNotificationChannelRequest) Validate() models.ValidationErrors
 		errs["webhookUrl"] = "A Webhook URL is required."
 	} else {
 		if _, err := policy.MattermostWebhookUrlPolicy(m.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Invalid mattermost webhook URL format."
+			errs["webhookUrl"] = "Please enter a valid webhook URL."
 		}
 	}
 
@@ -54,7 +54,7 @@ func (r *MattermostNotificationChannelCheckRequest) Validate() models.Validation
 		errs["webhookUrl"] = "A Webhook URL is required."
 	} else {
 		if _, err := policy.MattermostWebhookUrlPolicy(r.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Invalid mattermost webhook URL format."
+			errs["webhookUrl"] = "Please enter a valid webhook URL."
 		}
 	}
 

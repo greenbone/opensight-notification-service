@@ -48,7 +48,7 @@ func (mc *MattermostController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrMattermostChannelNameExists,
 		http.StatusBadRequest,
-		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrMattermostChannelNameExists.Error()),
+		errorResponses.NewErrorGenericResponse("Mattermost channel name already exists."),
 	)
 }
 

@@ -35,5 +35,10 @@ func MattermostWebhookUrlPolicy(webhook string) (*url.URL, error) {
 		return nil, fmt.Errorf("invalid URL: %w", err)
 	}
 
+	var re = regexp.MustCompile(`^https://[\w.-]+/hooks/[a-zA-Z0-9]+$`)
+	if !re.MatchString(webhook) {
+		return nil, errors.New("invalid Mattermost webhook URL")
+	}
+
 	return u, nil
 }
