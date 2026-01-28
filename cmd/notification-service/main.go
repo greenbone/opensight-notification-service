@@ -104,9 +104,10 @@ func run(config config.Config) error {
 		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}
 
+	mailService := notificationchannelservice.NewMailService()
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
-	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, notificationChannelRepository, config.ChannelLimit.EMailLimit)
+	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, notificationChannelRepository, mailService, config.ChannelLimit.EMailLimit)
 	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.ChannelLimit.MattermostLimit)
 	teamsChannelService := notificationchannelservice.NewTeamsChannelService(notificationChannelService, config.ChannelLimit.TeamsLimit)
 	healthService := healthservice.NewHealthService(pgClient)
