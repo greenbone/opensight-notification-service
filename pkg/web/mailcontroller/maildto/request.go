@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/rs/zerolog/log"
 )
 
@@ -37,18 +38,18 @@ func (v CheckMailServerRequest) Validate() models.ValidationErrors {
 	errors := make(models.ValidationErrors)
 
 	if v.Domain == "" {
-		errors["domain"] = "A mailhub is required."
+		errors["domain"] = translation.MailhubIsRequired
 	}
 	if v.Port == 0 {
-		errors["port"] = "A port is required."
+		errors["port"] = translation.PortIsRequired
 	}
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errors["username"] = "A username is required."
+			errors["username"] = translation.UsernameIsRequired
 		}
 		if v.Password == "" {
-			errors["password"] = "A password is required."
+			errors["password"] = translation.PasswordIsRequired
 		}
 	}
 
@@ -84,15 +85,15 @@ func (v CheckMailServerEntityRequest) Validate() models.ValidationErrors {
 	errs := make(models.ValidationErrors)
 
 	if v.Domain == "" {
-		errs["domain"] = "A mailhub is required."
+		errs["domain"] = translation.MailhubIsRequired
 	}
 	if v.Port < 1 || v.Port > 65535 {
-		errs["port"] = "A port is required."
+		errs["port"] = translation.PortIsRequired
 	}
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errs["username"] = "A username is required."
+			errs["username"] = translation.UsernameIsRequired
 		}
 	}
 
@@ -124,25 +125,25 @@ func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
 	errMap := make(models.ValidationErrors)
 
 	if r.Domain == "" {
-		errMap["domain"] = "A mailhub is required."
+		errMap["domain"] = translation.MailhubIsRequired
 	}
 
 	if r.Port < 1 || r.Port > 65535 {
-		errMap["port"] = "A port is required."
+		errMap["port"] = translation.PortIsRequired
 	}
 
 	if r.SenderEmailAddress == "" {
-		errMap["senderEmailAddress"] = "A sender email is required."
+		errMap["senderEmailAddress"] = translation.MailSenderIsRequired
 	}
 
 	_, err := mail.ParseAddress(r.SenderEmailAddress)
 	if err != nil && !strings.Contains(err.Error(), "mail: no address") {
 		log.Info().Msgf("unable to parse email address %s", err.Error())
-		errMap["senderEmailAddress"] = "A valid sender email is required."
+		errMap["senderEmailAddress"] = translation.ValidEmailSenderIsRequired
 	}
 
 	if r.ChannelName == "" {
-		errMap["channelName"] = "A channel name is required."
+		errMap["channelName"] = translation.ChannelNameIsRequired
 	}
 
 	return errMap
