@@ -385,33 +385,6 @@ info:
   title: Notification Service API
   version: "1.0"
 paths:
-  /notification-channel/Teams/check:
-    post:
-      consumes:
-      - application/json
-      description: Check if a Teams server is able to send a test message
-      parameters:
-      - description: Teams channel ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: Teams server test message sent successfully
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - KeycloakAuth: []
-      summary: Check Teams server
-      tags:
-      - Teams-channel
   /notification-channel/mail:
     get:
       description: List mail notification channels by type
@@ -536,6 +509,66 @@ paths:
       security:
       - KeycloakAuth: []
       summary: Update Mail Channel
+      tags:
+      - mail-channel
+  /notification-channel/mail/{id}/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mail server is reachable
+      parameters:
+      - description: Mail server to check
+        in: body
+        name: MailServerConfig
+        required: true
+        schema:
+          $ref: '#/definitions/maildto.CheckMailServerEntityRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mail server reachable
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Mail server error
+      security:
+      - KeycloakAuth: []
+      summary: Check mail server
+      tags:
+      - mail-channel
+  /notification-channel/mail/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a mail server is reachable
+      parameters:
+      - description: Mail server to check
+        in: body
+        name: MailServerConfig
+        required: true
+        schema:
+          $ref: '#/definitions/maildto.CheckMailServerRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Mail server reachable
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Mail server error
+      security:
+      - KeycloakAuth: []
+      summary: Check mail server
       tags:
       - mail-channel
   /notification-channel/mattermost:
@@ -835,6 +868,33 @@ paths:
       summary: Update Teams Channel
       tags:
       - teams-channel
+  /notification-channel/teams/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a Teams server is able to send a test message
+      parameters:
+      - description: Teams channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Teams server test message sent successfully
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - KeycloakAuth: []
+      summary: Check Teams server
+      tags:
+      - teams-channel
   /notifications:
     post:
       consumes:
@@ -890,66 +950,6 @@ paths:
       summary: List Notifications
       tags:
       - notification
-  /notifications/mail/{id}/check:
-    post:
-      consumes:
-      - application/json
-      description: Check if a mail server is reachable
-      parameters:
-      - description: Mail server to check
-        in: body
-        name: MailServerConfig
-        required: true
-        schema:
-          $ref: '#/definitions/maildto.CheckMailServerEntityRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: Mail server reachable
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "422":
-          description: Mail server error
-      security:
-      - KeycloakAuth: []
-      summary: Check mail server
-      tags:
-      - mailserver
-  /notifications/mail/check:
-    post:
-      consumes:
-      - application/json
-      description: Check if a mail server is reachable
-      parameters:
-      - description: Mail server to check
-        in: body
-        name: MailServerConfig
-        required: true
-        schema:
-          $ref: '#/definitions/maildto.CheckMailServerRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: Mail server reachable
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "422":
-          description: Mail server error
-      security:
-      - KeycloakAuth: []
-      summary: Check mail server
-      tags:
-      - mailserver
   /notifications/options:
     get:
       description: Get filter options for listing notifications

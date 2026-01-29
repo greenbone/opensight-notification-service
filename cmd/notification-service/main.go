@@ -129,20 +129,22 @@ func run(config config.Config) error {
 	registry := errmap.NewRegistry()
 
 	router := web.NewWebEngine(config.Http, registry)
-	rootRouter := router.Group("/")
-	notificationServiceRouter := router.Group("/api/notification-service")
-	docsRouter := router.Group("/docs/notification-service")
 
 	// rest api docs
+	docsRouter := router.Group("/docs/notification-service")
 	web.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 	healthcontroller.RegisterSwaggerDocsRoute(docsRouter, config.KeycloakConfig)
 
-	//instantiate controllers
+	// instantiate controllers
+	notificationServiceRouter := router.Group("/api/notification-service")
 	notificationcontroller.AddNotificationController(notificationServiceRouter, notificationService, authMiddleware)
 	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware, registry)
 	mailcontroller.AddCheckMailServerController(notificationServiceRouter, mailChannelService, authMiddleware, registry)
 	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware, registry)
 	teamsController.AddTeamsController(notificationServiceRouter, notificationChannelRepository, teamsChannelService, authMiddleware, registry)
+
+	// health router
+	rootRouter := router.Group("/")
 	healthcontroller.NewHealthController(rootRouter, healthService) // for health probes (not a data source)
 
 	srv := &http.Server{

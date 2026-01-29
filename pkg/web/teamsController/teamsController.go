@@ -171,14 +171,14 @@ func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 //
 //	@Summary		Check Teams server
 //	@Description	Check if a Teams server is able to send a test message
-//	@Tags			Teams-channel
+//	@Tags			teams-channel
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
 //	@Param			id	path	string	true	"Teams channel ID"
 //	@Success		204 "Teams server test message sent successfully"
 //	@Failure		400			{object}	map[string]string
-//	@Router			/notification-channel/Teams/check [post]
+//	@Router			/notification-channel/teams/check [post]
 func (tc *TeamsController) SendTeamsTestMessage(c *gin.Context) {
 	var channel teamsdto.TeamsNotificationChannelCheckRequest
 	if !ginEx.BindAndValidateBody(c, &channel) {

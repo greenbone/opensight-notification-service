@@ -41,11 +41,15 @@ func (mc *MailController) configureMappings(r errmap.ErrorRegistry) {
 		http.StatusUnprocessableEntity,
 		errorResponses.NewErrorGenericResponse("Mail channel limit reached."),
 	)
-
 	r.Register(
 		notificationchannelservice.ErrListMailChannels,
 		http.StatusInternalServerError,
 		errorResponses.ErrorInternalResponse,
+	)
+	r.Register(
+		notificationchannelservice.ErrMailServerUnreachable,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse("Server is unreachable"),
 	)
 }
 
@@ -165,7 +169,7 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 //
 //	@Summary		Check mail server
 //	@Description	Check if a mail server is reachable
-//	@Tags			mailserver
+//	@Tags			mail-channel
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
@@ -173,7 +177,7 @@ func (mc *MailController) DeleteMailChannel(c *gin.Context) {
 //	@Success		204 "Mail server reachable"
 //	@Failure		400			{object}	map[string]string
 //	@Failure		422 "Mail server error"
-//	@Router			/notifications/mail/{id}/check [post]
+//	@Router			/notification-channel/mail/{id}/check [post]
 func (mc *MailController) CheckMailServer(c *gin.Context) {
 	id := c.Param("id")
 
