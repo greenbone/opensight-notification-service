@@ -5,6 +5,7 @@ import (
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/policy"
+	"github.com/greenbone/opensight-notification-service/pkg/translation"
 )
 
 // MattermostNotificationChannelRequest mattermost notification channel request
@@ -24,14 +25,14 @@ func (m MattermostNotificationChannelRequest) Validate() models.ValidationErrors
 	errs := make(models.ValidationErrors)
 
 	if m.ChannelName == "" {
-		errs["channelName"] = "A channel name is required."
+		errs["channelName"] = translation.ChannelNameIsRequired
 	}
 
 	if m.WebhookUrl == "" {
-		errs["webhookUrl"] = "A Webhook URL is required."
+		errs["webhookUrl"] = translation.WebhookUrlIsRequired
 	} else {
 		if _, err := policy.MattermostWebhookUrlPolicy(m.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Please enter a valid webhook URL."
+			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
 		}
 	}
 
@@ -51,10 +52,10 @@ func (r *MattermostNotificationChannelCheckRequest) Validate() models.Validation
 	errs := make(models.ValidationErrors)
 
 	if r.WebhookUrl == "" {
-		errs["webhookUrl"] = "A Webhook URL is required."
+		errs["webhookUrl"] = translation.WebhookUrlIsRequired
 	} else {
 		if _, err := policy.MattermostWebhookUrlPolicy(r.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Please enter a valid webhook URL."
+			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
 		}
 	}
 

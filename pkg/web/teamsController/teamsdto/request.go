@@ -3,6 +3,7 @@ package teamsdto
 import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/policy"
+	"github.com/greenbone/opensight-notification-service/pkg/translation"
 )
 
 // TeamsNotificationChannelRequest teams notification channel request
@@ -15,14 +16,14 @@ type TeamsNotificationChannelRequest struct {
 func (m *TeamsNotificationChannelRequest) Validate() models.ValidationErrors {
 	errs := make(map[string]string)
 	if m.ChannelName == "" {
-		errs["channelName"] = "A channel name is required."
+		errs["channelName"] = translation.ChannelNameIsRequired
 	}
 
 	if m.WebhookUrl == "" {
-		errs["webhookUrl"] = "A Webhook URL is required."
+		errs["webhookUrl"] = translation.WebhookUrlIsRequired
 	} else {
 		if _, err := policy.TeamsWebhookUrlPolicy(m.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Please enter a valid webhook URL."
+			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
 		}
 	}
 
@@ -38,10 +39,10 @@ func (r *TeamsNotificationChannelCheckRequest) Validate() models.ValidationError
 	errs := make(models.ValidationErrors)
 
 	if r.WebhookUrl == "" {
-		errs["webhookUrl"] = "A Webhook URL is required."
+		errs["webhookUrl"] = translation.WebhookUrlIsRequired
 	} else {
 		if _, err := policy.TeamsWebhookUrlPolicy(r.WebhookUrl); err != nil {
-			errs["webhookUrl"] = "Please enter a valid webhook URL."
+			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
 		}
 	}
 
