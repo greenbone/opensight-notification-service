@@ -44,7 +44,7 @@ func (mc *CheckMailServerController) configureMappings(r errmap.ErrorRegistry) {
 		errorResponses.ErrorInternalResponse,
 	)
 	r.Register(
-		notificationchannelservice.ErrCreateMailFailed,
+		notificationchannelservice.ErrCreateMailClient,
 		http.StatusUnprocessableEntity,
 		errorResponses.NewErrorGenericResponse("Unable to create mail client"),
 	)
