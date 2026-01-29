@@ -18,49 +18,6 @@ const docTemplatenotificationservice = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/notification-channel/Teams/check": {
-            "post": {
-                "security": [
-                    {
-                        "KeycloakAuth": []
-                    }
-                ],
-                "description": "Check if a Teams server is able to send a test message",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Teams-channel"
-                ],
-                "summary": "Check Teams server",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Teams channel ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Teams server test message sent successfully"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/notification-channel/mail": {
             "get": {
                 "security": [
@@ -161,6 +118,54 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/notification-channel/mail/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mail server is reachable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mail-channel"
+                ],
+                "summary": "Check mail server",
+                "parameters": [
+                    {
+                        "description": "Mail server to check",
+                        "name": "MailServerConfig",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/maildto.CheckMailServerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Mail server reachable"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Mail server error"
+                    }
+                }
+            }
+        },
         "/notification-channel/mail/{id}": {
             "put": {
                 "security": [
@@ -256,6 +261,54 @@ const docTemplatenotificationservice = `{
                                 "type": "string"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/notification-channel/mail/{id}/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a mail server is reachable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mail-channel"
+                ],
+                "summary": "Check mail server",
+                "parameters": [
+                    {
+                        "description": "Mail server to check",
+                        "name": "MailServerConfig",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/maildto.CheckMailServerEntityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Mail server reachable"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Mail server error"
                     }
                 }
             }
@@ -611,6 +664,49 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/notification-channel/teams/check": {
+            "post": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Check if a Teams server is able to send a test message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams-channel"
+                ],
+                "summary": "Check Teams server",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Teams channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Teams server test message sent successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notification-channel/teams/{id}": {
             "put": {
                 "security": [
@@ -812,102 +908,6 @@ const docTemplatenotificationservice = `{
                                 "description": "API version"
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/notifications/mail/check": {
-            "post": {
-                "security": [
-                    {
-                        "KeycloakAuth": []
-                    }
-                ],
-                "description": "Check if a mail server is reachable",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "mailserver"
-                ],
-                "summary": "Check mail server",
-                "parameters": [
-                    {
-                        "description": "Mail server to check",
-                        "name": "MailServerConfig",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/maildto.CheckMailServerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Mail server reachable"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Mail server error"
-                    }
-                }
-            }
-        },
-        "/notifications/mail/{id}/check": {
-            "post": {
-                "security": [
-                    {
-                        "KeycloakAuth": []
-                    }
-                ],
-                "description": "Check if a mail server is reachable",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "mailserver"
-                ],
-                "summary": "Check mail server",
-                "parameters": [
-                    {
-                        "description": "Mail server to check",
-                        "name": "MailServerConfig",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/maildto.CheckMailServerEntityRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Mail server reachable"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Mail server error"
                     }
                 }
             }

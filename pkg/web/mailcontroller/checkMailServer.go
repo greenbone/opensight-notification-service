@@ -48,7 +48,6 @@ func (mc *CheckMailServerController) configureMappings(r errmap.ErrorRegistry) {
 		http.StatusUnprocessableEntity,
 		errorResponses.NewErrorGenericResponse("Unable to create mail client"),
 	)
-
 	r.Register(
 		notificationchannelservice.ErrMailServerUnreachable,
 		http.StatusUnprocessableEntity,
@@ -60,7 +59,7 @@ func (mc *CheckMailServerController) configureMappings(r errmap.ErrorRegistry) {
 //
 //	@Summary		Check mail server
 //	@Description	Check if a mail server is reachable
-//	@Tags			mailserver
+//	@Tags			mail-channel
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
@@ -68,7 +67,7 @@ func (mc *CheckMailServerController) configureMappings(r errmap.ErrorRegistry) {
 //	@Success		204 "Mail server reachable"
 //	@Failure		400			{object}	map[string]string
 //	@Failure		422 "Mail server error"
-//	@Router			/notifications/mail/check [post]
+//	@Router			/notification-channel/mail/check [post]
 func (mc *CheckMailServerController) CheckMailServer(c *gin.Context) {
 	var mailServer maildto.CheckMailServerRequest
 	if !ginEx.BindAndValidateBody(c, &mailServer) {
