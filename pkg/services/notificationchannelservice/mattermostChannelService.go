@@ -16,6 +16,7 @@ var (
 	ErrMattermostChannelLimitReached = errors.New("Mattermost channel limit reached.")
 	ErrListMattermostChannels        = errors.New("failed to list mattermost channels")
 	ErrMattermostChannelNameExists   = errors.New("Mattermost channel name already exists.")
+	ErrMattermostMassageDelivery     = errors.New("mattermost message could not be send")
 )
 
 type MattermostChannelService interface {
@@ -58,7 +59,11 @@ func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) 
 	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("failed to send test message to Mattermost webhook: %s", resp.Status)
+		return fmt.Errorf(
+			"%w: http status: %s",
+			ErrMattermostMassageDelivery,
+			resp.Status,
+		)
 	}
 
 	return nil

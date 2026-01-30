@@ -16,6 +16,7 @@ var (
 	ErrTeamsChannelLimitReached = errors.New("Teams channel limit reached.")
 	ErrListTeamsChannels        = errors.New("failed to list teams channels")
 	ErrTeamsChannelNameExists   = errors.New("Teams channel name already exists.")
+	ErrTeamsMassageDelivery     = errors.New("teams message could not be send")
 )
 
 type TeamsChannelService interface {
@@ -58,7 +59,11 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("failed to send test message to Teams webhook: %s", resp.Status)
+		return fmt.Errorf(
+			"%w: http status: %s",
+			ErrTeamsMassageDelivery,
+			resp.Status,
+		)
 	}
 
 	return nil
