@@ -14,8 +14,12 @@ import (
 func InterpretErrors(errorType gin.ErrorType, r errmap.ErrorRegistry) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
-		for _, errorValue := range c.Errors.ByType(errorType) {
 
+		if c.IsAborted() {
+			return
+		}
+
+		for _, errorValue := range c.Errors.ByType(errorType) {
 			actual := errorValue.Unwrap()
 
 			bindingError := ginEx.BindingError{}

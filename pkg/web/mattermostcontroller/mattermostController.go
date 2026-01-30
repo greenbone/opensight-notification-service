@@ -1,6 +1,7 @@
 package mattermostcontroller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,9 +30,30 @@ func NewMattermostController(
 		notificationChannelServicer: notificationChannelServicer,
 		mattermostChannelService:    mattermostChannelService,
 	}
-	ctrl.registerRoutes(router, auth)
+
+	group := router.Group("/notification-channel/mattermost").
+		Use(middleware.AuthorizeRoles(auth, "admin")...)
+	group.POST("", ctrl.CreateMattermostChannel)
+	group.GET("", ctrl.ListMattermostChannelsByType)
+	group.PUT("/:id", ctrl.UpdateMattermostChannel)
+	group.DELETE("/:id", ctrl.DeleteMattermostChannel)
+	group.POST("/check", ctrl.SendMattermostTestMessage)
+
+	router.Use(errorHandler(gin.ErrorTypePrivate))
 	ctrl.configureMappings(registry)
 	return ctrl
+}
+
+func errorHandler(errorType gin.ErrorType) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		for _, errorValue := range c.Errors.ByType(errorType) {
+			if errors.Is(errorValue, notificationchannelservice.ErrMattermostMassageDelivery) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorGenericResponse(errorValue.Error()))
+				return
+			}
+		}
+	}
 }
 
 func (mc *MattermostController) configureMappings(r *errmap.Registry) {
@@ -50,16 +72,6 @@ func (mc *MattermostController) configureMappings(r *errmap.Registry) {
 		http.StatusBadRequest,
 		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrMattermostChannelNameExists.Error()),
 	)
-}
-
-func (mc *MattermostController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
-	group := router.Group("/notification-channel/mattermost").
-		Use(middleware.AuthorizeRoles(auth, "admin")...)
-	group.POST("", mc.CreateMattermostChannel)
-	group.GET("", mc.ListMattermostChannelsByType)
-	group.PUT("/:id", mc.UpdateMattermostChannel)
-	group.DELETE("/:id", mc.DeleteMattermostChannel)
-	group.POST("/check", mc.SendMattermostTestMessage)
 }
 
 // CreateMattermostChannel

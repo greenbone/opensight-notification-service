@@ -43,8 +43,21 @@ func AddTeamsController(
 	group.DELETE("/:id", ctrl.DeleteTeamsChannel)
 	group.POST("/check", ctrl.SendTeamsTestMessage)
 
+	router.Use(errorHandler(gin.ErrorTypePrivate))
 	ctrl.configureMappings(registry)
 	return ctrl
+}
+
+func errorHandler(errorType gin.ErrorType) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		for _, errorValue := range c.Errors.ByType(errorType) {
+			if errors.Is(errorValue, notificationchannelservice.ErrTeamsMassageDelivery) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorGenericResponse(errorValue.Error()))
+				return
+			}
+		}
+	}
 }
 
 func (tc *TeamsController) configureMappings(r *errmap.Registry) {
