@@ -9,3 +9,9 @@ const ChannelNameIsRequired = "A channel name is required."
 const ValidEmailSenderIsRequired = "A valid sender email is required."
 const WebhookUrlIsRequired = "A Webhook URL is required."
 const ValidWebhookUrlIsRequired = "Please enter a valid webhook URL."
+
+// Mattermost implementation
+const (
+	MattermostChannelLimitReached     = "Mattermost channel creation limit reached."
+	MattermostChannelNameAlreadyExist = "Mattermost channel name already exists."
+)

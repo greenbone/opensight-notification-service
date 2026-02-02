@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
@@ -123,7 +124,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusUnprocessableEntity).
-			JsonPath("$.title", "Mattermost channel limit reached.")
+			JsonPath("$.title", translation.MattermostChannelLimitReached)
 	})
 
 	t.Run("Create two mattermost channels with the same name", func(t *testing.T) {
@@ -138,7 +139,7 @@ func TestIntegration_MattermostController_CRUD(t *testing.T) {
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusBadRequest).
-			JsonPath("$.title", "Mattermost channel name already exists.")
+			JsonPath("$.title", translation.MattermostChannelNameAlreadyExist)
 	})
 }
 
