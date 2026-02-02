@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-co-op/gocron/v2 v2.19.0
+	github.com/go-co-op/gocron/v2 v2.19.1
 	github.com/go-openapi/testify/v2 v2.2.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.19.1
@@ -13,7 +13,7 @@ require (
 	github.com/greenbone/opensight-golang-libraries v1.24.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/lib/pq v1.10.9
+	github.com/lib/pq v1.11.1
 	github.com/peterldowns/pgtestdb v0.1.1
 	github.com/peterldowns/pgtestdb/migrators/golangmigrator v0.1.1
 	github.com/rs/zerolog v1.34.0
@@ -31,7 +31,7 @@ require (
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gin-contrib/logger v1.2.6 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.22.4 // indirect
@@ -50,7 +50,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
