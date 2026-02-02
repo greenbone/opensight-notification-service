@@ -8,6 +8,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
@@ -60,7 +61,7 @@ func (mc *MattermostController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrMattermostChannelLimitReached,
 		http.StatusUnprocessableEntity,
-		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrMattermostChannelLimitReached.Error()),
+		errorResponses.NewErrorGenericResponse(translation.MattermostChannelLimitReached),
 	)
 	r.Register(
 		notificationchannelservice.ErrListMattermostChannels,
@@ -70,7 +71,7 @@ func (mc *MattermostController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrMattermostChannelNameExists,
 		http.StatusBadRequest,
-		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrMattermostChannelNameExists.Error()),
+		errorResponses.NewErrorGenericResponse(translation.MattermostChannelNameAlreadyExist),
 	)
 }
 
