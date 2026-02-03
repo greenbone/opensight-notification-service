@@ -1233,7 +1233,7 @@ const docTemplatenotificationservice = `{
             ],
             "properties": {
                 "customFields": {
-                    "description": "can contain arbitrary structured information about the notification",
+                    "description": "can contain arbitrary structured information about the event",
                     "type": "object",
                     "additionalProperties": {}
                 },
@@ -1249,14 +1249,20 @@ const docTemplatenotificationservice = `{
                     "enum": [
                         "info",
                         "warning",
-                        "error"
+                        "error",
+                        "urgent"
                     ]
                 },
                 "origin": {
+                    "description": "name of the origin, e.g. ` + "`" + `SBOM - React` + "`" + `",
                     "type": "string"
                 },
-                "originUri": {
-                    "description": "can be used to provide a link to the origin",
+                "originClass": {
+                    "description": "unique identifier for the class of origins, e.g. ` + "`" + `/vi/SBOM` + "`" + `, for now optional for backwards compatibility, will be required in future",
+                    "type": "string"
+                },
+                "originResourceID": {
+                    "description": "together with class it can be used to provide a link to the origin, e.g. ` + "`" + `\u003cid of react sbom object\u003e` + "`" + `",
                     "type": "string"
                 },
                 "timestamp": {
@@ -1264,7 +1270,6 @@ const docTemplatenotificationservice = `{
                     "format": "date-time"
                 },
                 "title": {
-                    "description": "can also be seen as the 'type'",
                     "type": "string"
                 }
             }
