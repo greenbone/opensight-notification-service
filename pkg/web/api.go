@@ -5,11 +5,12 @@
 package web
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	docs "github.com/greenbone/opensight-notification-service/api/notificationservice"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/swagger"
-	"strings"
 )
 
 // comment block for api docs generation via swag:

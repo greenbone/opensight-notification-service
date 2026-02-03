@@ -874,7 +874,7 @@ const docTemplatenotificationservice = `{
                         "KeycloakAuth": []
                     }
                 ],
-                "description": "Create a new notification",
+                "description": "Create a new notification. It will always be stored by the notification service and it will possibly also trigger actions like sending mails, depending on the cofigured rules.",
                 "consumes": [
                     "application/json"
                 ],
@@ -932,6 +932,61 @@ const docTemplatenotificationservice = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/query.ResponseWithMetadata-array_query_FilterOption"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/origins/{namespace}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Registers a set of origins in the given namespace. Replaces the content of the namespace if it already existed. The origins can be ulitized to set trigger conditions for actions.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "origin"
+                ],
+                "summary": "Register Origins",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "namespace of the calling service, need to be unique among all services registering origins",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "origins provided by the calling service",
+                        "name": "origins",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Origin"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/query.ResponseWithMetadata-array_models_Origin"
                         },
                         "headers": {
                             "api-version": {
@@ -1274,6 +1329,25 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "models.Origin": {
+            "type": "object",
+            "required": [
+                "class",
+                "name"
+            ],
+            "properties": {
+                "class": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string",
+                    "readOnly": true
+                }
+            }
+        },
         "paging.Request": {
             "type": "object",
             "properties": {
@@ -1378,6 +1452,24 @@ const docTemplatenotificationservice = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Notification"
+                    }
+                },
+                "metadata": {
+                    "$ref": "#/definitions/query.Metadata"
+                }
+            }
+        },
+        "query.ResponseWithMetadata-array_models_Origin": {
+            "type": "object",
+            "required": [
+                "data",
+                "metadata"
+            ],
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Origin"
                     }
                 },
                 "metadata": {

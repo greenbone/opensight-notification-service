@@ -250,6 +250,19 @@ definitions:
     - timestamp
     - title
     type: object
+  models.Origin:
+    properties:
+      class:
+        type: string
+      name:
+        type: string
+      namespace:
+        readOnly: true
+        type: string
+    required:
+    - class
+    - name
+    type: object
   paging.Request:
     properties:
       index:
@@ -316,6 +329,18 @@ definitions:
       data:
         items:
           $ref: '#/definitions/models.Notification'
+        type: array
+      metadata:
+        $ref: '#/definitions/query.Metadata'
+    required:
+    - data
+    - metadata
+    type: object
+  query.ResponseWithMetadata-array_models_Origin:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Origin'
         type: array
       metadata:
         $ref: '#/definitions/query.Metadata'
@@ -905,7 +930,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new notification
+      description: Create a new notification. It will always be stored by the notification
+        service and it will possibly also trigger actions like sending mails, depending
+        on the cofigured rules.
       parameters:
       - description: notification to add
         in: body
@@ -975,6 +1002,44 @@ paths:
       summary: Notification filter options
       tags:
       - notification
+  /origins/{namespace}:
+    put:
+      consumes:
+      - application/json
+      description: Registers a set of origins in the given namespace. Replaces the
+        content of the namespace if it already existed. The origins can be ulitized
+        to set trigger conditions for actions.
+      parameters:
+      - description: namespace of the calling service, need to be unique among all
+          services registering origins
+        in: path
+        name: namespace
+        required: true
+        type: string
+      - description: origins provided by the calling service
+        in: body
+        name: origins
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Origin'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/query.ResponseWithMetadata-array_models_Origin'
+      security:
+      - KeycloakAuth: []
+      summary: Register Origins
+      tags:
+      - origin
 securityDefinitions:
   KeycloakAuth:
     authorizationUrl: '{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth'
