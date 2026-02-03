@@ -1,5 +1,18 @@
 basePath: /api/notification-service
 definitions:
+  errorResponses.ErrorResponse:
+    properties:
+      details:
+        type: string
+      errors:
+        additionalProperties:
+          type: string
+        type: object
+      title:
+        type: string
+      type:
+        type: string
+    type: object
   filter.CompareOperator:
     enum:
     - beginsWith
@@ -249,6 +262,22 @@ definitions:
     - origin
     - timestamp
     - title
+    type: object
+  models.Origin:
+    properties:
+      class:
+        description: unique identifier
+        type: string
+      name:
+        description: human readable name representation
+        type: string
+      serviceID:
+        description: service in which this origin is defined
+        readOnly: true
+        type: string
+    required:
+    - class
+    - name
     type: object
   paging.Request:
     properties:
@@ -905,7 +934,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new notification
+      description: Create a new notification. It will always be stored by the notification
+        service and it will possibly also trigger actions like sending mails, depending
+        on the cofigured rules.
       parameters:
       - description: notification to add
         in: body
@@ -975,6 +1006,58 @@ paths:
       summary: Notification filter options
       tags:
       - notification
+  /origins/{serviceID}:
+    put:
+      consumes:
+      - application/json
+      description: Registers a set of origins in the given service. Replaces origins
+        of this service if they already existed. The origins can be ulitized to set
+        trigger conditions for actions.
+      parameters:
+      - description: serviceID of the calling service, needs to be unique among all
+          services registering origins
+        in: path
+        name: serviceID
+        required: true
+        type: string
+      - description: origins provided by the calling service
+        in: body
+        name: origins
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Origin'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: origins registered
+          headers:
+            api-version:
+              description: API version
+              type: string
+        "400":
+          description: Bad Request
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth: []
+      summary: Register Origins
+      tags:
+      - origin
 securityDefinitions:
   KeycloakAuth:
     authorizationUrl: '{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth'

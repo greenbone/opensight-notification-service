@@ -33,11 +33,14 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/config/secretfiles"
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
+	"github.com/greenbone/opensight-notification-service/pkg/repository/originrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
+	"github.com/greenbone/opensight-notification-service/pkg/services/originservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/healthcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/notificationcontroller"
+	"github.com/greenbone/opensight-notification-service/pkg/web/origincontroller"
 )
 
 func main() {
@@ -102,6 +105,10 @@ func run(config config.Config) error {
 	if err != nil {
 		return fmt.Errorf("error creating Notification Repository: %w", err)
 	}
+	originsRepository, err := originrepository.NewOriginRepository(pgClient)
+	if err != nil {
+		return err
+	}
 
 	// Encrypt
 	manager := security.NewEncryptManager()
@@ -121,6 +128,7 @@ func run(config config.Config) error {
 	notificationTransport := http.Client{Timeout: 15 * time.Second}
 	teamsChannelService := notificationchannelservice.NewTeamsChannelService(
 		notificationChannelService, config.ChannelLimit.TeamsLimit, notificationTransport)
+	originService := originservice.NewOriginService(originsRepository)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler
@@ -153,6 +161,7 @@ func run(config config.Config) error {
 	mailcontroller.AddCheckMailServerController(notificationServiceRouter, mailChannelService, authMiddleware, registry)
 	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware, registry)
 	teamsController.AddTeamsController(notificationServiceRouter, notificationChannelRepository, teamsChannelService, authMiddleware, registry)
+	origincontroller.NewOriginController(notificationServiceRouter, originService, authMiddleware)
 
 	// health router
 	rootRouter := router.Group("/")

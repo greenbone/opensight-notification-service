@@ -874,7 +874,7 @@ const docTemplatenotificationservice = `{
                         "KeycloakAuth": []
                     }
                 ],
-                "description": "Create a new notification",
+                "description": "Create a new notification. It will always be stored by the notification service and it will possibly also trigger actions like sending mails, depending on the cofigured rules.",
                 "consumes": [
                     "application/json"
                 ],
@@ -942,9 +942,105 @@ const docTemplatenotificationservice = `{
                     }
                 }
             }
+        },
+        "/origins/{serviceID}": {
+            "put": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Registers a set of origins in the given service. Replaces origins of this service if they already existed. The origins can be ulitized to set trigger conditions for actions.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "origin"
+                ],
+                "summary": "Register Origins",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "serviceID of the calling service, needs to be unique among all services registering origins",
+                        "name": "serviceID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "origins provided by the calling service",
+                        "name": "origins",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Origin"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "origins registered",
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "errorResponses.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "filter.CompareOperator": {
             "type": "string",
             "enum": [
@@ -1271,6 +1367,28 @@ const docTemplatenotificationservice = `{
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Origin": {
+            "type": "object",
+            "required": [
+                "class",
+                "name"
+            ],
+            "properties": {
+                "class": {
+                    "description": "unique identifier",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "human readable name representation",
+                    "type": "string"
+                },
+                "serviceID": {
+                    "description": "service in which this origin is defined",
+                    "type": "string",
+                    "readOnly": true
                 }
             }
         },
