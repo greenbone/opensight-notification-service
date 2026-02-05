@@ -20,6 +20,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/go-playground/validator"
 	"github.com/greenbone/opensight-notification-service/pkg/jobs/checkmailconnectivity"
@@ -73,6 +74,13 @@ func run(config config.Config) error {
 	if err != nil {
 		return err
 	}
+	defer func(pgClient *sqlx.DB) {
+		err = pgClient.Close()
+		if err != nil {
+			log.Error().Err(err).Msgf("Error while closing Postgres: %s", err)
+		}
+	}(pgClient)
+	log.Debug().Msg("postgres database connection successful")
 
 	// auth
 	realmInfo := auth.KeycloakRealmInfo{

@@ -5,7 +5,6 @@
 package repository
 
 import (
-	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
@@ -31,13 +30,13 @@ func NewClient(postgres config.Database) (*sqlx.DB, error) {
 		url.QueryEscape(postgres.User), url.QueryEscape(postgres.Password),
 		url.QueryEscape(postgres.Host), postgres.Port, url.QueryEscape(postgres.DBName),
 		url.QueryEscape(postgres.SSLMode))
-	//connect to the db
+
 	db, err := sqlx.Connect("postgres", connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to postgres database '%s:%d': %w", postgres.Host, postgres.Port, err)
 	}
 
-	if automigrateErr := autoMigrate(connectionString); automigrateErr != nil {
+	if automigrateErr := autoMigrate(db); automigrateErr != nil {
 		if errors.Is(automigrateErr, migrate.ErrNoChange) {
 			log.Debug().Msg("nothing to migrate")
 			return db, nil
@@ -48,15 +47,11 @@ func NewClient(postgres config.Database) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func autoMigrate(connectionString string) error {
+func autoMigrate(db *sqlx.DB) error {
 	log.Debug().Msg("starting database migration")
-	//migrating postgres database
-	db, err := sql.Open("postgres", connectionString)
-	if err != nil {
-		return err
-	}
 
-	databaseDriver, err := postgres.WithInstance(db, &postgres.Config{})
+	// We re-use our connection from sqlx from our pool, so no new connections are made here
+	databaseDriver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
 		return err
 	}
@@ -74,6 +69,7 @@ func autoMigrate(connectionString string) error {
 	if migrateErr := migration.Up(); migrateErr != nil {
 		return fmt.Errorf("migration error: %w", migrateErr)
 	}
+
 	log.Debug().Msg("database migration done")
 	return nil
 }
