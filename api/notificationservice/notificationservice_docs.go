@@ -983,10 +983,31 @@ const docTemplatenotificationservice = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "origins registered",
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/query.ResponseWithMetadata-array_models_Origin"
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
                         },
                         "headers": {
                             "api-version": {
@@ -1000,6 +1021,26 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
+        "errorResponses.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "filter.CompareOperator": {
             "type": "string",
             "enum": [
@@ -1452,24 +1493,6 @@ const docTemplatenotificationservice = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Notification"
-                    }
-                },
-                "metadata": {
-                    "$ref": "#/definitions/query.Metadata"
-                }
-            }
-        },
-        "query.ResponseWithMetadata-array_models_Origin": {
-            "type": "object",
-            "required": [
-                "data",
-                "metadata"
-            ],
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Origin"
                     }
                 },
                 "metadata": {

@@ -1,5 +1,18 @@
 basePath: /api/notification-service
 definitions:
+  errorResponses.ErrorResponse:
+    properties:
+      details:
+        type: string
+      errors:
+        additionalProperties:
+          type: string
+        type: object
+      title:
+        type: string
+      type:
+        type: string
+    type: object
   filter.CompareOperator:
     enum:
     - beginsWith
@@ -329,18 +342,6 @@ definitions:
       data:
         items:
           $ref: '#/definitions/models.Notification'
-        type: array
-      metadata:
-        $ref: '#/definitions/query.Metadata'
-    required:
-    - data
-    - metadata
-    type: object
-  query.ResponseWithMetadata-array_models_Origin:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/models.Origin'
         type: array
       metadata:
         $ref: '#/definitions/query.Metadata'
@@ -1027,14 +1028,28 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: origins registered
+          headers:
+            api-version:
+              description: API version
+              type: string
+        "400":
+          description: Bad Request
           headers:
             api-version:
               description: API version
               type: string
           schema:
-            $ref: '#/definitions/query.ResponseWithMetadata-array_models_Origin'
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
       security:
       - KeycloakAuth: []
       summary: Register Origins

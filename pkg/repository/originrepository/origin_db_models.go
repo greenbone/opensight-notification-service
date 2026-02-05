@@ -19,7 +19,7 @@ type originRow struct {
 	Namespace string `db:"namespace"`
 }
 
-func toOrignRow(o entities.Origin, namespace string) originRow {
+func toOriginRow(o entities.Origin, namespace string) originRow {
 	return originRow{
 		Name:      o.Name,
 		Class:     o.Class,

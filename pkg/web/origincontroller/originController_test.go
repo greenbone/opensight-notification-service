@@ -6,10 +6,13 @@ package origincontroller
 
 import (
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
@@ -117,6 +120,50 @@ func TestRegisterOrigins(t *testing.T) {
 			router.ServeHTTP(resp, req)
 
 			assert.Equal(t, tt.wantResponseCode, resp.Code)
+		})
+	}
+}
+
+func TestParseAndValidateOrigins(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		wantOrigins []models.Origin
+		wantErr     bool
+	}{
+		{
+			name:  "success",
+			input: `[{"name": "Origin 1", "class": "origin/1"}, {"name": "Origin 2", "class": "origin/2"}]`,
+			wantOrigins: []models.Origin{
+				{Name: "Origin 1", Class: "origin/1"},
+				{Name: "Origin 2", Class: "origin/2"},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "error on empty body",
+			input:   "",
+			wantErr: true,
+		},
+		{
+			name:    "error on invalid json",
+			input:   `[{"name": "Origin 1"`,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gc, _ := gin.CreateTestContext(httptest.NewRecorder())
+			gc.Request = &http.Request{Body: io.NopCloser(strings.NewReader(tt.input))}
+
+			got, err := parseAndValidateOrigins(gc)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantOrigins, got)
+			}
 		})
 	}
 }

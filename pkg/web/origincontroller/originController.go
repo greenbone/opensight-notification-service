@@ -36,12 +36,12 @@ func NewOriginController(
 	originService OriginService,
 	auth gin.HandlerFunc,
 ) *OriginController {
-	crtl := &OriginController{
+	ctrl := &OriginController{
 		originService: originService,
 	}
-	crtl.RegisterRoutes(router, auth)
+	ctrl.RegisterRoutes(router, auth)
 
-	return crtl
+	return ctrl
 }
 
 func (c *OriginController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFunc) {
@@ -59,9 +59,11 @@ func (c *OriginController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFu
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			namespace	path		string			true	"namespace of the calling service, need to be unique among all services registering origins"
-//	@Param			origins		body		[]models.Origin	true	"origins provided by the calling service"
-//	@Success		200			{object}	query.ResponseWithMetadata[[]models.Origin]
+//	@Param			namespace	path	string			true	"namespace of the calling service, need to be unique among all services registering origins"
+//	@Param			origins		body	[]models.Origin	true	"origins provided by the calling service"
+//	@Success		204			"origins registered"
+//	@Failure		400			{object}	errorResponses.ErrorResponse
+//	@Failure		500			{object}	errorResponses.ErrorResponse
 //	@Header			all			{string}	api-version	"API version"
 //	@Router			/origins/{namespace} [put]
 func (c *OriginController) RegisterOrigins(gc *gin.Context) {

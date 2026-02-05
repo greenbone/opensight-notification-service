@@ -36,7 +36,7 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, namespace string, 
 
 	var originRows []originRow
 	for _, o := range origins {
-		originRows = append(originRows, toOrignRow(o, namespace))
+		originRows = append(originRows, toOriginRow(o, namespace))
 	}
 
 	tx, err := r.client.BeginTxx(ctx, nil) // replacement of existing entries must be atomic
@@ -50,17 +50,11 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, namespace string, 
 		return fmt.Errorf("could not delete existing origins: %w", err)
 	}
 
-	if len(originRows) == 0 { // nothing to insert -> commit and return
-		err := tx.Commit()
+	if len(originRows) != 0 {
+		_, err = tx.NamedExec(createOriginsQuery, originRows)
 		if err != nil {
-			return fmt.Errorf("could not commit transaction: %w", err)
+			return fmt.Errorf("could not insert origins: %w", err)
 		}
-		return nil
-	}
-
-	_, err = tx.NamedExec(createOriginsQuery, originRows)
-	if err != nil {
-		return fmt.Errorf("could not insert origins: %w", err)
 	}
 
 	err = tx.Commit()

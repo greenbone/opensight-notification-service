@@ -13,14 +13,6 @@ type Origin struct {
 	Namespace string `json:"namespace" readonly:"true"`
 }
 
-// OriginReference is the reference to an origin, uniquely identified by the combination of namespace and class.
-// The name is simply informational.
-type OriginReference struct {
-	Name      string `json:"name" readonly:"true"`
-	Class     string `json:"class" binding:"required"`
-	Namespace string `json:"namespace" binding:"required"`
-}
-
 // ToEntity transforms the rest model to the entity for use in the service
 func (o Origin) ToEntity() entities.Origin {
 	return entities.Origin(o)
