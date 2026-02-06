@@ -45,6 +45,13 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, 
 	}
 	defer func() { _ = tx.Rollback() }() // note: rollback after successful commit is a no-op
 
+	// acquire exclusive lock, as concurrent upserts for the same serviceID can result
+	// extra data or unique constraint violation
+	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtext($1))", serviceID)
+	if err != nil {
+		return fmt.Errorf("could not acquire lock: %w", err)
+	}
+
 	_, err = tx.Exec(deleteOriginsQuery, serviceID)
 	if err != nil {
 		return fmt.Errorf("could not delete existing origins: %w", err)
