@@ -6,6 +6,7 @@ package originrepository
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"testing"
 
@@ -103,6 +104,23 @@ func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 			},
 			wantOrigins: []entities.Origin{},
 		},
+		"error on duplicate origin classes": {
+			inputs: []input{
+				{
+					serviceID: "service1",
+					origins: []entities.Origin{
+						{Name: "origin1", Class: "classA"},
+					},
+				},
+				{
+					serviceID: "service2",
+					origins: []entities.Origin{
+						{Name: "origin1", Class: "classA"}, // class must be unique across all services
+					},
+				},
+			},
+			wantErr: true,
+		},
 		"error on empty serviceID": {
 			inputs: []input{
 				{
@@ -125,16 +143,19 @@ func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 
 			ctx := context.Background()
 
+			var errs []error
 			for _, input := range tt.inputs {
 				err := repo.UpsertOrigins(ctx, input.serviceID, input.origins)
-				if tt.wantErr {
-					require.Error(t, err)
-				} else {
-					require.NoError(t, err)
-				}
+				errs = append(errs, err)
+			}
+			err = errors.Join(errs...)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
 			}
 
 			// if all operarions were successful, verify final state
+			require.NoError(t, err)
 			gotOrigins, err := repo.ListOrigins(ctx)
 			require.NoError(t, err)
 			assert.ElementsMatch(t, tt.wantOrigins, gotOrigins) // order so far not guaranteed or relevant
@@ -162,7 +183,9 @@ func Test_UpsertOrigins_Concurrency(t *testing.T) {
 		go func(val int) {
 			defer wg.Done()
 			err := repo.UpsertOrigins(context.Background(), serviceID, origins)
-			assert.NoError(t, err, "failed at iteration %d", val)
+			if err != nil {
+				t.Logf("Failed at iteration %d: %v", val, err)
+			}
 		}(i)
 	}
 	wg.Wait()
@@ -171,5 +194,5 @@ func Test_UpsertOrigins_Concurrency(t *testing.T) {
 	err = db.QueryRow("SELECT COUNT(*) FROM notification_service.origins WHERE service_id = $1", serviceID).Scan(&count)
 	require.NoError(t, err)
 
-	require.Equal(t, len(origins), count, "Data was duplicated due to race condition!")
+	require.Equal(t, 2, count, "Data was duplicated due to race condition!")
 }

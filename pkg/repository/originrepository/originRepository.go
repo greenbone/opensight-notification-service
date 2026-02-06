@@ -10,8 +10,13 @@ import (
 	"fmt"
 
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
+
+// see https://github.com/lib/pq/blob/3d613208bca2e74f2a20e04126ed30bcb5c4cc27/error.go#L78
+const pgErrCodeConflict = "23505"
 
 type OriginRepository struct {
 	client *sqlx.DB
@@ -60,6 +65,12 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, 
 	if len(originRows) != 0 {
 		_, err = tx.NamedExec(createOriginsQuery, originRows)
 		if err != nil {
+			var pgErr *pq.Error
+			if errors.As(err, &pgErr) { // postgres specific error handling
+				if pgErr.Code == pgErrCodeConflict {
+					err = &errs.ErrConflict{Message: "duplicate origin class"}
+				}
+			}
 			return fmt.Errorf("could not insert origins: %w", err)
 		}
 	}
