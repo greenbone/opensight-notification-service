@@ -25,26 +25,26 @@ import (
 
 func TestRegisterOrigins(t *testing.T) {
 	type ServiceCall struct {
-		wantNamespace string
+		wantServiceID string
 		wantOrigins   []entities.Origin
 		err           error
 	}
 
 	tests := map[string]struct {
-		namespace        string
+		serviceID        string
 		origins          []models.Origin
 		serviceCalls     []ServiceCall
 		wantResponseCode int
 	}{
 		"valid request": {
-			namespace: "serviceA",
+			serviceID: "serviceA",
 			origins: []models.Origin{
 				{Name: "Origin 1", Class: "origin/1"},
 				{Name: "Origin 2", Class: "origin/2"},
 			},
 			serviceCalls: []ServiceCall{
 				{
-					wantNamespace: "serviceA",
+					wantServiceID: "serviceA",
 					wantOrigins: []entities.Origin{
 						{Name: "Origin 1", Class: "origin/1"},
 						{Name: "Origin 2", Class: "origin/2"},
@@ -55,13 +55,13 @@ func TestRegisterOrigins(t *testing.T) {
 			wantResponseCode: http.StatusNoContent,
 		},
 		"service error": {
-			namespace: "serviceB",
+			serviceID: "serviceB",
 			origins: []models.Origin{
 				{Name: "Origin X", Class: "origin/x"},
 			},
 			serviceCalls: []ServiceCall{
 				{
-					wantNamespace: "serviceB",
+					wantServiceID: "serviceB",
 					wantOrigins: []entities.Origin{
 						{Name: "Origin X", Class: "origin/x"},
 					},
@@ -71,7 +71,7 @@ func TestRegisterOrigins(t *testing.T) {
 			wantResponseCode: http.StatusInternalServerError,
 		},
 		"invalid body (missing name)": {
-			namespace: "serviceC",
+			serviceID: "serviceC",
 			origins: []models.Origin{
 				{Name: "", Class: "origin/y"}, // Name is required
 			},
@@ -79,7 +79,7 @@ func TestRegisterOrigins(t *testing.T) {
 			wantResponseCode: http.StatusBadRequest,
 		},
 		"invalid body (missing class)": {
-			namespace: "serviceC",
+			serviceID: "serviceC",
 			origins: []models.Origin{
 				{Name: "Origin Y", Class: ""}, // Class is required
 			},
@@ -87,11 +87,11 @@ func TestRegisterOrigins(t *testing.T) {
 			wantResponseCode: http.StatusBadRequest,
 		},
 		"empty origins list": {
-			namespace: "serviceD",
+			serviceID: "serviceD",
 			origins:   []models.Origin{},
 			serviceCalls: []ServiceCall{
 				{
-					wantNamespace: "serviceD",
+					wantServiceID: "serviceD",
 					wantOrigins:   []entities.Origin{},
 					err:           nil,
 				},
@@ -105,7 +105,7 @@ func TestRegisterOrigins(t *testing.T) {
 			mockService := mocks.NewOriginService(t)
 
 			for _, call := range tt.serviceCalls {
-				mockService.EXPECT().UpsertOrigins(mock.Anything, call.wantNamespace, call.wantOrigins).Return(call.err).Once()
+				mockService.EXPECT().UpsertOrigins(mock.Anything, call.wantServiceID, call.wantOrigins).Return(call.err).Once()
 			}
 
 			registry := errmap.NewRegistry()
@@ -113,7 +113,7 @@ func TestRegisterOrigins(t *testing.T) {
 
 			_ = NewOriginController(router, mockService, testhelper.MockAuthMiddleware)
 
-			req, err := testhelper.NewJSONRequest(http.MethodPut, "/origins/"+tt.namespace, tt.origins)
+			req, err := testhelper.NewJSONRequest(http.MethodPut, "/origins/"+tt.serviceID, tt.origins)
 			require.NoError(t, err, "could not build request")
 
 			resp := httptest.NewRecorder()

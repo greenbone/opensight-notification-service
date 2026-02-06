@@ -943,14 +943,14 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "/origins/{namespace}": {
+        "/origins/{serviceID}": {
             "put": {
                 "security": [
                     {
                         "KeycloakAuth": []
                     }
                 ],
-                "description": "Registers a set of origins in the given namespace. Replaces the content of the namespace if it already existed. The origins can be ulitized to set trigger conditions for actions.",
+                "description": "Registers a set of origins in the given service. Replaces origins of this service if they already existed. The origins can be ulitized to set trigger conditions for actions.",
                 "consumes": [
                     "application/json"
                 ],
@@ -964,8 +964,8 @@ const docTemplatenotificationservice = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "namespace of the calling service, need to be unique among all services registering origins",
-                        "name": "namespace",
+                        "description": "serviceID of the calling service, needs to be unique among all services registering origins",
+                        "name": "serviceID",
                         "in": "path",
                         "required": true
                     },
@@ -1378,12 +1378,15 @@ const docTemplatenotificationservice = `{
             ],
             "properties": {
                 "class": {
+                    "description": "unique identifier",
                     "type": "string"
                 },
                 "name": {
+                    "description": "human readable name representation",
                     "type": "string"
                 },
-                "namespace": {
+                "serviceID": {
+                    "description": "service in which this origin is defined",
                     "type": "string",
                     "readOnly": true
                 }

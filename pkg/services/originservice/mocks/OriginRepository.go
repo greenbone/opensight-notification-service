@@ -101,8 +101,8 @@ func (_c *OriginRepository_ListOrigins_Call) RunAndReturn(run func(ctx context.C
 }
 
 // UpsertOrigins provides a mock function for the type OriginRepository
-func (_mock *OriginRepository) UpsertOrigins(ctx context.Context, namespace string, origins []entities.Origin) error {
-	ret := _mock.Called(ctx, namespace, origins)
+func (_mock *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error {
+	ret := _mock.Called(ctx, serviceID, origins)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpsertOrigins")
@@ -110,7 +110,7 @@ func (_mock *OriginRepository) UpsertOrigins(ctx context.Context, namespace stri
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []entities.Origin) error); ok {
-		r0 = returnFunc(ctx, namespace, origins)
+		r0 = returnFunc(ctx, serviceID, origins)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -124,13 +124,13 @@ type OriginRepository_UpsertOrigins_Call struct {
 
 // UpsertOrigins is a helper method to define mock.On call
 //   - ctx context.Context
-//   - namespace string
+//   - serviceID string
 //   - origins []entities.Origin
-func (_e *OriginRepository_Expecter) UpsertOrigins(ctx interface{}, namespace interface{}, origins interface{}) *OriginRepository_UpsertOrigins_Call {
-	return &OriginRepository_UpsertOrigins_Call{Call: _e.mock.On("UpsertOrigins", ctx, namespace, origins)}
+func (_e *OriginRepository_Expecter) UpsertOrigins(ctx interface{}, serviceID interface{}, origins interface{}) *OriginRepository_UpsertOrigins_Call {
+	return &OriginRepository_UpsertOrigins_Call{Call: _e.mock.On("UpsertOrigins", ctx, serviceID, origins)}
 }
 
-func (_c *OriginRepository_UpsertOrigins_Call) Run(run func(ctx context.Context, namespace string, origins []entities.Origin)) *OriginRepository_UpsertOrigins_Call {
+func (_c *OriginRepository_UpsertOrigins_Call) Run(run func(ctx context.Context, serviceID string, origins []entities.Origin)) *OriginRepository_UpsertOrigins_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -158,7 +158,7 @@ func (_c *OriginRepository_UpsertOrigins_Call) Return(err error) *OriginReposito
 	return _c
 }
 
-func (_c *OriginRepository_UpsertOrigins_Call) RunAndReturn(run func(ctx context.Context, namespace string, origins []entities.Origin) error) *OriginRepository_UpsertOrigins_Call {
+func (_c *OriginRepository_UpsertOrigins_Call) RunAndReturn(run func(ctx context.Context, serviceID string, origins []entities.Origin) error) *OriginRepository_UpsertOrigins_Call {
 	_c.Call.Return(run)
 	return _c
 }

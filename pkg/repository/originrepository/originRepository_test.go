@@ -18,7 +18,7 @@ import (
 func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 	type input struct {
 		origins   []entities.Origin
-		namespace string
+		serviceID string
 	}
 
 	tests := map[string]struct {
@@ -26,87 +26,87 @@ func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 		wantOrigins []entities.Origin
 		wantErr     bool
 	}{
-		"create origins in single namespace (no prior data)": {
+		"create origins from single service (no prior data)": {
 			inputs: []input{
 				{
-					namespace: "ns1",
+					serviceID: "service1",
 					origins: []entities.Origin{
-						{Name: "origin1", Class: "classA", Namespace: "read only, to be ignored"},
+						{Name: "origin1", Class: "classA", ServiceID: "read only, to be ignored"},
 						{Name: "origin2", Class: "classB"},
 					},
 				},
 			},
 			wantOrigins: []entities.Origin{
-				{Name: "origin1", Class: "classA", Namespace: "ns1"},
-				{Name: "origin2", Class: "classB", Namespace: "ns1"},
+				{Name: "origin1", Class: "classA", ServiceID: "service1"},
+				{Name: "origin2", Class: "classB", ServiceID: "service1"},
 			},
 		},
-		"create origins in multiple namespaces": {
+		"create origins from multiple services": {
 			inputs: []input{
 				{
-					namespace: "ns1",
+					serviceID: "service1",
 					origins: []entities.Origin{
 						{Name: "origin1", Class: "classA"},
 					},
 				},
 				{
-					namespace: "ns2",
+					serviceID: "service2",
 					origins: []entities.Origin{
 						{Name: "origin2", Class: "classB"},
 					},
 				},
 			},
 			wantOrigins: []entities.Origin{
-				{Name: "origin1", Class: "classA", Namespace: "ns1"},
-				{Name: "origin2", Class: "classB", Namespace: "ns2"},
+				{Name: "origin1", Class: "classA", ServiceID: "service1"},
+				{Name: "origin2", Class: "classB", ServiceID: "service2"},
 			},
 		},
-		"upsert origins replaces the entries from the same namespace": {
+		"upsert origins replaces the entries from the same service": {
 			inputs: []input{
 				{
-					namespace: "ns1",
+					serviceID: "service1",
 					origins: []entities.Origin{
 						{Name: "origin1", Class: "classA"},
 						{Name: "origin2", Class: "classB"},
 					},
 				},
 				{
-					namespace: "ns2",
+					serviceID: "service2",
 					origins: []entities.Origin{
 						{Name: "origin3", Class: "classC"},
 					},
 				},
 				{
-					namespace: "ns1",
+					serviceID: "service1",
 					origins: []entities.Origin{
 						{Name: "origin4", Class: "classD"},
 					},
 				},
 			},
 			wantOrigins: []entities.Origin{
-				{Name: "origin4", Class: "classD", Namespace: "ns1"},
-				{Name: "origin3", Class: "classC", Namespace: "ns2"},
+				{Name: "origin4", Class: "classD", ServiceID: "service1"},
+				{Name: "origin3", Class: "classC", ServiceID: "service2"},
 			},
 		},
-		"delete all origins in namespace when upserting empty list": {
+		"delete all origins from a service when upserting empty list": {
 			inputs: []input{
 				{
-					namespace: "ns1",
+					serviceID: "service1",
 					origins: []entities.Origin{
 						{Name: "origin1", Class: "classA"},
 					},
 				},
 				{
-					namespace: "ns1",
+					serviceID: "service1",
 					origins:   []entities.Origin{},
 				},
 			},
 			wantOrigins: []entities.Origin{},
 		},
-		"error on empty namespace": {
+		"error on empty serviceID": {
 			inputs: []input{
 				{
-					namespace: "",
+					serviceID: "",
 					origins: []entities.Origin{
 						{Name: "origin1", Class: "classA"},
 					},
@@ -126,7 +126,7 @@ func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 			ctx := context.Background()
 
 			for _, input := range tt.inputs {
-				err := repo.UpsertOrigins(ctx, input.namespace, input.origins)
+				err := repo.UpsertOrigins(ctx, input.serviceID, input.origins)
 				if tt.wantErr {
 					require.Error(t, err)
 				} else {
@@ -148,10 +148,10 @@ func Test_UpsertOrigins_Concurrency(t *testing.T) {
 	repo, err := NewOriginRepository(db)
 	require.NoError(t, err)
 
-	namespace := "some-name-space"
+	serviceID := "some-service"
 	origins := []entities.Origin{
-		{Name: "origin4", Class: "classD", Namespace: "read-only,ignored"},
-		{Name: "origin3", Class: "classC", Namespace: "read-only,ignored"},
+		{Name: "origin4", Class: "classD", ServiceID: "read-only,ignored"},
+		{Name: "origin3", Class: "classC", ServiceID: "read-only,ignored"},
 	}
 
 	var wg sync.WaitGroup
@@ -161,14 +161,14 @@ func Test_UpsertOrigins_Concurrency(t *testing.T) {
 		wg.Add(1)
 		go func(val int) {
 			defer wg.Done()
-			err := repo.UpsertOrigins(context.Background(), namespace, origins)
+			err := repo.UpsertOrigins(context.Background(), serviceID, origins)
 			assert.NoError(t, err, "failed at iteration %d", val)
 		}(i)
 	}
 	wg.Wait()
 
 	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM notification_service.origins WHERE namespace = $1", namespace).Scan(&count)
+	err = db.QueryRow("SELECT COUNT(*) FROM notification_service.origins WHERE service_id = $1", serviceID).Scan(&count)
 	require.NoError(t, err)
 
 	require.Equal(t, len(origins), count, "Data was duplicated due to race condition!")

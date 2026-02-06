@@ -7,5 +7,5 @@ package entities
 type Origin struct {
 	Name      string
 	Class     string
-	Namespace string // read-only
+	ServiceID string // read-only
 }

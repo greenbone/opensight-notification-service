@@ -23,7 +23,7 @@ import (
 )
 
 type OriginService interface {
-	UpsertOrigins(ctx context.Context, namespace string, origins []entities.Origin) error
+	UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error
 	ListOrigins(ctx context.Context) ([]entities.Origin, error)
 }
 
@@ -48,28 +48,28 @@ func (c *OriginController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFu
 	group := router.Group("/origins").
 		// TODO: remove user role here, only services are supposed to register origins
 		Use(middleware.AuthorizeRoles(auth, middleware.UserRole, middleware.NotificationRole)...)
-	group.PUT("/:namespace", c.RegisterOrigins)
+	group.PUT("/:serviceID", c.RegisterOrigins)
 }
 
 // RegisterOrigins
 //
 //	@Summary		Register Origins
-//	@Description	Registers a set of origins in the given namespace. Replaces the content of the namespace if it already existed. The origins can be ulitized to set trigger conditions for actions.
+//	@Description	Registers a set of origins in the given service. Replaces origins of this service if they already existed. The origins can be ulitized to set trigger conditions for actions.
 //	@Tags			origin
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			namespace	path	string			true	"namespace of the calling service, need to be unique among all services registering origins"
+//	@Param			serviceID	path	string			true	"serviceID of the calling service, needs to be unique among all services registering origins"
 //	@Param			origins		body	[]models.Origin	true	"origins provided by the calling service"
 //	@Success		204			"origins registered"
 //	@Failure		400			{object}	errorResponses.ErrorResponse
 //	@Failure		500			{object}	errorResponses.ErrorResponse
 //	@Header			all			{string}	api-version	"API version"
-//	@Router			/origins/{namespace} [put]
+//	@Router			/origins/{serviceID} [put]
 func (c *OriginController) RegisterOrigins(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
-	namespace := gc.Param("namespace")
+	serviceID := gc.Param("serviceID")
 	var origins []models.Origin
 	origins, err := parseAndValidateOrigins(gc)
 	if err != nil {
@@ -82,7 +82,7 @@ func (c *OriginController) RegisterOrigins(gc *gin.Context) {
 		originsEntities = append(originsEntities, origin.ToEntity())
 	}
 
-	err = c.originService.UpsertOrigins(gc.Request.Context(), namespace, originsEntities)
+	err = c.originService.UpsertOrigins(gc.Request.Context(), serviceID, originsEntities)
 	if err != nil {
 		restErrorHandler.ErrorHandler(gc, "could not upsert origins", err)
 		return

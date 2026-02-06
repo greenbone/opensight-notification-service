@@ -11,7 +11,7 @@ import (
 )
 
 type OriginRepository interface {
-	UpsertOrigins(ctx context.Context, namespace string, origins []entities.Origin) error
+	UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error
 	ListOrigins(ctx context.Context) ([]entities.Origin, error)
 }
 
@@ -23,8 +23,8 @@ func NewOriginService(store OriginRepository) *OriginService {
 	return &OriginService{store: store}
 }
 
-func (s *OriginService) UpsertOrigins(ctx context.Context, namespace string, origins []entities.Origin) error {
-	return s.store.UpsertOrigins(ctx, namespace, origins)
+func (s *OriginService) UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error {
+	return s.store.UpsertOrigins(ctx, serviceID, origins)
 }
 
 func (s *OriginService) ListOrigins(ctx context.Context) ([]entities.Origin, error) {

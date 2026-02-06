@@ -101,8 +101,8 @@ func (_c *OriginService_ListOrigins_Call) RunAndReturn(run func(ctx context.Cont
 }
 
 // UpsertOrigins provides a mock function for the type OriginService
-func (_mock *OriginService) UpsertOrigins(ctx context.Context, namespace string, origins []entities.Origin) error {
-	ret := _mock.Called(ctx, namespace, origins)
+func (_mock *OriginService) UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error {
+	ret := _mock.Called(ctx, serviceID, origins)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpsertOrigins")
@@ -110,7 +110,7 @@ func (_mock *OriginService) UpsertOrigins(ctx context.Context, namespace string,
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []entities.Origin) error); ok {
-		r0 = returnFunc(ctx, namespace, origins)
+		r0 = returnFunc(ctx, serviceID, origins)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -124,13 +124,13 @@ type OriginService_UpsertOrigins_Call struct {
 
 // UpsertOrigins is a helper method to define mock.On call
 //   - ctx context.Context
-//   - namespace string
+//   - serviceID string
 //   - origins []entities.Origin
-func (_e *OriginService_Expecter) UpsertOrigins(ctx interface{}, namespace interface{}, origins interface{}) *OriginService_UpsertOrigins_Call {
-	return &OriginService_UpsertOrigins_Call{Call: _e.mock.On("UpsertOrigins", ctx, namespace, origins)}
+func (_e *OriginService_Expecter) UpsertOrigins(ctx interface{}, serviceID interface{}, origins interface{}) *OriginService_UpsertOrigins_Call {
+	return &OriginService_UpsertOrigins_Call{Call: _e.mock.On("UpsertOrigins", ctx, serviceID, origins)}
 }
 
-func (_c *OriginService_UpsertOrigins_Call) Run(run func(ctx context.Context, namespace string, origins []entities.Origin)) *OriginService_UpsertOrigins_Call {
+func (_c *OriginService_UpsertOrigins_Call) Run(run func(ctx context.Context, serviceID string, origins []entities.Origin)) *OriginService_UpsertOrigins_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -158,7 +158,7 @@ func (_c *OriginService_UpsertOrigins_Call) Return(err error) *OriginService_Ups
 	return _c
 }
 
-func (_c *OriginService_UpsertOrigins_Call) RunAndReturn(run func(ctx context.Context, namespace string, origins []entities.Origin) error) *OriginService_UpsertOrigins_Call {
+func (_c *OriginService_UpsertOrigins_Call) RunAndReturn(run func(ctx context.Context, serviceID string, origins []entities.Origin) error) *OriginService_UpsertOrigins_Call {
 	_c.Call.Return(run)
 	return _c
 }

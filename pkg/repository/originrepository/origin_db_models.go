@@ -8,22 +8,22 @@ import "github.com/greenbone/opensight-notification-service/pkg/entities"
 
 const (
 	originsTable       = "notification_service.origins"
-	deleteOriginsQuery = `DELETE FROM ` + originsTable + ` WHERE namespace = $1`
-	createOriginsQuery = `INSERT INTO ` + originsTable + ` (name, class, namespace) VALUES (:name, :class, :namespace)`
-	listOriginsQuery   = `SELECT * FROM ` + originsTable + ` ORDER BY namespace, name`
+	deleteOriginsQuery = `DELETE FROM ` + originsTable + ` WHERE service_id = $1`
+	createOriginsQuery = `INSERT INTO ` + originsTable + ` (name, class, service_id) VALUES (:name, :class, :service_id)`
+	listOriginsQuery   = `SELECT * FROM ` + originsTable + ` ORDER BY service_id, name`
 )
 
 type originRow struct {
 	Name      string `db:"name"`
 	Class     string `db:"class"`
-	Namespace string `db:"namespace"`
+	ServiceID string `db:"service_id"`
 }
 
-func toOriginRow(o entities.Origin, namespace string) originRow {
+func toOriginRow(o entities.Origin, serviceID string) originRow {
 	return originRow{
 		Name:      o.Name,
 		Class:     o.Class,
-		Namespace: namespace,
+		ServiceID: serviceID,
 	}
 }
 

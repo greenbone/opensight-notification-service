@@ -27,16 +27,16 @@ func NewOriginRepository(db *sqlx.DB) (*OriginRepository, error) {
 	return r, nil
 }
 
-// UpsertOrigins replaces all origins for the given namespace with the provided ones.
-// Note: `origins.Namespace` is ignored, only the provided `namespace` parameter is used.
-func (r *OriginRepository) UpsertOrigins(ctx context.Context, namespace string, origins []entities.Origin) (err error) {
-	if namespace == "" {
-		return errors.New("namespace must not be empty")
+// UpsertOrigins replaces all origins for the given serviceID with the provided ones.
+// Note: `origins.ServiceID` is ignored, only the provided `serviceID` parameter is used.
+func (r *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) (err error) {
+	if serviceID == "" {
+		return errors.New("serviceID must not be empty")
 	}
 
 	var originRows []originRow
 	for _, o := range origins {
-		originRows = append(originRows, toOriginRow(o, namespace))
+		originRows = append(originRows, toOriginRow(o, serviceID))
 	}
 
 	tx, err := r.client.BeginTxx(ctx, nil) // replacement of existing entries must be atomic
@@ -45,7 +45,7 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, namespace string, 
 	}
 	defer func() { _ = tx.Rollback() }() // note: rollback after successful commit is a no-op
 
-	_, err = tx.Exec(deleteOriginsQuery, namespace)
+	_, err = tx.Exec(deleteOriginsQuery, serviceID)
 	if err != nil {
 		return fmt.Errorf("could not delete existing origins: %w", err)
 	}
@@ -66,7 +66,7 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, namespace string, 
 }
 
 // ListOrigins returns all origins in the database.
-// The origins are ordered by namespace and name.
+// The origins are ordered by serviceID and name.
 func (r *OriginRepository) ListOrigins(ctx context.Context) ([]entities.Origin, error) {
 	// Note: so far we don't have a usecase for filter or pagination
 	// We usually need all of them and the total number is expected to be reasonably small.
