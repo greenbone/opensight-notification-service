@@ -6,6 +6,7 @@ package originrepository
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
@@ -14,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_CreateOrigins_ListOrigins(t *testing.T) {
+func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 	type input struct {
 		origins   []entities.Origin
 		namespace string
@@ -139,4 +140,36 @@ func Test_CreateOrigins_ListOrigins(t *testing.T) {
 			assert.ElementsMatch(t, tt.wantOrigins, gotOrigins) // order so far not guaranteed or relevant
 		})
 	}
+}
+
+func Test_UpsertOrigins_Concurrency(t *testing.T) {
+	db := pgtesting.NewDB(t)
+
+	repo, err := NewOriginRepository(db)
+	require.NoError(t, err)
+
+	namespace := "some-name-space"
+	origins := []entities.Origin{
+		{Name: "origin4", Class: "classD", Namespace: "read-only,ignored"},
+		{Name: "origin3", Class: "classC", Namespace: "read-only,ignored"},
+	}
+
+	var wg sync.WaitGroup
+	iterations := 200
+
+	for i := range iterations {
+		wg.Add(1)
+		go func(val int) {
+			defer wg.Done()
+			err := repo.UpsertOrigins(context.Background(), namespace, origins)
+			assert.NoError(t, err, "failed at iteration %d", val)
+		}(i)
+	}
+	wg.Wait()
+
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM notification_service.origins WHERE namespace = $1", namespace).Scan(&count)
+	require.NoError(t, err)
+
+	require.Equal(t, len(origins), count, "Data was duplicated due to race condition!")
 }
