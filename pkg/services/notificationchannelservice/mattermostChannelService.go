@@ -44,7 +44,7 @@ func NewMattermostChannelService(
 
 func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) error {
 	body, err := json.Marshal(map[string]string{
-		"text": "Hello This is a test message",
+		"text": "Hello, This is a test message",
 	})
 	if err != nil {
 		return err
