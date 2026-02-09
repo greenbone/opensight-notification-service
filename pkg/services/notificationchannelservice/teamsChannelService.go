@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/policy"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 )
 
@@ -43,9 +44,41 @@ func NewTeamsChannelService(
 }
 
 func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
-	body, err := json.Marshal(map[string]string{
-		"text": "Hello This is a test message",
-	})
+	var body []byte
+	var err error
+
+	isTeamsOldWebhookUrl, err := policy.IsTeamsOldWebhookUrl(webhookUrl)
+	if err != nil {
+		return err
+	}
+
+	if isTeamsOldWebhookUrl {
+		body, err = json.Marshal(map[string]string{
+			"text": "Hello This is a test message",
+		})
+	} else {
+		adaptiveCard := map[string]interface{}{
+			"type": "message",
+			"attachments": []map[string]interface{}{
+				{
+					"contentType": "application/vnd.microsoft.card.adaptive",
+					"content": map[string]interface{}{
+						"$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+						"type":    "AdaptiveCard",
+						"version": "1.2",
+						"body": []map[string]interface{}{
+							{
+								"type": "TextBlock",
+								"text": "Hello This is a test message",
+							},
+						},
+					},
+				},
+			},
+		}
+		body, err = json.Marshal(adaptiveCard)
+	}
+
 	if err != nil {
 		return err
 	}

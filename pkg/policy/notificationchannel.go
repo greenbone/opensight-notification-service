@@ -10,21 +10,21 @@ import (
 var teamsRegex = regexp.MustCompile(`^https://[\w.-]+/webhook/[a-zA-Z0-9]+$`)
 var mattermostRegex = regexp.MustCompile(`^https://[\w.-]+/hooks/[a-zA-Z0-9]+$`)
 
-func TeamsWebhookUrlPolicy(webhook string) (*url.URL, error) {
+func IsTeamsOldWebhookUrl(webhook string) (bool, error) {
 	if webhook == "" {
-		return nil, errors.New("webhook URL is required")
+		return false, errors.New("webhook URL is required")
 	}
 
-	u, err := url.Parse(webhook)
+	_, err := url.Parse(webhook)
 	if err != nil {
-		return nil, fmt.Errorf("invalid URL: %w", err)
+		return false, fmt.Errorf("invalid URL: %w", err)
 	}
 
 	if !teamsRegex.MatchString(webhook) {
-		return nil, errors.New("invalid Teams webhook URL")
+		return false, nil
 	}
 
-	return u, nil
+	return true, nil
 }
 
 func MattermostWebhookUrlPolicy(webhook string) (*url.URL, error) {
