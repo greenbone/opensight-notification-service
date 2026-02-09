@@ -54,7 +54,7 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 
 	if isTeamsOldWebhookUrl {
 		body, err = json.Marshal(map[string]string{
-			"text": "Hello This is a test message",
+			"text": "Hello, This is a test message",
 		})
 	} else {
 		adaptiveCard := map[string]interface{}{
@@ -69,7 +69,7 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 						"body": []map[string]interface{}{
 							{
 								"type": "TextBlock",
-								"text": "Hello This is a test message",
+								"text": "Hello, This is a test message",
 							},
 						},
 					},
