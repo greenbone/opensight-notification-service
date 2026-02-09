@@ -20,11 +20,7 @@ func IsTeamsOldWebhookUrl(webhook string) (bool, error) {
 		return false, fmt.Errorf("invalid URL: %w", err)
 	}
 
-	if !teamsRegex.MatchString(webhook) {
-		return false, nil
-	}
-
-	return true, nil
+	return teamsRegex.MatchString(webhook), nil
 }
 
 func MattermostWebhookUrlPolicy(webhook string) (*url.URL, error) {
