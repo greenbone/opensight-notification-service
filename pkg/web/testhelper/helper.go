@@ -61,34 +61,31 @@ func NewJSONRequest(method, url string, bodyAsStruct any) (*http.Request, error)
 
 // MockAuthMiddleware mocks authentication by setting a default user context in the Gin context for testing purposes.
 func MockAuthMiddleware(ctx *gin.Context) {
-	const userContextKey = "USER_CONTEXT_DATA"
 	const iamRoleUser = "user"
-
-	userContext := auth.UserContext{
-		Realm:          "",
-		UserID:         "",
-		UserName:       "",
-		EmailAddress:   "",
-		Roles:          []string{iamRoleUser},
-		Groups:         nil,
-		AllowedOrigins: nil,
-	}
-
-	ctx.Set(userContextKey, userContext)
-	ctx.Next()
+	mockAuthMiddlewareWithRole(ctx, iamRoleUser)
 }
 
 // MockAuthMiddleware mocks authentication by setting a admin user context in the Gin context for testing purposes.
 func MockAuthMiddlewareWithAdmin(ctx *gin.Context) {
-	const userContextKey = "USER_CONTEXT_DATA"
 	const iamRoleUser = "admin"
+	mockAuthMiddlewareWithRole(ctx, iamRoleUser)
+}
+
+// MockAuthMiddleware mocks authentication by setting a notification user context in the Gin context for testing purposes.
+func MockAuthMiddlewareWithNotificationUser(ctx *gin.Context) {
+	const iamRoleUser = "opensight_notification_role"
+	mockAuthMiddlewareWithRole(ctx, iamRoleUser)
+}
+
+func mockAuthMiddlewareWithRole(ctx *gin.Context, role string) {
+	const userContextKey = "USER_CONTEXT_DATA"
 
 	userContext := auth.UserContext{
 		Realm:          "",
 		UserID:         "",
 		UserName:       "",
 		EmailAddress:   "",
-		Roles:          []string{iamRoleUser},
+		Roles:          []string{role},
 		Groups:         nil,
 		AllowedOrigins: nil,
 	}

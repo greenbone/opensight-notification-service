@@ -6,21 +6,18 @@ package origincontroller
 
 import (
 	"errors"
-	"io"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-openapi/testify/v2/assert"
+	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/origincontroller/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRegisterOrigins(t *testing.T) {
@@ -35,6 +32,7 @@ func TestRegisterOrigins(t *testing.T) {
 		origins          []models.Origin
 		serviceCalls     []ServiceCall
 		wantResponseCode int
+		wantBodyContains string
 	}{
 		"valid request": {
 			serviceID: "serviceA",
@@ -69,22 +67,25 @@ func TestRegisterOrigins(t *testing.T) {
 				},
 			},
 			wantResponseCode: http.StatusInternalServerError,
+			wantBodyContains: "internal",
 		},
 		"invalid body (missing name)": {
 			serviceID: "serviceC",
 			origins: []models.Origin{
-				{Name: "", Class: "origin/y"}, // Name is required
+				{Name: "", Class: "origin/y"},
 			},
 			serviceCalls:     []ServiceCall{},
 			wantResponseCode: http.StatusBadRequest,
+			wantBodyContains: "Name",
 		},
 		"invalid body (missing class)": {
 			serviceID: "serviceC",
 			origins: []models.Origin{
-				{Name: "Origin Y", Class: ""}, // Class is required
+				{Name: "Origin Y", Class: ""},
 			},
 			serviceCalls:     []ServiceCall{},
 			wantResponseCode: http.StatusBadRequest,
+			wantBodyContains: "Class",
 		},
 		"empty origins list": {
 			serviceID: "serviceD",
@@ -111,59 +112,58 @@ func TestRegisterOrigins(t *testing.T) {
 			registry := errmap.NewRegistry()
 			router := testhelper.NewTestWebEngine(registry)
 
-			_ = NewOriginController(router, mockService, testhelper.MockAuthMiddleware)
+			_ = NewOriginController(router, mockService, testhelper.MockAuthMiddlewareWithNotificationUser)
 
-			req, err := testhelper.NewJSONRequest(http.MethodPut, "/origins/"+tt.serviceID, tt.origins)
-			require.NoError(t, err, "could not build request")
+			request := httpassert.New(t, router)
 
-			resp := httptest.NewRecorder()
-			router.ServeHTTP(resp, req)
-
-			assert.Equal(t, tt.wantResponseCode, resp.Code)
+			resp := request.Put("/origins/" + tt.serviceID).
+				JsonContentObject(tt.origins).
+				Expect().
+				StatusCode(tt.wantResponseCode)
+			if tt.wantBodyContains != "" {
+				assert.Contains(t, resp.GetBody(), tt.wantBodyContains)
+			}
 		})
 	}
 }
 
-func TestParseAndValidateOrigins(t *testing.T) {
-	tests := []struct {
-		name        string
-		input       string
-		wantOrigins []models.Origin
-		wantErr     bool
+func TestRegisterOrigins_Auth(t *testing.T) {
+	tests := map[string]struct {
+		authMiddleware   gin.HandlerFunc
+		wantResponseCode int
 	}{
-		{
-			name:  "success",
-			input: `[{"name": "Origin 1", "class": "origin/1"}, {"name": "Origin 2", "class": "origin/2"}]`,
-			wantOrigins: []models.Origin{
-				{Name: "Origin 1", Class: "origin/1"},
-				{Name: "Origin 2", Class: "origin/2"},
-			},
-			wantErr: false,
+		"notification user is allowed to register origins": {
+			authMiddleware:   testhelper.MockAuthMiddlewareWithNotificationUser,
+			wantResponseCode: http.StatusNoContent,
 		},
-		{
-			name:    "error on empty body",
-			input:   "",
-			wantErr: true,
+		"normal users are not allowed to register origins": {
+			authMiddleware:   testhelper.MockAuthMiddleware,
+			wantResponseCode: http.StatusForbidden,
 		},
-		{
-			name:    "error on invalid json",
-			input:   `[{"name": "Origin 1"`,
-			wantErr: true,
+		"admins are not allowed to register origins": {
+			authMiddleware:   testhelper.MockAuthMiddlewareWithAdmin,
+			wantResponseCode: http.StatusForbidden,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gc, _ := gin.CreateTestContext(httptest.NewRecorder())
-			gc.Request = &http.Request{Body: io.NopCloser(strings.NewReader(tt.input))}
-
-			got, err := parseAndValidateOrigins(gc)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.wantOrigins, got)
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockService := mocks.NewOriginService(t)
+			if tt.wantResponseCode == http.StatusNoContent {
+				mockService.EXPECT().UpsertOrigins(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 			}
+
+			registry := errmap.NewRegistry()
+			router := testhelper.NewTestWebEngine(registry)
+
+			_ = NewOriginController(router, mockService, tt.authMiddleware)
+
+			request := httpassert.New(t, router)
+
+			request.Put("/origins/serviceX").
+				JsonContentObject([]models.Origin{{Name: "Origin", Class: "origin/class"}}).
+				Expect().
+				StatusCode(tt.wantResponseCode)
 		})
 	}
 }

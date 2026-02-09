@@ -6,19 +6,15 @@ package origincontroller
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
-	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	_ "github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
@@ -46,8 +42,7 @@ func NewOriginController(
 
 func (c *OriginController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFunc) {
 	group := router.Group("/origins").
-		// TODO: remove user role here, only services are supposed to register origins
-		Use(middleware.AuthorizeRoles(auth, middleware.UserRole, middleware.NotificationRole)...)
+		Use(middleware.AuthorizeRoles(auth, middleware.NotificationRole)...)
 	group.PUT("/:serviceID", c.RegisterOrigins)
 }
 
@@ -70,10 +65,8 @@ func (c *OriginController) RegisterOrigins(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
 	serviceID := gc.Param("serviceID")
-	var origins []models.Origin
-	origins, err := parseAndValidateOrigins(gc)
-	if err != nil {
-		restErrorHandler.ErrorHandler(gc, "could not parse origins", err)
+	var origins models.OriginList
+	if !ginEx.BindAndValidateBody(gc, &origins) {
 		return
 	}
 
@@ -82,27 +75,11 @@ func (c *OriginController) RegisterOrigins(gc *gin.Context) {
 		originsEntities = append(originsEntities, origin.ToEntity())
 	}
 
-	err = c.originService.UpsertOrigins(gc.Request.Context(), serviceID, originsEntities)
+	err := c.originService.UpsertOrigins(gc.Request.Context(), serviceID, originsEntities)
 	if err != nil {
-		restErrorHandler.ErrorHandler(gc, "could not upsert origins", err)
+		ginEx.AddError(gc, err)
 		return
 	}
 
 	gc.Status(http.StatusNoContent)
-}
-
-func parseAndValidateOrigins(gc *gin.Context) (origins []models.Origin, err error) {
-	err = gc.ShouldBindJSON(&origins)
-	if err != nil {
-		switch {
-		case errors.Is(err, io.EOF):
-			return nil, &errs.ErrValidation{Message: "body must not be empty"}
-		case errors.Is(err, io.ErrUnexpectedEOF):
-			return nil, &errs.ErrValidation{Message: "body is not valid json"}
-		default:
-			return nil, &errs.ErrValidation{Message: fmt.Sprintf("invalid input: %v", err)}
-		}
-	}
-
-	return origins, nil
 }

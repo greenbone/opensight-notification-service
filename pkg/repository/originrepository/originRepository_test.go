@@ -104,7 +104,7 @@ func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 			},
 			wantOrigins: []entities.Origin{},
 		},
-		"error on duplicate origin classes": {
+		"error on duplicate origin classes (class must be unique across all services)": {
 			inputs: []input{
 				{
 					serviceID: "service1",
@@ -115,7 +115,7 @@ func Test_UpsertOrigins_ListOrigins(t *testing.T) {
 				{
 					serviceID: "service2",
 					origins: []entities.Origin{
-						{Name: "origin1", Class: "classA"}, // class must be unique across all services
+						{Name: "origin1", Class: "classA"},
 					},
 				},
 			},

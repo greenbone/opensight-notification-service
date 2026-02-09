@@ -86,9 +86,6 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, 
 // ListOrigins returns all origins in the database.
 // The origins are ordered by serviceID and name.
 func (r *OriginRepository) ListOrigins(ctx context.Context) ([]entities.Origin, error) {
-	// Note: so far we don't have a usecase for filter or pagination
-	// We usually need all of them and the total number is expected to be reasonably small.
-
 	var originRows []originRow
 	err := r.client.SelectContext(ctx, &originRows, listOriginsQuery)
 	if err != nil {
