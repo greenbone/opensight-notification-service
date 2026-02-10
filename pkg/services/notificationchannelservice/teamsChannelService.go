@@ -84,7 +84,7 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 
 	body, err := json.Marshal(message)
 	if err != nil {
-		return err
+		return fmt.Errorf("can not marshal teams message: %w", err)
 	}
 
 	resp, err := t.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
