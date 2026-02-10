@@ -38,6 +38,9 @@ type ErrValidation struct {
 
 func (e *ErrValidation) Error() string {
 	message := e.Message
+	if e.Message == "" {
+		message = "validation error"
+	}
 	if len(e.Errors) > 0 {
 		message += fmt.Sprintf(", specific errors: %v", e.Errors)
 	}

@@ -6,6 +6,7 @@ package models
 
 import (
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/validation"
 )
 
@@ -23,10 +24,10 @@ func (o Origin) ToEntity() entities.Origin {
 
 type OriginList []Origin
 
-func (o OriginList) Validate() ValidationErrors {
+func (o OriginList) Validate() *errs.ErrValidation {
 	err := validation.Validate.Var(o, "omitempty,dive")
 	if err != nil {
-		return ValidationErrors{"$": err.Error()}
+		return &errs.ErrValidation{Message: err.Error()}
 	}
 	return nil
 }

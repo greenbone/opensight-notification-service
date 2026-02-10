@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 )
 
 type BindingError struct {
@@ -23,7 +23,7 @@ func (e BindingError) Error() string {
 
 // Validate can be implemented by a dto that is used in BindAndValidateBody for custom validation
 type Validate interface {
-	Validate() models.ValidationErrors
+	Validate() *errs.ErrValidation
 }
 
 // Cleaner can be implemented by a dto that is used in BindAndValidateBody for clean up values before validate
@@ -57,7 +57,7 @@ func BindAndValidateBody(c *gin.Context, bodyDto any) bool {
 
 	if value, ok := bodyDto.(Validate); ok {
 		err := value.Validate()
-		if len(err) > 0 {
+		if err != nil {
 			_ = c.Error(err)
 			return false
 		}

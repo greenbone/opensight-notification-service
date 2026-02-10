@@ -5,7 +5,7 @@
 package mocks
 
 import (
-	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -37,19 +37,19 @@ func (_m *Validate) EXPECT() *Validate_Expecter {
 }
 
 // Validate provides a mock function for the type Validate
-func (_mock *Validate) Validate() models.ValidationErrors {
+func (_mock *Validate) Validate() *errs.ErrValidation {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Validate")
 	}
 
-	var r0 models.ValidationErrors
-	if returnFunc, ok := ret.Get(0).(func() models.ValidationErrors); ok {
+	var r0 *errs.ErrValidation
+	if returnFunc, ok := ret.Get(0).(func() *errs.ErrValidation); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(models.ValidationErrors)
+			r0 = ret.Get(0).(*errs.ErrValidation)
 		}
 	}
 	return r0
@@ -72,12 +72,12 @@ func (_c *Validate_Validate_Call) Run(run func()) *Validate_Validate_Call {
 	return _c
 }
 
-func (_c *Validate_Validate_Call) Return(validationErrors models.ValidationErrors) *Validate_Validate_Call {
-	_c.Call.Return(validationErrors)
+func (_c *Validate_Validate_Call) Return(errValidation *errs.ErrValidation) *Validate_Validate_Call {
+	_c.Call.Return(errValidation)
 	return _c
 }
 
-func (_c *Validate_Validate_Call) RunAndReturn(run func() models.ValidationErrors) *Validate_Validate_Call {
+func (_c *Validate_Validate_Call) RunAndReturn(run func() *errs.ErrValidation) *Validate_Validate_Call {
 	_c.Call.Return(run)
 	return _c
 }

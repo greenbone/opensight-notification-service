@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -64,9 +64,10 @@ func TestBindBody_BindingErrors(t *testing.T) {
 type sample struct {
 }
 
-func (s sample) Validate() models.ValidationErrors {
-	return models.ValidationErrors{
-		"a": "b",
+func (s sample) Validate() *errs.ErrValidation {
+	return &errs.ErrValidation{
+		Message: "validation error",
+		Errors:  map[string]string{"a": "b"},
 	}
 }
 

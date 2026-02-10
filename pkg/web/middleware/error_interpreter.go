@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
-	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 )
@@ -28,9 +28,9 @@ func InterpretErrors(errorType gin.ErrorType, r errmap.ErrorRegistry) gin.Handle
 				return
 			}
 
-			validationErrors := models.ValidationErrors{}
-			if errors.As(actual, &validationErrors) {
-				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse("", "", validationErrors))
+			validationError := &errs.ErrValidation{}
+			if errors.As(actual, &validationError) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorValidationResponse(validationError.Message, "", validationError.Errors))
 				return
 			}
 

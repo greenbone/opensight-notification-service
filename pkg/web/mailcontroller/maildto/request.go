@@ -4,6 +4,7 @@ import (
 	"net/mail"
 	"strings"
 
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/rs/zerolog/log"
@@ -34,8 +35,8 @@ func (r *CheckMailServerRequest) Cleanup() {
 	r.Domain = strings.TrimSpace(r.Domain)
 }
 
-func (v CheckMailServerRequest) Validate() models.ValidationErrors {
-	errors := make(models.ValidationErrors)
+func (v CheckMailServerRequest) Validate() *errs.ErrValidation {
+	errors := make(map[string]string)
 
 	if v.Domain == "" {
 		errors["domain"] = translation.MailhubIsRequired
@@ -53,7 +54,11 @@ func (v CheckMailServerRequest) Validate() models.ValidationErrors {
 		}
 	}
 
-	return errors
+	if len(errors) > 0 {
+		return &errs.ErrValidation{Errors: errors}
+	}
+
+	return nil
 }
 
 // CheckMailServerEntityRequest check mail server entity request
@@ -81,23 +86,27 @@ func (r *CheckMailServerEntityRequest) Cleanup() {
 	r.Domain = strings.TrimSpace(r.Domain)
 }
 
-func (v CheckMailServerEntityRequest) Validate() models.ValidationErrors {
-	errs := make(models.ValidationErrors)
+func (v CheckMailServerEntityRequest) Validate() *errs.ErrValidation {
+	errors := make(map[string]string)
 
 	if v.Domain == "" {
-		errs["domain"] = translation.MailhubIsRequired
+		errors["domain"] = translation.MailhubIsRequired
 	}
 	if v.Port < 1 || v.Port > 65535 {
-		errs["port"] = translation.PortIsRequired
+		errors["port"] = translation.PortIsRequired
 	}
 
 	if v.IsAuthenticationRequired {
 		if v.Username == "" {
-			errs["username"] = translation.UsernameIsRequired
+			errors["username"] = translation.UsernameIsRequired
 		}
 	}
 
-	return errs
+	if len(errors) > 0 {
+		return &errs.ErrValidation{Errors: errors}
+	}
+
+	return nil
 }
 
 // MailNotificationChannelRequest mail notification channel request
@@ -121,8 +130,8 @@ func (r *MailNotificationChannelRequest) Cleanup() {
 	r.ChannelName = strings.TrimSpace(r.ChannelName)
 }
 
-func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
-	errMap := make(models.ValidationErrors)
+func (r MailNotificationChannelRequest) Validate() *errs.ErrValidation {
+	errMap := make(map[string]string)
 
 	if r.Domain == "" {
 		errMap["domain"] = translation.MailhubIsRequired
@@ -146,5 +155,9 @@ func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
 		errMap["channelName"] = translation.ChannelNameIsRequired
 	}
 
-	return errMap
+	if len(errMap) > 0 {
+		return &errs.ErrValidation{Errors: errMap}
+	}
+
+	return nil
 }

@@ -3,7 +3,7 @@ package mattermostdto
 import (
 	"strings"
 
-	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/policy"
 	"github.com/greenbone/opensight-notification-service/pkg/translation"
 )
@@ -21,22 +21,26 @@ func (m *MattermostNotificationChannelRequest) Cleanup() {
 	m.Description = strings.TrimSpace(m.Description)
 }
 
-func (m MattermostNotificationChannelRequest) Validate() models.ValidationErrors {
-	errs := make(models.ValidationErrors)
+func (m MattermostNotificationChannelRequest) Validate() *errs.ErrValidation {
+	errors := make(map[string]string)
 
 	if m.ChannelName == "" {
-		errs["channelName"] = translation.ChannelNameIsRequired
+		errors["channelName"] = translation.ChannelNameIsRequired
 	}
 
 	if m.WebhookUrl == "" {
-		errs["webhookUrl"] = translation.WebhookUrlIsRequired
+		errors["webhookUrl"] = translation.WebhookUrlIsRequired
 	} else {
 		if _, err := policy.MattermostWebhookUrlPolicy(m.WebhookUrl); err != nil {
-			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
+			errors["webhookUrl"] = translation.ValidWebhookUrlIsRequired
 		}
 	}
 
-	return errs
+	if len(errors) > 0 {
+		return &errs.ErrValidation{Errors: errors}
+	}
+
+	return nil
 }
 
 // MattermostNotificationChannelCheckRequest mattermost notification channel check request
@@ -48,16 +52,20 @@ func (r *MattermostNotificationChannelCheckRequest) Cleanup() {
 	r.WebhookUrl = strings.TrimSpace(r.WebhookUrl)
 }
 
-func (r *MattermostNotificationChannelCheckRequest) Validate() models.ValidationErrors {
-	errs := make(models.ValidationErrors)
+func (r *MattermostNotificationChannelCheckRequest) Validate() *errs.ErrValidation {
+	errors := make(map[string]string)
 
 	if r.WebhookUrl == "" {
-		errs["webhookUrl"] = translation.WebhookUrlIsRequired
+		errors["webhookUrl"] = translation.WebhookUrlIsRequired
 	} else {
 		if _, err := policy.MattermostWebhookUrlPolicy(r.WebhookUrl); err != nil {
-			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
+			errors["webhookUrl"] = translation.ValidWebhookUrlIsRequired
 		}
 	}
 
-	return errs
+	if len(errors) > 0 {
+		return &errs.ErrValidation{Errors: errors}
+	}
+
+	return nil
 }
