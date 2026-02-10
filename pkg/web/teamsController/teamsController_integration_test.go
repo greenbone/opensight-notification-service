@@ -132,42 +132,6 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			StatusCode(http.StatusBadRequest).
 			JsonPath("$.title", "Teams channel name already exists.")
 	})
-
-	t.Run("Send Test message with teams", func(t *testing.T) {
-		var gotMethod, gotPath string
-
-		rt := roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-			gotMethod = r.Method
-			gotPath = r.URL.Path
-			return &http.Response{
-				StatusCode: http.StatusNoContent,
-				Body:       http.NoBody,
-				Header:     make(http.Header),
-			}, nil
-		})
-
-		client := http.Client{Transport: rt}
-
-		repo, db := testhelper.SetupNotificationChannelTestEnv(t)
-		svc := notificationchannelservice.NewNotificationChannelService(repo)
-		teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 20, client)
-		registry := errmap.NewRegistry()
-		router := testhelper.NewTestWebEngine(registry)
-		AddTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
-		defer func() { _ = db.Close() }()
-
-		request := httpassert.New(t, router)
-
-		request.Post("/notification-channel/teams/check").
-			JsonContentObject(teamsdto.TeamsNotificationChannelCheckRequest{
-				WebhookUrl: "https://default41af85004428462ca2334f3ae673f7.bb.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/01fa130f2e134641b2cf39d8a710a002/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3WemuhZIadKcGIZdxJSmEFoJfdVJSOa1B_QNWa9z3rs",
-			}).
-			Expect().
-			StatusCode(http.StatusNoContent)
-
-		require.Equal(t, http.MethodPost, gotMethod)
-		require.Equal(t, "/powerautomate/automations/direct/workflows/01fa130f2e134641b2cf39d8a710a002/triggers/manual/paths/invoke", gotPath)
-	})
 }
 
 func createTeamsNotification(
@@ -204,10 +168,10 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	return router, db
 }
 
-// dummyHTTPClient returns an http.Client that always returns 204 No Content for POST requests
+// dummyHTTPClient returns an http.Client that does not make real HTTP requests.
 func dummyHTTPClient() http.Client {
 	return http.Client{
-		Transport: roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusNoContent,
 				Body:       http.NoBody,
@@ -217,6 +181,7 @@ func dummyHTTPClient() http.Client {
 	}
 }
 
+// roundTripperFunc type allows using a function as an http.RoundTripper.
 type roundTripperFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {

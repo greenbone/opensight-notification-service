@@ -14,8 +14,6 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
 )
 
-var ErrTeamsChannelBadRequest = errors.New("bad request for teams channel")
-
 type TeamsController struct {
 	notificationChannelServicer notificationchannelservice.NotificationChannelService
 	teamsChannelService         notificationchannelservice.TeamsChannelService
@@ -52,7 +50,7 @@ func errorHandler(errorType gin.ErrorType) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 		for _, errorValue := range c.Errors.ByType(errorType) {
-			if errors.Is(errorValue, notificationchannelservice.ErrTeamsMassageDelivery) {
+			if errors.Is(errorValue, notificationchannelservice.ErrTeamsMessageDelivery) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, errorResponses.NewErrorGenericResponse(errorValue.Error()))
 				return
 			}

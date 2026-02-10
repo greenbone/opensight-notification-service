@@ -17,7 +17,7 @@ var (
 	ErrTeamsChannelLimitReached = errors.New("Teams channel limit reached.")
 	ErrListTeamsChannels        = errors.New("failed to list teams channels")
 	ErrTeamsChannelNameExists   = errors.New("Teams channel name already exists.")
-	ErrTeamsMassageDelivery     = errors.New("teams message could not be send")
+	ErrTeamsMessageDelivery     = errors.New("teams message could not be send")
 )
 
 type TeamsChannelService interface {
@@ -49,8 +49,7 @@ func NewTeamsChannelService(
 func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 	isTeamsOldWebhookUrl, err := policy.IsTeamsOldWebhookUrl(webhookUrl)
 	if err != nil {
-		// TODO: 10.02.2026 stolksdorf - wrap errors
-		return err
+		return fmt.Errorf("failed to validate teams webhook url: %w", err)
 	}
 
 	var message map[string]interface{}
@@ -89,7 +88,7 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 
 	resp, err := t.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return err
+		return fmt.Errorf("can not send teams test message: %w", err)
 	}
 
 	defer func() {
@@ -97,7 +96,7 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("%w: http status: %s", ErrTeamsMassageDelivery, resp.Status)
+		return fmt.Errorf("%w: http status: %s", ErrTeamsMessageDelivery, resp.Status)
 	}
 
 	return nil
