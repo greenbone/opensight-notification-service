@@ -157,7 +157,7 @@ func postgresErrorHandling(err error) error {
 		case pgForeignKeyViolationCode:
 			return &errs.ErrValidation{Message: "invalid rule", Errors: map[string]string{"trigger.action.channel": "channel does not exist"}}
 		case pgErrorUniqueViolationCode: // unique_violation
-			return &errs.ErrConflict{Message: "rule with the same name already exists", Errors: map[string]string{"name": "must be unique"}}
+			return &errs.ErrValidation{Message: "rule with the same name already exists", Errors: map[string]string{"name": "must be unique"}}
 		}
 	}
 

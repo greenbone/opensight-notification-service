@@ -6,9 +6,12 @@ package ruleservice
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 )
+
+var ErrRuleLimitReached = fmt.Errorf("alert rule limit reached")
 
 type RuleRepository interface {
 	Get(ctx context.Context, id string) (models.Rule, error)
@@ -19,11 +22,15 @@ type RuleRepository interface {
 }
 
 type RuleService struct {
-	store RuleRepository
+	store     RuleRepository
+	ruleLimit int
 }
 
-func NewRuleService(store RuleRepository) *RuleService {
-	return &RuleService{store: store}
+func NewRuleService(store RuleRepository, ruleLimit int) *RuleService {
+	return &RuleService{
+		store:     store,
+		ruleLimit: ruleLimit,
+	}
 }
 
 func (s *RuleService) Get(ctx context.Context, id string) (models.Rule, error) {
@@ -35,6 +42,14 @@ func (s *RuleService) List(ctx context.Context) ([]models.Rule, error) {
 }
 
 func (s *RuleService) Create(ctx context.Context, rule models.Rule) (models.Rule, error) {
+	rules, err := s.store.List(ctx)
+	if err != nil {
+		return models.Rule{}, fmt.Errorf("failed to check the rule limit")
+	}
+	if len(rules) >= s.ruleLimit {
+		return models.Rule{}, ErrRuleLimitReached
+	}
+
 	return s.store.Create(ctx, rule)
 }
 

@@ -15,3 +15,8 @@ const (
 	MattermostChannelLimitReached     = "Mattermost channel creation limit reached."
 	MattermostChannelNameAlreadyExist = "Mattermost channel name already exists."
 )
+
+// Rules
+const (
+	RuleLimitReached = "Alter rule limit reached."
+)

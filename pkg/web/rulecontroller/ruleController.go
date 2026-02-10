@@ -9,10 +9,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	_ "github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	_ "github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	_ "github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/services/ruleservice"
+	"github.com/greenbone/opensight-notification-service/pkg/translation"
+	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -33,11 +37,13 @@ func NewRuleController(
 	router gin.IRouter,
 	ruleService RuleService,
 	auth gin.HandlerFunc,
+	registry *errmap.Registry,
 ) *RuleController {
 	ctrl := &RuleController{
 		ruleService: ruleService,
 	}
 	ctrl.RegisterRoutes(router, auth)
+	ctrl.configureMappings(registry)
 
 	return ctrl
 }
@@ -47,10 +53,17 @@ func (c *RuleController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFunc
 		Use(middleware.AuthorizeRoles(auth, middleware.AdminRole)...)
 	group.GET("/:id", c.GetRule)
 	group.POST("", c.CreateRule)
-	group.GET("/ruleoptions", c.GetRuleOptions)
 	group.PUT("/:id", c.UpdateRule)
 	group.DELETE("/:id", c.DeleteRule)
 	group.GET("", c.ListRules)
+}
+
+func (c *RuleController) configureMappings(r *errmap.Registry) {
+	r.Register(
+		ruleservice.ErrRuleLimitReached,
+		http.StatusUnprocessableEntity,
+		errorResponses.NewErrorGenericResponse(translation.RuleLimitReached),
+	)
 }
 
 // CreateRule
@@ -170,6 +183,9 @@ func (c *RuleController) ListRules(gc *gin.Context) {
 	if err != nil {
 		ginEx.AddError(gc, err)
 		return
+	}
+	if len(rules) == 0 { // return empty array rather than null
+		rules = []models.Rule{}
 	}
 
 	gc.JSON(http.StatusOK, rules)

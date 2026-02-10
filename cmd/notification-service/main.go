@@ -17,8 +17,10 @@ import (
 	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/services/ruleservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
+	"github.com/greenbone/opensight-notification-service/pkg/web/rulecontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController"
 	"github.com/jmoiron/sqlx"
 
@@ -34,6 +36,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/repository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/originrepository"
+	"github.com/greenbone/opensight-notification-service/pkg/repository/rulerepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/healthservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/originservice"
@@ -109,6 +112,10 @@ func run(config config.Config) error {
 	if err != nil {
 		return err
 	}
+	ruleRepository, err := rulerepository.NewRuleRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("error creating Rule Repository: %w", err)
+	}
 
 	// Encrypt
 	manager := security.NewEncryptManager()
@@ -129,6 +136,7 @@ func run(config config.Config) error {
 	teamsChannelService := notificationchannelservice.NewTeamsChannelService(
 		notificationChannelService, config.ChannelLimit.TeamsLimit, notificationTransport)
 	originService := originservice.NewOriginService(originsRepository)
+	ruleService := ruleservice.NewRuleService(ruleRepository, config.RuleLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler
@@ -162,6 +170,7 @@ func run(config config.Config) error {
 	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware, registry)
 	teamsController.AddTeamsController(notificationServiceRouter, notificationChannelRepository, teamsChannelService, authMiddleware, registry)
 	origincontroller.NewOriginController(notificationServiceRouter, originService, authMiddleware)
+	rulecontroller.NewRuleController(notificationServiceRouter, ruleService, authMiddleware, registry)
 
 	// health router
 	rootRouter := router.Group("/")

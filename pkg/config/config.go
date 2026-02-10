@@ -16,6 +16,7 @@ type Config struct {
 	Database              Database              `envconfig:"DB"`
 	LogLevel              string                `envconfig:"LOG_LEVEL" default:"info"`
 	KeycloakConfig        KeycloakConfig        `envconfig:"KEYCLOAK"`
+	RuleLimit             int                   `envconfig:"RULE_LIMIT" default:"100"`
 	ChannelLimit          ChannelLimits         `envconfig:"CHANNELLIMIT"`
 	DatabaseEncryptionKey DatabaseEncryptionKey `envconfig:"DATABASE_ENCRYPTION_KEY"`
 }
