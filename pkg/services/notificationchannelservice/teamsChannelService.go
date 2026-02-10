@@ -31,15 +31,21 @@ type TeamsChannelService interface {
 type teamsChannelService struct {
 	notificationChannelService NotificationChannelService
 	teamsChannelLimit          int
+	httpClient                 *http.Client
 }
 
 func NewTeamsChannelService(
 	notificationChannelService NotificationChannelService,
 	teamsChannelLimit int,
+	httpClient *http.Client,
 ) TeamsChannelService {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
 	return &teamsChannelService{
 		notificationChannelService: notificationChannelService,
 		teamsChannelLimit:          teamsChannelLimit,
+		httpClient:                 httpClient,
 	}
 }
 
@@ -83,7 +89,7 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 		return err
 	}
 
-	resp, err := http.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
+	resp, err := t.httpClient.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
