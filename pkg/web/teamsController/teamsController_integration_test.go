@@ -146,7 +146,7 @@ func TestIntegration_TeamsController_CRUD(t *testing.T) {
 			}, nil
 		})
 
-		client := &http.Client{Transport: rt}
+		client := http.Client{Transport: rt}
 
 		repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 		svc := notificationchannelservice.NewNotificationChannelService(repo)
@@ -205,8 +205,8 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 }
 
 // dummyHTTPClient returns an http.Client that always returns 204 No Content for POST requests
-func dummyHTTPClient() *http.Client {
-	return &http.Client{
+func dummyHTTPClient() http.Client {
+	return http.Client{
 		Transport: roundTripperFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusNoContent,
