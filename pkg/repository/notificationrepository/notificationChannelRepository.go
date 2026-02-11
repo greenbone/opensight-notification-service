@@ -93,7 +93,6 @@ func buildUpdateNotificationChannelQuery(in models.NotificationChannel) string {
 	return query
 }
 
-// CreateNotificationChannel is now transactional and supports commit/rollback.
 func (r *notificationChannelRepository) CreateNotificationChannel(
 	ctx context.Context,
 	channelIn models.NotificationChannel,
@@ -167,7 +166,6 @@ func (r *notificationChannelRepository) ListNotificationChannelsByType(
 	return result, nil
 }
 
-// UpdateNotificationChannel is now transactional.
 func (r *notificationChannelRepository) UpdateNotificationChannel(
 	ctx context.Context,
 	id string,
@@ -257,7 +255,6 @@ func (r *notificationChannelRepository) decrypt(row notificationChannelRow) noti
 	return row
 }
 
-// DeleteNotificationChannel is now transactional.
 func (r *notificationChannelRepository) DeleteNotificationChannel(ctx context.Context, id string) error {
 	tx, err := r.client.BeginTxx(ctx, nil)
 	if err != nil {

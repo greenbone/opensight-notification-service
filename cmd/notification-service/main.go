@@ -115,10 +115,11 @@ func run(config config.Config) error {
 	mailService := notificationchannelservice.NewMailService()
 	notificationService := notificationservice.NewNotificationService(notificationRepository)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
-	mailChannelService := notificationchannelservice.NewMailChannelService(notificationChannelService, notificationChannelRepository, mailService, config.ChannelLimit.EMailLimit)
-	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(notificationChannelService, config.ChannelLimit.MattermostLimit)
-
+	mailChannelService := notificationchannelservice.NewMailChannelService(
+		notificationChannelService, notificationChannelRepository, mailService, config.ChannelLimit.EMailLimit)
 	notificationTransport := http.Client{Timeout: 15 * time.Second}
+	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(
+		notificationChannelService, config.ChannelLimit.MattermostLimit, &notificationTransport)
 	teamsChannelService := notificationchannelservice.NewTeamsChannelService(
 		notificationChannelService, config.ChannelLimit.TeamsLimit, notificationTransport)
 	healthService := healthservice.NewHealthService(pgClient)

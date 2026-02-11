@@ -18,8 +18,8 @@ func NewTestWebEngine(registry *errmap.Registry) *gin.Engine {
 			"http://example.com",
 		}),
 		middleware.ErrorHandler(gin.ErrorTypeAny),
+		middleware.InterpretErrors(gin.ErrorTypePrivate, registry),
 	)
-	ginWebEngine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 
 	return ginWebEngine
 }

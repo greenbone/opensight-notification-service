@@ -95,7 +95,17 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 		_ = resp.Body.Close()
 	}()
 
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return nil
+	}
+
+	if resp.StatusCode == 400 {
+		return fmt.Errorf("%w: http status: %s", ErrTeamsMessageDelivery, resp.Status)
+	} else if resp.StatusCode == 404 {
+		return fmt.Errorf("%w: http status: %s", ErrTeamsMessageDelivery, resp.Status)
+	} else if resp.StatusCode == 401 || resp.StatusCode == 403 {
+		return fmt.Errorf("%w: http status: %s", ErrTeamsMessageDelivery, resp.Status)
+	} else if resp.StatusCode >= 500 || resp.StatusCode < 600 {
 		return fmt.Errorf("%w: http status: %s", ErrTeamsMessageDelivery, resp.Status)
 	}
 

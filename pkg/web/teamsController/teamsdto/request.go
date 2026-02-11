@@ -1,6 +1,8 @@
 package teamsdto
 
 import (
+	"strings"
+
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/translation"
 )
@@ -12,8 +14,15 @@ type TeamsNotificationChannelRequest struct {
 	Description string `json:"description"`
 }
 
+func (m *TeamsNotificationChannelRequest) Cleanup() {
+	m.ChannelName = strings.TrimSpace(m.ChannelName)
+	m.WebhookUrl = strings.TrimSpace(m.WebhookUrl)
+	m.Description = strings.TrimSpace(m.Description)
+}
+
 func (m *TeamsNotificationChannelRequest) Validate() models.ValidationErrors {
 	errs := make(map[string]string)
+
 	if m.ChannelName == "" {
 		errs["channelName"] = translation.ChannelNameIsRequired
 	}
@@ -28,6 +37,10 @@ func (m *TeamsNotificationChannelRequest) Validate() models.ValidationErrors {
 // TeamsNotificationChannelCheckRequest teams notification channel check request
 type TeamsNotificationChannelCheckRequest struct {
 	WebhookUrl string `json:"webhookUrl"`
+}
+
+func (m *TeamsNotificationChannelCheckRequest) Cleanup() {
+	m.WebhookUrl = strings.TrimSpace(m.WebhookUrl)
 }
 
 func (r *TeamsNotificationChannelCheckRequest) Validate() models.ValidationErrors {
