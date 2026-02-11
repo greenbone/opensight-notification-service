@@ -17,7 +17,7 @@ var (
 	ErrTeamsChannelLimitReached = errors.New("Teams channel limit reached.")
 	ErrListTeamsChannels        = errors.New("failed to list teams channels")
 	ErrTeamsChannelNameExists   = errors.New("Teams channel name already exists.")
-	ErrTeamsMassageDelivery     = errors.New("teams message could not be send")
+	ErrTeamsMessageDelivery     = errors.New("teams message could not be send")
 )
 
 type TeamsChannelService interface {
@@ -31,33 +31,35 @@ type TeamsChannelService interface {
 type teamsChannelService struct {
 	notificationChannelService NotificationChannelService
 	teamsChannelLimit          int
+	transport                  http.Client
 }
 
 func NewTeamsChannelService(
 	notificationChannelService NotificationChannelService,
 	teamsChannelLimit int,
+	transport http.Client,
 ) TeamsChannelService {
 	return &teamsChannelService{
 		notificationChannelService: notificationChannelService,
 		teamsChannelLimit:          teamsChannelLimit,
+		transport:                  transport,
 	}
 }
 
 func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
-	var body []byte
-	var err error
-
 	isTeamsOldWebhookUrl, err := policy.IsTeamsOldWebhookUrl(webhookUrl)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to validate teams webhook url: %w", err)
 	}
 
+	var message map[string]interface{}
 	if isTeamsOldWebhookUrl {
-		body, err = json.Marshal(map[string]string{
+		message = map[string]interface{}{
 			"text": "Hello, This is a test message",
-		})
+		}
+
 	} else {
-		adaptiveCard := map[string]interface{}{
+		message = map[string]interface{}{
 			"type": "message",
 			"attachments": []map[string]interface{}{
 				{
@@ -76,42 +78,40 @@ func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
 				},
 			},
 		}
-		body, err = json.Marshal(adaptiveCard)
+
 	}
 
+	body, err := json.Marshal(message)
 	if err != nil {
-		return err
+		return fmt.Errorf("can not marshal teams message: %w", err)
 	}
 
-	resp, err := http.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
+	resp, err := t.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return err
+		return fmt.Errorf("can not send teams test message: %w", err)
 	}
+
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf(
-			"%w: http status: %s",
-			ErrTeamsMassageDelivery,
-			resp.Status,
-		)
+		return fmt.Errorf("%w: http status: %s", ErrTeamsMessageDelivery, resp.Status)
 	}
 
 	return nil
 }
 
 func (t *teamsChannelService) CreateTeamsChannel(
-	c context.Context,
+	ctx context.Context,
 	channel teamsdto.TeamsNotificationChannelRequest,
 ) (teamsdto.TeamsNotificationChannelResponse, error) {
-	if errResp := t.teamsChannelValidations(c, channel.ChannelName); errResp != nil {
-		return teamsdto.TeamsNotificationChannelResponse{}, errResp
+	if err := t.teamsChannelValidations(ctx, channel.ChannelName); err != nil {
+		return teamsdto.TeamsNotificationChannelResponse{}, err
 	}
 
 	notificationChannel := teamsdto.MapTeamsToNotificationChannel(channel)
-	created, err := t.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
+	created, err := t.notificationChannelService.CreateNotificationChannel(ctx, notificationChannel)
 	if err != nil {
 		return teamsdto.TeamsNotificationChannelResponse{}, err
 	}

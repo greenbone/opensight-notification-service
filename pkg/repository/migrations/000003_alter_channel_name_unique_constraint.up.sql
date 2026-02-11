@@ -1,0 +1,5 @@
+ALTER TABLE notification_service.notification_channel
+DROP CONSTRAINT IF EXISTS notification_channel_channel_name_key;
+
+ALTER TABLE notification_service.notification_channel
+ADD CONSTRAINT notification_channel_channel_name_type_key UNIQUE (channel_name, channel_type);
