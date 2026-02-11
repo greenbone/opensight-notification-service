@@ -5,11 +5,15 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
+	"github.com/stretchr/testify/require"
 )
 
 type roundTripperFunc func(*http.Request) (*http.Response, error)
@@ -26,7 +30,11 @@ func setup(t *testing.T, transport http.Client) *gin.Engine {
 	teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 20, &transport)
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
-	teamscontroller.NewTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
+
+	teamscontroller.NewTeamsController(router, svc, teamsSvc, authMiddleware, registry)
 	defer db.Close()
 	return router
 }
@@ -45,10 +53,10 @@ func TestCheckTeamsChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check teams channel
-		request.Post("/notification-channel/teams/check").
+		httpassert.New(t, router).Post("/notification-channel/teams/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -69,10 +77,10 @@ func TestCheckTeamsChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check teams channel
-		request.Post("/notification-channel/teams/check").
+		httpassert.New(t, router).Post("/notification-channel/teams/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/webhook/id1"
 			}`).
@@ -93,10 +101,10 @@ func TestCheckTeamsChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check teams channel
-		request.Post("/notification-channel/teams/check").
+		httpassert.New(t, router).Post("/notification-channel/teams/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"webhookUrl": "invalid"
 			}`).
@@ -125,10 +133,10 @@ func TestCheckTeamsChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check teams channel
-		request.Post("/notification-channel/teams/check").
+		httpassert.New(t, router).Post("/notification-channel/teams/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -154,10 +162,10 @@ func TestCheckTeamsChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check teams channel
-		request.Post("/notification-channel/teams/check").
+		httpassert.New(t, router).Post("/notification-channel/teams/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).

@@ -11,6 +11,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -33,7 +34,7 @@ func NewMattermostController(
 	}
 
 	group := router.Group("/notification-channel/mattermost").
-		Use(middleware.AuthorizeRoles(auth, "admin")...)
+		Use(middleware.AuthorizeRoles(auth, iam.Admin)...)
 	group.Use(errorHandler(gin.ErrorTypePrivate))
 
 	group.POST("", ctrl.createMattermostChannel)

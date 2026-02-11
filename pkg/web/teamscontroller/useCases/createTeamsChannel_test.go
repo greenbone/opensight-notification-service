@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,12 +17,11 @@ func TestCreateTeamsChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var teamsId string
 
 		// Create teams channel
-		request.Post("/notification-channel/teams").
+		httpassert.New(t, router).Post("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "teams1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -46,10 +47,9 @@ func TestCreateTeamsChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		// Create teams channel
-		request.Post("/notification-channel/teams").
+		httpassert.New(t, router).Post("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "a",
 				"webhookUrl": "invalid",
@@ -72,10 +72,9 @@ func TestCreateTeamsChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		// Create teams channel
-		request.Post("/notification-channel/teams").
+		httpassert.New(t, router).Post("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
@@ -95,10 +94,9 @@ func TestCreateTeamsChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		// Create teams channel
-		request.Post("/notification-channel/teams").
+		httpassert.New(t, router).Post("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "teams 1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -108,7 +106,8 @@ func TestCreateTeamsChannel(t *testing.T) {
 			StatusCode(http.StatusCreated)
 
 		// Create teams channel with the same name
-		request.Post("/notification-channel/teams").
+		httpassert.New(t, router).Post("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "teams 1",
 				"webhookUrl": "https://example.com/hooks/id1",

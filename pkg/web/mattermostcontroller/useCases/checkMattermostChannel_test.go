@@ -5,11 +5,15 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
+	"github.com/stretchr/testify/require"
 )
 
 type roundTripperFunc func(*http.Request) (*http.Response, error)
@@ -26,7 +30,11 @@ func setup(t *testing.T, transport http.Client) *gin.Engine {
 	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20, &transport)
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
-	mattermostcontroller.NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
+
+	mattermostcontroller.NewMattermostController(router, svc, mattermostSvc, authMiddleware, registry)
 	defer db.Close()
 	return router
 }
@@ -45,10 +53,10 @@ func TestCheckMattermostChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check mattermost channel
-		request.Post("/notification-channel/mattermost/check").
+		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -69,10 +77,10 @@ func TestCheckMattermostChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check mattermost channel
-		request.Post("/notification-channel/mattermost/check").
+		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"webhookUrl": "invalid"
 			}`).
@@ -101,10 +109,10 @@ func TestCheckMattermostChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check mattermost channel
-		request.Post("/notification-channel/mattermost/check").
+		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -130,10 +138,10 @@ func TestCheckMattermostChannel(t *testing.T) {
 			}),
 		}
 		router := setup(t, transport)
-		request := httpassert.New(t, router)
 
 		// Check mattermost channel
-		request.Post("/notification-channel/mattermost/check").
+		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).

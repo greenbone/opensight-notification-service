@@ -10,6 +10,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller/teamsdto"
 )
@@ -33,7 +34,7 @@ func NewTeamsController(
 	}
 
 	group := router.Group("/notification-channel/teams").
-		Use(middleware.AuthorizeRoles(auth, "admin")...)
+		Use(middleware.AuthorizeRoles(auth, iam.Admin)...)
 	group.Use(errorHandler(gin.ErrorTypePrivate))
 
 	group.POST("", ctrl.CreateTeamsChannel)

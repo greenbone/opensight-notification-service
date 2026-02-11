@@ -6,9 +6,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
@@ -21,7 +24,11 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20, &http.Client{Timeout: 15 * time.Second})
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
-	mattermostcontroller.NewMattermostController(router, svc, mattermostSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
+
+	mattermostcontroller.NewMattermostController(router, svc, mattermostSvc, authMiddleware, registry)
 
 	return router, db
 }
@@ -33,12 +40,11 @@ func TestDeleteMattermostChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var mattermostId string
 
 		// Create mattermost channel
-		request.Post("/notification-channel/mattermost").
+		httpassert.New(t, router).Post("/notification-channel/mattermost").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -46,7 +52,6 @@ func TestDeleteMattermostChannel(t *testing.T) {
 			}`).
 			Expect().
 			StatusCode(http.StatusCreated).
-			Log().
 			JsonPath("$.id", httpassert.ExtractTo(&mattermostId)).
 			JsonTemplate(`{
 				"id": "d9cc9be2-7b4d-4c6f-991d-a40cfe002ceb",
@@ -59,7 +64,8 @@ func TestDeleteMattermostChannel(t *testing.T) {
 		require.NotEmpty(t, mattermostId)
 
 		// Delete mattermost channel
-		request.Deletef("/notification-channel/mattermost/%s", mattermostId).
+		httpassert.New(t, router).Deletef("/notification-channel/mattermost/%s", mattermostId).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			Expect().
 			StatusCode(http.StatusNoContent)
 	})

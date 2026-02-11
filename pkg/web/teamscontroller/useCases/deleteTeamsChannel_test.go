@@ -6,9 +6,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
@@ -21,7 +24,11 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 20, &http.Client{Timeout: 15 * time.Second})
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
-	teamscontroller.NewTeamsController(router, svc, teamsSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
+
+	teamscontroller.NewTeamsController(router, svc, teamsSvc, authMiddleware, registry)
 
 	return router, db
 }
@@ -33,12 +40,11 @@ func TestDeleteTeamsChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var teamsId string
 
 		// Create teams channel
-		request.Post("/notification-channel/teams").
+		httpassert.New(t, router).Post("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "teams1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -58,7 +64,8 @@ func TestDeleteTeamsChannel(t *testing.T) {
 		require.NotEmpty(t, teamsId)
 
 		// Delete teams channel
-		request.Deletef("/notification-channel/teams/%s", teamsId).
+		httpassert.New(t, router).Deletef("/notification-channel/teams/%s", teamsId).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			Expect().
 			StatusCode(http.StatusNoContent)
 	})

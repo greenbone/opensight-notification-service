@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,12 +17,11 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var mattermostId string
 
 		// Create mattermost channel
-		request.Post("/notification-channel/mattermost").
+		httpassert.New(t, router).Post("/notification-channel/mattermost").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -32,7 +33,8 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		require.NotEmpty(t, mattermostId)
 
 		// Update mattermost channel
-		request.Putf("/notification-channel/mattermost/%s", mattermostId).
+		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost2",
 				"webhookUrl": "https://example.com/hooks/id2",
@@ -56,12 +58,11 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var mattermostId string
 
 		// Create mattermost channel
-		request.Post("/notification-channel/mattermost").
+		httpassert.New(t, router).Post("/notification-channel/mattermost").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -73,7 +74,8 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		require.NotEmpty(t, mattermostId)
 
 		// Update mattermost channel
-		request.Putf("/notification-channel/mattermost/%s", mattermostId).
+		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "1",
 				"webhookUrl": "invalid",
@@ -96,12 +98,11 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var mattermostId string
 
 		// Create mattermost channel
-		request.Post("/notification-channel/mattermost").
+		httpassert.New(t, router).Post("/notification-channel/mattermost").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -113,11 +114,11 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		require.NotEmpty(t, mattermostId)
 
 		// Update mattermost channel
-		request.Putf("/notification-channel/mattermost/%s", mattermostId).
+		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
-			Log().
 			Json(`{
 				"type": "greenbone/validation-error",
 				"title": "",
@@ -134,12 +135,11 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var mattermostId string
 
 		// Create mattermost channel
-		request.Post("/notification-channel/mattermost").
+		httpassert.New(t, router).Post("/notification-channel/mattermost").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost 1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -149,7 +149,8 @@ func TestUpdateMattermostChannel(t *testing.T) {
 			StatusCode(http.StatusCreated)
 
 		// Create mattermost channel
-		request.Post("/notification-channel/mattermost").
+		httpassert.New(t, router).Post("/notification-channel/mattermost").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost 2",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -161,7 +162,8 @@ func TestUpdateMattermostChannel(t *testing.T) {
 		require.NotEmpty(t, mattermostId)
 
 		// Update mattermost channel
-		request.Putf("/notification-channel/mattermost/%s", mattermostId).
+		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "mattermost 1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -169,7 +171,6 @@ func TestUpdateMattermostChannel(t *testing.T) {
 			}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
-			Log().
 			Json(`{
 				"type": "greenbone/generic-error",
 				"title": "Mattermost channel name already exists."

@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,12 +17,11 @@ func TestListTeamsChannels(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
 
-		request := httpassert.New(t, router)
-
 		var teamsId string
 
 		// Create teams channel
-		request.Post("/notification-channel/teams").
+		httpassert.New(t, router).Post("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			JsonContent(`{
 				"channelName": "teams1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -40,7 +41,8 @@ func TestListTeamsChannels(t *testing.T) {
 		require.NotEmpty(t, teamsId)
 
 		// List teams channels
-		request.Get("/notification-channel/teams").
+		httpassert.New(t, router).Get("/notification-channel/teams").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonTemplate(`[
