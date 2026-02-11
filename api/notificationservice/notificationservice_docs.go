@@ -320,7 +320,7 @@ const docTemplatenotificationservice = `{
                         "KeycloakAuth": []
                     }
                 ],
-                "description": "List mattermost notification channels by type",
+                "description": "List mattermost notification channels",
                 "produces": [
                     "application/json"
                 ],
@@ -328,14 +328,6 @@ const docTemplatenotificationservice = `{
                     "mattermost-channel"
                 ],
                 "summary": "List Mattermost Channels",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Channel type",
-                        "name": "type",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",

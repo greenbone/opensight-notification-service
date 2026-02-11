@@ -107,7 +107,6 @@ func (m *mattermostChannelService) UpdateMattermostChannel(
 		return mattermostdto.MattermostNotificationChannelResponse{}, err
 	}
 
-	// TODO: 11.02.2026 stolksdorf - mapping is not part of the service
 	return mattermostdto.MapNotificationChannelToMattermost(updated), nil
 }
 

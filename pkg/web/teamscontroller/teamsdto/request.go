@@ -1,6 +1,7 @@
 package teamsdto
 
 import (
+	"net/url"
 	"strings"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
@@ -29,6 +30,11 @@ func (m *TeamsNotificationChannelRequest) Validate() models.ValidationErrors {
 
 	if m.WebhookUrl == "" {
 		errs["webhookUrl"] = translation.WebhookUrlIsRequired
+	} else {
+		_, err := url.ParseRequestURI(m.WebhookUrl)
+		if err != nil {
+			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
+		}
 	}
 
 	return errs
@@ -48,6 +54,11 @@ func (r *TeamsNotificationChannelCheckRequest) Validate() models.ValidationError
 
 	if r.WebhookUrl == "" {
 		errs["webhookUrl"] = translation.WebhookUrlIsRequired
+	} else {
+		_, err := url.ParseRequestURI(r.WebhookUrl)
+		if err != nil {
+			errs["webhookUrl"] = translation.ValidWebhookUrlIsRequired
+		}
 	}
 
 	return errs

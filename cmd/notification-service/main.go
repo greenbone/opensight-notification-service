@@ -19,7 +19,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller"
-	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/go-playground/validator"
@@ -121,7 +121,7 @@ func run(config config.Config) error {
 	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(
 		notificationChannelService, config.ChannelLimit.MattermostLimit, &notificationTransport)
 	teamsChannelService := notificationchannelservice.NewTeamsChannelService(
-		notificationChannelService, config.ChannelLimit.TeamsLimit, notificationTransport)
+		notificationChannelService, config.ChannelLimit.TeamsLimit, &notificationTransport)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler
@@ -153,7 +153,7 @@ func run(config config.Config) error {
 	mailcontroller.NewMailController(notificationServiceRouter, notificationChannelService, mailChannelService, authMiddleware, registry)
 	mailcontroller.AddCheckMailServerController(notificationServiceRouter, mailChannelService, authMiddleware, registry)
 	mattermostcontroller.NewMattermostController(notificationServiceRouter, notificationChannelService, mattermostChannelService, authMiddleware, registry)
-	teamsController.AddTeamsController(notificationServiceRouter, notificationChannelRepository, teamsChannelService, authMiddleware, registry)
+	teamscontroller.NewTeamsController(notificationServiceRouter, notificationChannelRepository, teamsChannelService, authMiddleware, registry)
 
 	// health router
 	rootRouter := router.Group("/")

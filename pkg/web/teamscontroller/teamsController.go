@@ -1,4 +1,4 @@
-package teamsController
+package teamscontroller
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
-	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller/teamsdto"
 )
 
 type TeamsController struct {
@@ -19,7 +19,7 @@ type TeamsController struct {
 	teamsChannelService         notificationchannelservice.TeamsChannelService
 }
 
-func AddTeamsController(
+func NewTeamsController(
 	router gin.IRouter,
 	notificationChannelServicer notificationchannelservice.NotificationChannelService,
 	teamsChannelService notificationchannelservice.TeamsChannelService,
@@ -34,6 +34,7 @@ func AddTeamsController(
 
 	group := router.Group("/notification-channel/teams").
 		Use(middleware.AuthorizeRoles(auth, "admin")...)
+	group.Use(errorHandler(gin.ErrorTypePrivate))
 
 	group.POST("", ctrl.CreateTeamsChannel)
 	group.GET("", ctrl.ListTeamsChannels)
@@ -41,7 +42,6 @@ func AddTeamsController(
 	group.DELETE("/:id", ctrl.DeleteTeamsChannel)
 	group.POST("/check", ctrl.SendTeamsTestMessage)
 
-	router.Use(errorHandler(gin.ErrorTypePrivate))
 	ctrl.configureMappings(registry)
 	return ctrl
 }
@@ -96,8 +96,7 @@ func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
 	}
 
 	teamsChannel, err := tc.teamsChannelService.CreateTeamsChannel(c, channel)
-	if err != nil {
-		ginEx.AddError(c, err)
+	if ginEx.AddError(c, err) {
 		return
 	}
 
@@ -117,8 +116,7 @@ func (tc *TeamsController) CreateTeamsChannel(c *gin.Context) {
 //	@Router			/notification-channel/teams [get]
 func (tc *TeamsController) ListTeamsChannels(c *gin.Context) {
 	channels, err := tc.notificationChannelServicer.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
-	if err != nil {
-		ginEx.AddError(c, err)
+	if ginEx.AddError(c, err) {
 		return
 	}
 
@@ -147,14 +145,11 @@ func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 		return
 	}
 
-	notificationChannel := teamsdto.MapTeamsToNotificationChannel(channel)
-	updated, err := tc.notificationChannelServicer.UpdateNotificationChannel(c, id, notificationChannel)
-	if err != nil {
-		ginEx.AddError(c, err)
+	updated, err := tc.teamsChannelService.UpdateTeamsChannel(c, id, channel)
+	if ginEx.AddError(c, err) {
 		return
 	}
-	response := teamsdto.MapNotificationChannelToTeams(updated)
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, updated)
 }
 
 // DeleteTeamsChannel
@@ -170,8 +165,9 @@ func (tc *TeamsController) UpdateTeamsChannel(c *gin.Context) {
 //		@Router			/notification-channel/teams/{id} [delete]
 func (tc *TeamsController) DeleteTeamsChannel(c *gin.Context) {
 	id := c.Param("id")
-	if err := tc.notificationChannelServicer.DeleteNotificationChannel(c, id); err != nil {
-		ginEx.AddError(c, err)
+
+	err := tc.notificationChannelServicer.DeleteNotificationChannel(c, id)
+	if ginEx.AddError(c, err) {
 		return
 	}
 
@@ -196,8 +192,8 @@ func (tc *TeamsController) SendTeamsTestMessage(c *gin.Context) {
 		return
 	}
 
-	if err := tc.teamsChannelService.SendTeamsTestMessage(channel.WebhookUrl); err != nil {
-		ginEx.AddError(c, err)
+	err := tc.teamsChannelService.SendTeamsTestMessage(channel.WebhookUrl)
+	if ginEx.AddError(c, err) {
 		return
 	}
 

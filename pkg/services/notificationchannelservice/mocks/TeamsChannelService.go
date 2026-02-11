@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller/teamsdto"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,8 +39,8 @@ func (_m *TeamsChannelService) EXPECT() *TeamsChannelService_Expecter {
 }
 
 // CreateTeamsChannel provides a mock function for the type TeamsChannelService
-func (_mock *TeamsChannelService) CreateTeamsChannel(c context.Context, channel teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error) {
-	ret := _mock.Called(c, channel)
+func (_mock *TeamsChannelService) CreateTeamsChannel(ctx context.Context, channel teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error) {
+	ret := _mock.Called(ctx, channel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateTeamsChannel")
@@ -49,15 +49,15 @@ func (_mock *TeamsChannelService) CreateTeamsChannel(c context.Context, channel 
 	var r0 teamsdto.TeamsNotificationChannelResponse
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error)); ok {
-		return returnFunc(c, channel)
+		return returnFunc(ctx, channel)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, teamsdto.TeamsNotificationChannelRequest) teamsdto.TeamsNotificationChannelResponse); ok {
-		r0 = returnFunc(c, channel)
+		r0 = returnFunc(ctx, channel)
 	} else {
 		r0 = ret.Get(0).(teamsdto.TeamsNotificationChannelResponse)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, teamsdto.TeamsNotificationChannelRequest) error); ok {
-		r1 = returnFunc(c, channel)
+		r1 = returnFunc(ctx, channel)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -70,13 +70,13 @@ type TeamsChannelService_CreateTeamsChannel_Call struct {
 }
 
 // CreateTeamsChannel is a helper method to define mock.On call
-//   - c context.Context
+//   - ctx context.Context
 //   - channel teamsdto.TeamsNotificationChannelRequest
-func (_e *TeamsChannelService_Expecter) CreateTeamsChannel(c interface{}, channel interface{}) *TeamsChannelService_CreateTeamsChannel_Call {
-	return &TeamsChannelService_CreateTeamsChannel_Call{Call: _e.mock.On("CreateTeamsChannel", c, channel)}
+func (_e *TeamsChannelService_Expecter) CreateTeamsChannel(ctx interface{}, channel interface{}) *TeamsChannelService_CreateTeamsChannel_Call {
+	return &TeamsChannelService_CreateTeamsChannel_Call{Call: _e.mock.On("CreateTeamsChannel", ctx, channel)}
 }
 
-func (_c *TeamsChannelService_CreateTeamsChannel_Call) Run(run func(c context.Context, channel teamsdto.TeamsNotificationChannelRequest)) *TeamsChannelService_CreateTeamsChannel_Call {
+func (_c *TeamsChannelService_CreateTeamsChannel_Call) Run(run func(ctx context.Context, channel teamsdto.TeamsNotificationChannelRequest)) *TeamsChannelService_CreateTeamsChannel_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -99,7 +99,7 @@ func (_c *TeamsChannelService_CreateTeamsChannel_Call) Return(teamsNotificationC
 	return _c
 }
 
-func (_c *TeamsChannelService_CreateTeamsChannel_Call) RunAndReturn(run func(c context.Context, channel teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error)) *TeamsChannelService_CreateTeamsChannel_Call {
+func (_c *TeamsChannelService_CreateTeamsChannel_Call) RunAndReturn(run func(ctx context.Context, channel teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error)) *TeamsChannelService_CreateTeamsChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -151,6 +151,78 @@ func (_c *TeamsChannelService_SendTeamsTestMessage_Call) Return(err error) *Team
 }
 
 func (_c *TeamsChannelService_SendTeamsTestMessage_Call) RunAndReturn(run func(webhookUrl string) error) *TeamsChannelService_SendTeamsTestMessage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateTeamsChannel provides a mock function for the type TeamsChannelService
+func (_mock *TeamsChannelService) UpdateTeamsChannel(ctx context.Context, id string, channel teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error) {
+	ret := _mock.Called(ctx, id, channel)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateTeamsChannel")
+	}
+
+	var r0 teamsdto.TeamsNotificationChannelResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error)); ok {
+		return returnFunc(ctx, id, channel)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, teamsdto.TeamsNotificationChannelRequest) teamsdto.TeamsNotificationChannelResponse); ok {
+		r0 = returnFunc(ctx, id, channel)
+	} else {
+		r0 = ret.Get(0).(teamsdto.TeamsNotificationChannelResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, teamsdto.TeamsNotificationChannelRequest) error); ok {
+		r1 = returnFunc(ctx, id, channel)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamsChannelService_UpdateTeamsChannel_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateTeamsChannel'
+type TeamsChannelService_UpdateTeamsChannel_Call struct {
+	*mock.Call
+}
+
+// UpdateTeamsChannel is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - channel teamsdto.TeamsNotificationChannelRequest
+func (_e *TeamsChannelService_Expecter) UpdateTeamsChannel(ctx interface{}, id interface{}, channel interface{}) *TeamsChannelService_UpdateTeamsChannel_Call {
+	return &TeamsChannelService_UpdateTeamsChannel_Call{Call: _e.mock.On("UpdateTeamsChannel", ctx, id, channel)}
+}
+
+func (_c *TeamsChannelService_UpdateTeamsChannel_Call) Run(run func(ctx context.Context, id string, channel teamsdto.TeamsNotificationChannelRequest)) *TeamsChannelService_UpdateTeamsChannel_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 teamsdto.TeamsNotificationChannelRequest
+		if args[2] != nil {
+			arg2 = args[2].(teamsdto.TeamsNotificationChannelRequest)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamsChannelService_UpdateTeamsChannel_Call) Return(teamsNotificationChannelResponse teamsdto.TeamsNotificationChannelResponse, err error) *TeamsChannelService_UpdateTeamsChannel_Call {
+	_c.Call.Return(teamsNotificationChannelResponse, err)
+	return _c
+}
+
+func (_c *TeamsChannelService_UpdateTeamsChannel_Call) RunAndReturn(run func(ctx context.Context, id string, channel teamsdto.TeamsNotificationChannelRequest) (teamsdto.TeamsNotificationChannelResponse, error)) *TeamsChannelService_UpdateTeamsChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }
