@@ -608,12 +608,7 @@ paths:
       - mail-channel
   /notification-channel/mattermost:
     get:
-      description: List mattermost notification channels by type
-      parameters:
-      - description: Channel type
-        in: query
-        name: type
-        type: string
+      description: List mattermost notification channels
       produces:
       - application/json
       responses:

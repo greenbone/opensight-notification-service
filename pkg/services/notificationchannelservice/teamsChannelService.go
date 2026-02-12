@@ -10,7 +10,7 @@ import (
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/policy"
-	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller/teamsdto"
 )
 
 var (
@@ -23,7 +23,12 @@ var (
 type TeamsChannelService interface {
 	SendTeamsTestMessage(webhookUrl string) error
 	CreateTeamsChannel(
-		c context.Context,
+		ctx context.Context,
+		channel teamsdto.TeamsNotificationChannelRequest,
+	) (teamsdto.TeamsNotificationChannelResponse, error)
+	UpdateTeamsChannel(
+		ctx context.Context,
+		id string,
 		channel teamsdto.TeamsNotificationChannelRequest,
 	) (teamsdto.TeamsNotificationChannelResponse, error)
 }
@@ -31,13 +36,13 @@ type TeamsChannelService interface {
 type teamsChannelService struct {
 	notificationChannelService NotificationChannelService
 	teamsChannelLimit          int
-	transport                  http.Client
+	transport                  *http.Client
 }
 
 func NewTeamsChannelService(
 	notificationChannelService NotificationChannelService,
 	teamsChannelLimit int,
-	transport http.Client,
+	transport *http.Client,
 ) TeamsChannelService {
 	return &teamsChannelService{
 		notificationChannelService: notificationChannelService,
@@ -106,7 +111,7 @@ func (t *teamsChannelService) CreateTeamsChannel(
 	ctx context.Context,
 	channel teamsdto.TeamsNotificationChannelRequest,
 ) (teamsdto.TeamsNotificationChannelResponse, error) {
-	if err := t.teamsChannelValidations(ctx, channel.ChannelName); err != nil {
+	if err := t.teamsChannelValidations(ctx, channel.ChannelName, ""); err != nil {
 		return teamsdto.TeamsNotificationChannelResponse{}, err
 	}
 
@@ -119,8 +124,30 @@ func (t *teamsChannelService) CreateTeamsChannel(
 	return teamsdto.MapNotificationChannelToTeams(created), nil
 }
 
-func (t *teamsChannelService) teamsChannelValidations(c context.Context, channelName string) error {
-	channels, err := t.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeTeams)
+func (t *teamsChannelService) UpdateTeamsChannel(
+	ctx context.Context,
+	id string,
+	channel teamsdto.TeamsNotificationChannelRequest,
+) (teamsdto.TeamsNotificationChannelResponse, error) {
+	if err := t.teamsChannelValidations(ctx, channel.ChannelName, id); err != nil {
+		return teamsdto.TeamsNotificationChannelResponse{}, err
+	}
+
+	notificationChannel := teamsdto.MapTeamsToNotificationChannel(channel)
+	created, err := t.notificationChannelService.UpdateNotificationChannel(ctx, id, notificationChannel)
+	if err != nil {
+		return teamsdto.TeamsNotificationChannelResponse{}, err
+	}
+
+	return teamsdto.MapNotificationChannelToTeams(created), nil
+}
+
+func (t *teamsChannelService) teamsChannelValidations(
+	ctx context.Context,
+	channelName string,
+	excludeId string,
+) error {
+	channels, err := t.notificationChannelService.ListNotificationChannelsByType(ctx, models.ChannelTypeTeams)
 	if err != nil {
 		return errors.Join(ErrListTeamsChannels, err)
 	}
@@ -130,6 +157,10 @@ func (t *teamsChannelService) teamsChannelValidations(c context.Context, channel
 	}
 
 	for _, ch := range channels {
+		if ch.Id != nil && *ch.Id == excludeId {
+			continue
+		}
+
 		if ch.ChannelName != nil && *ch.ChannelName == channelName {
 			return ErrTeamsChannelNameExists
 		}

@@ -1,4 +1,4 @@
-package mattermostcontroller
+package teamscontroller
 
 import (
 	"net/http"
@@ -20,53 +20,53 @@ func setup(t *testing.T) *gin.Engine {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 	notificationChannelService := mocks.NewNotificationChannelService(t)
-	mattermostChannelService := mocks.NewMattermostChannelService(t)
+	teamsChannelService := mocks.NewTeamsChannelService(t)
 
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
-	NewMattermostController(router, notificationChannelService, mattermostChannelService, authMiddleware, registry)
+	NewTeamsController(router, notificationChannelService, teamsChannelService, authMiddleware, registry)
 	return router
 }
 
-func TestMattermostController(t *testing.T) {
+func TestTeamsController(t *testing.T) {
 	router := setup(t)
 
-	t.Run("Create mattermost channel is forbidden for role user", func(t *testing.T) {
+	t.Run("Create teams channel is forbidden for role user", func(t *testing.T) {
 		httpassert.New(t, router).
-			Post(`/notification-channel/mattermost`).
+			Post(`/notification-channel/teams`).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
 			Expect().
 			StatusCode(http.StatusForbidden)
 	})
 
-	t.Run("Get mattermost channels is forbidden for role user", func(t *testing.T) {
+	t.Run("Get teams channels is forbidden for role user", func(t *testing.T) {
 		httpassert.New(t, router).
-			Get(`/notification-channel/mattermost`).
+			Get(`/notification-channel/teams`).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
 			Expect().
 			StatusCode(http.StatusForbidden)
 	})
 
-	t.Run("Update mattermost channel is forbidden for role user", func(t *testing.T) {
+	t.Run("Update teams channel is forbidden for role user", func(t *testing.T) {
 		httpassert.New(t, router).
-			Putf(`/notification-channel/mattermost/%s`, uuid.New()).
+			Putf(`/notification-channel/teams/%s`, uuid.New()).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
 			Expect().
 			StatusCode(http.StatusForbidden)
 	})
 
-	t.Run("Delete mattermost channel is forbidden for role user", func(t *testing.T) {
+	t.Run("Delete teams channel is forbidden for role user", func(t *testing.T) {
 		httpassert.New(t, router).
-			Deletef(`/notification-channel/mattermost/%s`, uuid.New()).
+			Deletef(`/notification-channel/teams/%s`, uuid.New()).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
 			Expect().
 			StatusCode(http.StatusForbidden)
 	})
 
-	t.Run("Check mattermost channels is forbidden for role user", func(t *testing.T) {
+	t.Run("Check teams channels is forbidden for role user", func(t *testing.T) {
 		httpassert.New(t, router).
-			Post(`/notification-channel/mattermost/check`).
+			Post(`/notification-channel/teams/check`).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
 			Expect().
 			StatusCode(http.StatusForbidden)

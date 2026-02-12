@@ -19,7 +19,6 @@ const driverName = "postgres" // depends on registered driver via import above
 // NewDB is a helper that returns an open connection to a unique and isolated
 // test database, fully migrated and ready to query.
 func NewDB(t *testing.T) *sqlx.DB {
-	t.Parallel() // each test has its own isolated database
 	t.Helper()
 	conf := pgtestdb.Config{ // must match the deployment in `compose.yml`
 		DriverName: driverName,

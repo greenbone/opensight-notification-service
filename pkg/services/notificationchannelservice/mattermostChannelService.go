@@ -22,7 +22,12 @@ var (
 type MattermostChannelService interface {
 	SendMattermostTestMessage(webhookUrl string) error
 	CreateMattermostChannel(
-		c context.Context,
+		ctx context.Context,
+		channel mattermostdto.MattermostNotificationChannelRequest,
+	) (mattermostdto.MattermostNotificationChannelResponse, error)
+	UpdateMattermostChannel(
+		ctx context.Context,
+		id string,
 		channel mattermostdto.MattermostNotificationChannelRequest,
 	) (mattermostdto.MattermostNotificationChannelResponse, error)
 }
@@ -30,15 +35,18 @@ type MattermostChannelService interface {
 type mattermostChannelService struct {
 	notificationChannelService NotificationChannelService
 	mattermostChannelLimit     int
+	transport                  *http.Client
 }
 
 func NewMattermostChannelService(
 	notificationChannelService NotificationChannelService,
 	mattermostChannelLimit int,
+	transport *http.Client,
 ) MattermostChannelService {
 	return &mattermostChannelService{
 		notificationChannelService: notificationChannelService,
 		mattermostChannelLimit:     mattermostChannelLimit,
+		transport:                  transport,
 	}
 }
 
@@ -47,38 +55,35 @@ func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) 
 		"text": "Hello, This is a test message",
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("can not marshal mattermost message: %w", err)
 	}
 
-	resp, err := http.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
+	resp, err := m.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return err
+		return fmt.Errorf("can not send mattermost test message: %w", err)
 	}
+
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf(
-			"%w: http status: %s",
-			ErrMattermostMassageDelivery,
-			resp.Status,
-		)
+		return fmt.Errorf("%w: http status: %s", ErrMattermostMassageDelivery, resp.Status)
 	}
 
 	return nil
 }
 
 func (m *mattermostChannelService) CreateMattermostChannel(
-	c context.Context,
+	ctx context.Context,
 	channel mattermostdto.MattermostNotificationChannelRequest,
 ) (mattermostdto.MattermostNotificationChannelResponse, error) {
-	if errResp := m.mattermostChannelValidations(c, channel.ChannelName); errResp != nil {
-		return mattermostdto.MattermostNotificationChannelResponse{}, errResp
+	if err := m.mattermostChannelValidations(ctx, channel.ChannelName, ""); err != nil {
+		return mattermostdto.MattermostNotificationChannelResponse{}, err
 	}
 
 	notificationChannel := mattermostdto.MapMattermostToNotificationChannel(channel)
-	created, err := m.notificationChannelService.CreateNotificationChannel(c, notificationChannel)
+	created, err := m.notificationChannelService.CreateNotificationChannel(ctx, notificationChannel)
 	if err != nil {
 		return mattermostdto.MattermostNotificationChannelResponse{}, err
 	}
@@ -86,8 +91,31 @@ func (m *mattermostChannelService) CreateMattermostChannel(
 	return mattermostdto.MapNotificationChannelToMattermost(created), nil
 }
 
-func (m *mattermostChannelService) mattermostChannelValidations(c context.Context, channelName string) error {
-	channels, err := m.notificationChannelService.ListNotificationChannelsByType(c, models.ChannelTypeMattermost)
+func (m *mattermostChannelService) UpdateMattermostChannel(
+	ctx context.Context,
+	id string,
+	channel mattermostdto.MattermostNotificationChannelRequest,
+) (mattermostdto.MattermostNotificationChannelResponse, error) {
+
+	if err := m.mattermostChannelValidations(ctx, channel.ChannelName, id); err != nil {
+		return mattermostdto.MattermostNotificationChannelResponse{}, err
+	}
+
+	notificationChannel := mattermostdto.MapMattermostToNotificationChannel(channel)
+	updated, err := m.notificationChannelService.UpdateNotificationChannel(ctx, id, notificationChannel)
+	if err != nil {
+		return mattermostdto.MattermostNotificationChannelResponse{}, err
+	}
+
+	return mattermostdto.MapNotificationChannelToMattermost(updated), nil
+}
+
+func (m *mattermostChannelService) mattermostChannelValidations(
+	ctx context.Context,
+	channelName string,
+	excludeId string,
+) error {
+	channels, err := m.notificationChannelService.ListNotificationChannelsByType(ctx, models.ChannelTypeMattermost)
 	if err != nil {
 		return errors.Join(ErrListMattermostChannels, err)
 	}
@@ -97,6 +125,10 @@ func (m *mattermostChannelService) mattermostChannelValidations(c context.Contex
 	}
 
 	for _, ch := range channels {
+		if ch.Id != nil && *ch.Id == excludeId {
+			continue
+		}
+
 		if ch.ChannelName != nil && *ch.ChannelName == channelName {
 			return ErrMattermostChannelNameExists
 		}

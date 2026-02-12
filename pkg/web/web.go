@@ -19,7 +19,7 @@ func NewWebEngine(httpConfig config.Http, registry *errmap.Registry) *gin.Engine
 		gin.Recovery(),
 		middleware.CORS(httpConfig.AllowedOrigins),
 		middleware.ErrorHandler(gin.ErrorTypeAny),
+		middleware.InterpretErrors(gin.ErrorTypePrivate, registry),
 	)
-	ginWebEngine.Use(middleware.InterpretErrors(gin.ErrorTypePrivate, registry))
 	return ginWebEngine
 }

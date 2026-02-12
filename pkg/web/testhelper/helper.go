@@ -18,7 +18,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
-	"github.com/greenbone/opensight-notification-service/pkg/web/teamsController/teamsdto"
+	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller/teamsdto"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )

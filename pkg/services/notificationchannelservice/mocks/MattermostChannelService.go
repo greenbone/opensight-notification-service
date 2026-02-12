@@ -39,8 +39,8 @@ func (_m *MattermostChannelService) EXPECT() *MattermostChannelService_Expecter 
 }
 
 // CreateMattermostChannel provides a mock function for the type MattermostChannelService
-func (_mock *MattermostChannelService) CreateMattermostChannel(c context.Context, channel mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error) {
-	ret := _mock.Called(c, channel)
+func (_mock *MattermostChannelService) CreateMattermostChannel(ctx context.Context, channel mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error) {
+	ret := _mock.Called(ctx, channel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateMattermostChannel")
@@ -49,15 +49,15 @@ func (_mock *MattermostChannelService) CreateMattermostChannel(c context.Context
 	var r0 mattermostdto.MattermostNotificationChannelResponse
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error)); ok {
-		return returnFunc(c, channel)
+		return returnFunc(ctx, channel)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, mattermostdto.MattermostNotificationChannelRequest) mattermostdto.MattermostNotificationChannelResponse); ok {
-		r0 = returnFunc(c, channel)
+		r0 = returnFunc(ctx, channel)
 	} else {
 		r0 = ret.Get(0).(mattermostdto.MattermostNotificationChannelResponse)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, mattermostdto.MattermostNotificationChannelRequest) error); ok {
-		r1 = returnFunc(c, channel)
+		r1 = returnFunc(ctx, channel)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -70,13 +70,13 @@ type MattermostChannelService_CreateMattermostChannel_Call struct {
 }
 
 // CreateMattermostChannel is a helper method to define mock.On call
-//   - c context.Context
+//   - ctx context.Context
 //   - channel mattermostdto.MattermostNotificationChannelRequest
-func (_e *MattermostChannelService_Expecter) CreateMattermostChannel(c interface{}, channel interface{}) *MattermostChannelService_CreateMattermostChannel_Call {
-	return &MattermostChannelService_CreateMattermostChannel_Call{Call: _e.mock.On("CreateMattermostChannel", c, channel)}
+func (_e *MattermostChannelService_Expecter) CreateMattermostChannel(ctx interface{}, channel interface{}) *MattermostChannelService_CreateMattermostChannel_Call {
+	return &MattermostChannelService_CreateMattermostChannel_Call{Call: _e.mock.On("CreateMattermostChannel", ctx, channel)}
 }
 
-func (_c *MattermostChannelService_CreateMattermostChannel_Call) Run(run func(c context.Context, channel mattermostdto.MattermostNotificationChannelRequest)) *MattermostChannelService_CreateMattermostChannel_Call {
+func (_c *MattermostChannelService_CreateMattermostChannel_Call) Run(run func(ctx context.Context, channel mattermostdto.MattermostNotificationChannelRequest)) *MattermostChannelService_CreateMattermostChannel_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -99,7 +99,7 @@ func (_c *MattermostChannelService_CreateMattermostChannel_Call) Return(mattermo
 	return _c
 }
 
-func (_c *MattermostChannelService_CreateMattermostChannel_Call) RunAndReturn(run func(c context.Context, channel mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error)) *MattermostChannelService_CreateMattermostChannel_Call {
+func (_c *MattermostChannelService_CreateMattermostChannel_Call) RunAndReturn(run func(ctx context.Context, channel mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error)) *MattermostChannelService_CreateMattermostChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -151,6 +151,78 @@ func (_c *MattermostChannelService_SendMattermostTestMessage_Call) Return(err er
 }
 
 func (_c *MattermostChannelService_SendMattermostTestMessage_Call) RunAndReturn(run func(webhookUrl string) error) *MattermostChannelService_SendMattermostTestMessage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateMattermostChannel provides a mock function for the type MattermostChannelService
+func (_mock *MattermostChannelService) UpdateMattermostChannel(ctx context.Context, id string, channel mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error) {
+	ret := _mock.Called(ctx, id, channel)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateMattermostChannel")
+	}
+
+	var r0 mattermostdto.MattermostNotificationChannelResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error)); ok {
+		return returnFunc(ctx, id, channel)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, mattermostdto.MattermostNotificationChannelRequest) mattermostdto.MattermostNotificationChannelResponse); ok {
+		r0 = returnFunc(ctx, id, channel)
+	} else {
+		r0 = ret.Get(0).(mattermostdto.MattermostNotificationChannelResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, mattermostdto.MattermostNotificationChannelRequest) error); ok {
+		r1 = returnFunc(ctx, id, channel)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MattermostChannelService_UpdateMattermostChannel_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateMattermostChannel'
+type MattermostChannelService_UpdateMattermostChannel_Call struct {
+	*mock.Call
+}
+
+// UpdateMattermostChannel is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - channel mattermostdto.MattermostNotificationChannelRequest
+func (_e *MattermostChannelService_Expecter) UpdateMattermostChannel(ctx interface{}, id interface{}, channel interface{}) *MattermostChannelService_UpdateMattermostChannel_Call {
+	return &MattermostChannelService_UpdateMattermostChannel_Call{Call: _e.mock.On("UpdateMattermostChannel", ctx, id, channel)}
+}
+
+func (_c *MattermostChannelService_UpdateMattermostChannel_Call) Run(run func(ctx context.Context, id string, channel mattermostdto.MattermostNotificationChannelRequest)) *MattermostChannelService_UpdateMattermostChannel_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 mattermostdto.MattermostNotificationChannelRequest
+		if args[2] != nil {
+			arg2 = args[2].(mattermostdto.MattermostNotificationChannelRequest)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MattermostChannelService_UpdateMattermostChannel_Call) Return(mattermostNotificationChannelResponse mattermostdto.MattermostNotificationChannelResponse, err error) *MattermostChannelService_UpdateMattermostChannel_Call {
+	_c.Call.Return(mattermostNotificationChannelResponse, err)
+	return _c
+}
+
+func (_c *MattermostChannelService_UpdateMattermostChannel_Call) RunAndReturn(run func(ctx context.Context, id string, channel mattermostdto.MattermostNotificationChannelRequest) (mattermostdto.MattermostNotificationChannelResponse, error)) *MattermostChannelService_UpdateMattermostChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }
