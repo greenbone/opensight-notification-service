@@ -27,12 +27,13 @@ import (
 
 func getNotification() models.Notification {
 	return models.Notification{
-		Id:        "57fe22b8-89a4-445f-b6c7-ef9ea724ea48",
-		Timestamp: time.Time{}.Format(time.RFC3339Nano),
-		Origin:    "Example Task XY",
-		Title:     "Example Task XY failed",
-		Detail:    "Example Task XY failed because ...",
-		Level:     "error",
+		Id:          "57fe22b8-89a4-445f-b6c7-ef9ea724ea48",
+		Timestamp:   time.Time{}.Format(time.RFC3339Nano),
+		Origin:      "Example Task XY",
+		OriginClass: "serviceab/exampletaskxy",
+		Title:       "Example Task XY failed",
+		Detail:      "Example Task XY failed because ...",
+		Level:       "error",
 	}
 }
 
