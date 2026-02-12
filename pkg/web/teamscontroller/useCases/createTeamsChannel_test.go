@@ -117,7 +117,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 			StatusCode(http.StatusBadRequest).
 			Json(`{
 				"type": "greenbone/generic-error",
-				"title": "Teams channel name already exists."
+				"title": "MS Teams channel name already exists."
 			}`)
 	})
 }

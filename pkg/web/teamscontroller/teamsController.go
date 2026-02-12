@@ -8,6 +8,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/errorResponses"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
+	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
@@ -63,7 +64,7 @@ func (tc *TeamsController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrTeamsChannelLimitReached,
 		http.StatusUnprocessableEntity,
-		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrTeamsChannelLimitReached.Error()),
+		errorResponses.NewErrorGenericResponse(translation.TeamsChannelLimitReached),
 	)
 	r.Register(
 		notificationchannelservice.ErrListTeamsChannels,
@@ -73,7 +74,7 @@ func (tc *TeamsController) configureMappings(r *errmap.Registry) {
 	r.Register(
 		notificationchannelservice.ErrTeamsChannelNameExists,
 		http.StatusBadRequest,
-		errorResponses.NewErrorGenericResponse(notificationchannelservice.ErrTeamsChannelNameExists.Error()),
+		errorResponses.NewErrorGenericResponse(translation.TeamsChannelNameAlreadyExist),
 	)
 }
 
