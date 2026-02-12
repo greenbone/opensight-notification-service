@@ -46,7 +46,7 @@ func AddNotificationController(
 // CreateNotification
 //
 //	@Summary		Create Notification
-//	@Description	Create a new notification
+//	@Description	Create a new notification. It will always be stored by the notification service and it will possibly also trigger actions like sending mails, depending on the cofigured rules.
 //	@Tags			notification
 //	@Accept			json
 //	@Produce		json
@@ -113,8 +113,8 @@ func (c *NotificationController) ListNotifications(gc *gin.Context) {
 //	@Tags			notification
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Success		200				{object}	query.ResponseWithMetadata[[]query.FilterOption]
-//	@Header			all				{string}	api-version	"API version"
+//	@Success		200	{object}	query.ResponseWithMetadata[[]query.FilterOption]
+//	@Header			all	{string}	api-version	"API version"
 //	@Router			/notifications/options [get]
 func (c *NotificationController) GetOptions(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)

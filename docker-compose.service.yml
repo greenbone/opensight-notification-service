@@ -21,7 +21,7 @@ services:
     ports:
       - 8085:8085
     networks:
-      - notification-service-net
+      - opensight-notification-net
     depends_on: 
       postgres:
         condition: service_healthy

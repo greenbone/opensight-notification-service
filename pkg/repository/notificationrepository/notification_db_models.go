@@ -14,19 +14,20 @@ import (
 
 const (
 	notificationsTable               = "notification_service.notifications"
-	createNotificationQuery          = `INSERT INTO ` + notificationsTable + ` (origin, origin_uri, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_uri, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
+	createNotificationQuery          = `INSERT INTO ` + notificationsTable + ` (origin, origin_class, origin_resource_id, timestamp, title, detail, level, custom_fields) VALUES (:origin, :origin_class, :origin_resource_id, :timestamp, :title, :detail, :level, :custom_fields) RETURNING *`
 	unfilteredListNotificationsQuery = `SELECT * FROM ` + notificationsTable
 )
 
 type notificationRow struct {
-	Id           string  `db:"id"`
-	Origin       string  `db:"origin"`
-	OriginUri    *string `db:"origin_uri"`
-	Timestamp    string  `db:"timestamp"`
-	Title        string  `db:"title"`
-	Detail       string  `db:"detail"`
-	Level        string  `db:"level"`
-	CustomFields []byte  `db:"custom_fields"`
+	Id               string  `db:"id"`
+	Origin           string  `db:"origin"`
+	OriginClass      string  `db:"origin_class"`
+	OriginResourceID *string `db:"origin_resource_id"`
+	Timestamp        string  `db:"timestamp"`
+	Title            string  `db:"title"`
+	Detail           string  `db:"detail"`
+	Level            string  `db:"level"`
+	CustomFields     []byte  `db:"custom_fields"`
 }
 
 func notificationFieldMapping() map[string]string {
@@ -48,14 +49,15 @@ func toNotificationRow(n models.Notification) (notificationRow, error) {
 	}
 
 	notificationRow := notificationRow{
-		Id:           n.Id,
-		Origin:       n.Origin,
-		OriginUri:    &n.OriginUri,
-		Timestamp:    n.Timestamp,
-		Title:        n.Title,
-		Detail:       n.Detail,
-		Level:        n.Level,
-		CustomFields: customFieldsSerialized,
+		Id:               n.Id,
+		Origin:           n.Origin,
+		OriginClass:      n.OriginClass,
+		OriginResourceID: &n.OriginResourceID,
+		Timestamp:        n.Timestamp,
+		Title:            n.Title,
+		Detail:           n.Detail,
+		Level:            n.Level,
+		CustomFields:     customFieldsSerialized,
 	}
 
 	return notificationRow, nil
@@ -65,13 +67,14 @@ func (n *notificationRow) ToNotificationModel() (models.Notification, error) {
 	var empty models.Notification
 
 	notification := models.Notification{
-		Id:        n.Id,
-		Origin:    n.Origin,
-		OriginUri: helper.SafeDereference(n.OriginUri),
-		Timestamp: n.Timestamp,
-		Title:     n.Title,
-		Detail:    n.Detail,
-		Level:     n.Level,
+		Id:               n.Id,
+		Origin:           n.Origin,
+		OriginClass:      n.OriginClass,
+		OriginResourceID: helper.SafeDereference(n.OriginResourceID),
+		Timestamp:        n.Timestamp,
+		Title:            n.Title,
+		Detail:           n.Detail,
+		Level:            n.Level,
 		// CustomFields is set below
 	}
 
