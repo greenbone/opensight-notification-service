@@ -2,10 +2,12 @@ package notificationrepository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/security"
 	"github.com/jmoiron/sqlx"
@@ -16,6 +18,10 @@ type NotificationChannelRepository interface {
 	CreateNotificationChannel(
 		ctx context.Context,
 		channelIn models.NotificationChannel,
+	) (models.NotificationChannel, error)
+	GetNotificationChannelById(
+		ctx context.Context,
+		id string,
 	) (models.NotificationChannel, error)
 	GetNotificationChannelByIdAndType(
 		ctx context.Context,
@@ -132,6 +138,23 @@ func (r *notificationChannelRepository) CreateNotificationChannel(
 	return r.decrypt(row).ToModel(), nil
 }
 
+func (r *notificationChannelRepository) GetNotificationChannelById(
+	ctx context.Context,
+	id string,
+) (models.NotificationChannel, error) {
+	query := `SELECT * FROM notification_service.notification_channel WHERE id = $1`
+
+	var row notificationChannelRow
+	if err := r.client.GetContext(ctx, &row, query, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.NotificationChannel{}, errs.ErrItemNotFound
+		}
+		return models.NotificationChannel{}, fmt.Errorf("select by id failed: %w", err)
+	}
+
+	return r.decrypt(row).ToModel(), nil
+}
+
 func (r *notificationChannelRepository) GetNotificationChannelByIdAndType(
 	ctx context.Context,
 	id string,
@@ -141,6 +164,9 @@ func (r *notificationChannelRepository) GetNotificationChannelByIdAndType(
 
 	var row notificationChannelRow
 	if err := r.client.GetContext(ctx, &row, query, id, channelType); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.NotificationChannel{}, errs.ErrItemNotFound
+		}
 		return models.NotificationChannel{}, fmt.Errorf("select by id failed: %w", err)
 	}
 

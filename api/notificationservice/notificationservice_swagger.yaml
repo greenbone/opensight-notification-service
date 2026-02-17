@@ -222,6 +222,30 @@ definitions:
       webhookUrl:
         type: string
     type: object
+  models.Action:
+    properties:
+      channel:
+        $ref: '#/definitions/models.ChannelReference'
+      recipient:
+        description: specific recipient if supported/required by the channel, e.g.
+          for mail a comma separated list of mail adresses
+        type: string
+    required:
+    - channel
+    type: object
+  models.ChannelReference:
+    properties:
+      id:
+        type: string
+      name:
+        readOnly: true
+        type: string
+      type:
+        readOnly: true
+        type: string
+    required:
+    - id
+    type: object
   models.Notification:
     properties:
       customFields:
@@ -278,6 +302,51 @@ definitions:
     required:
     - class
     - name
+    type: object
+  models.OriginReference:
+    properties:
+      class:
+        type: string
+      name:
+        readOnly: true
+        type: string
+      serviceID:
+        readOnly: true
+        type: string
+    required:
+    - class
+    type: object
+  models.Rule:
+    properties:
+      action:
+        $ref: '#/definitions/models.Action'
+      active:
+        type: boolean
+      id:
+        readOnly: true
+        type: string
+      name:
+        type: string
+      trigger:
+        $ref: '#/definitions/models.Trigger'
+    required:
+    - action
+    - name
+    - trigger
+    type: object
+  models.Trigger:
+    properties:
+      levels:
+        items:
+          type: string
+        type: array
+      origins:
+        items:
+          $ref: '#/definitions/models.OriginReference'
+        type: array
+    required:
+    - levels
+    - origins
     type: object
   paging.Request:
     properties:
@@ -1053,6 +1122,175 @@ paths:
       summary: Register Origins
       tags:
       - origin
+  /rules:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of rules matching the provided filters.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            items:
+              $ref: '#/definitions/models.Rule'
+            type: array
+      security:
+      - KeycloakAuth: []
+      summary: List Rules
+      tags:
+      - rule
+    post:
+      consumes:
+      - application/json
+      description: Create a new rule. A rule determines on which conditions which
+        action is triggered.
+      parameters:
+      - description: new rule
+        in: body
+        name: rule
+        required: true
+        schema:
+          $ref: '#/definitions/models.Rule'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/models.Rule'
+        "400":
+          description: Bad Request
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth: []
+      summary: Create Rule
+      tags:
+      - rule
+  /rules/{id}:
+    delete:
+      description: Delete a rule.
+      parameters:
+      - description: unique ID of the rule
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: deleted
+          headers:
+            api-version:
+              description: API version
+              type: string
+      security:
+      - KeycloakAuth: []
+      summary: Delete Rule
+      tags:
+      - rule
+    put:
+      consumes:
+      - application/json
+      description: Update/replace a rule.
+      parameters:
+      - description: unique ID of the rule
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: updated rule
+        in: body
+        name: rule
+        required: true
+        schema:
+          $ref: '#/definitions/models.Rule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/models.Rule'
+        "400":
+          description: Bad Request
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+        "404":
+          description: Not Found
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth: []
+      summary: Update Rule
+      tags:
+      - rule
+  /rulse/{id}:
+    get:
+      description: Returns the rule
+      parameters:
+      - description: unique id of the rule
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/models.Rule'
+        "404":
+          description: Not Found
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
+      security:
+      - KeycloakAuth: []
+      summary: Get a rule by id
+      tags:
+      - rule
 securityDefinitions:
   KeycloakAuth:
     authorizationUrl: '{{.KeycloakAuthUrl}}/realms/{{.KeycloakRealm}}/protocol/openid-connect/auth'

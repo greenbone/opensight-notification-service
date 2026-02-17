@@ -3,8 +3,8 @@ package security
 import (
 	"testing"
 
-	"github.com/go-openapi/testify/v2/assert"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSaltManager_UpdateKeys(t *testing.T) {
