@@ -322,6 +322,12 @@ definitions:
         $ref: '#/definitions/models.Action'
       active:
         type: boolean
+      errors:
+        allOf:
+        - $ref: '#/definitions/models.ValidationErrors'
+        description: populated if the rule is invalid, this can be useful to highlight
+          rules which need action from the user.
+        readOnly: true
       id:
         readOnly: true
         type: string
@@ -347,6 +353,10 @@ definitions:
     required:
     - levels
     - origins
+    type: object
+  models.ValidationErrors:
+    additionalProperties:
+      type: string
     type: object
   paging.Request:
     properties:

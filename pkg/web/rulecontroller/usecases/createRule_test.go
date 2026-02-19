@@ -15,6 +15,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/originrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/repository/rulerepository"
 	"github.com/greenbone/opensight-notification-service/pkg/services/ruleservice"
@@ -32,6 +33,15 @@ import (
 // IMPORTANT: If you run tests in parallel, you must not pass the same instance of a slice in multiple tests
 // as they are modified by this function.
 func setupTestEnvironment(t *testing.T, origins []entities.Origin, channels []models.NotificationChannel, ruleLimit int) *gin.Engine {
+	router, _, _ := setupTestEnvironmentWithRepoReturn(t, origins, channels, ruleLimit)
+	return router
+}
+
+func setupTestEnvironmentWithRepoReturn(t *testing.T, origins []entities.Origin, channels []models.NotificationChannel, ruleLimit int) (
+	*gin.Engine,
+	notificationrepository.NotificationChannelRepository,
+	*originrepository.OriginRepository,
+) {
 	ctx := context.Background()
 
 	// create notification channels
@@ -66,7 +76,7 @@ func setupTestEnvironment(t *testing.T, origins []entities.Origin, channels []mo
 
 	rulecontroller.NewRuleController(router, ruleService, authMiddleware, registry)
 
-	return router
+	return router, notificationChannelRepo, originRepo
 }
 
 func Test_CreateRule(t *testing.T) {

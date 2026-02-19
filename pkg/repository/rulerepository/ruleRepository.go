@@ -17,12 +17,10 @@ import (
 	"github.com/lib/pq"
 )
 
-const pgForeignKeyViolationCode = "23503"
 const pgErrorUniqueViolationCode = "23505"
 
 var ErrInvalidID error = errors.New("id is not a valid uuid-v4")
 var ErrOriginsNotFound error = errors.New("one or more origins do not exist")
-var ErrChannelNotFound error = errors.New("channel does not exist")
 var ErrDuplicateRuleName error = errors.New("rule with the same name already exists")
 
 type RuleRepository struct {
@@ -181,10 +179,7 @@ func postgresErrorHandling(err error) error {
 	}
 
 	if pgErr, ok := errors.AsType[*pq.Error](err); ok {
-		switch errCode := pgErr.Code; errCode {
-		case pgForeignKeyViolationCode:
-			return ErrChannelNotFound
-		case pgErrorUniqueViolationCode:
+		if pgErr.Code == pgErrorUniqueViolationCode {
 			return ErrDuplicateRuleName
 		}
 	}

@@ -1739,6 +1739,15 @@ const docTemplatenotificationservice = `{
                 "active": {
                     "type": "boolean"
                 },
+                "errors": {
+                    "description": "populated if the rule is invalid, this can be useful to highlight rules which need action from the user.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ValidationErrors"
+                        }
+                    ],
+                    "readOnly": true
+                },
                 "id": {
                     "type": "string",
                     "readOnly": true
@@ -1770,6 +1779,12 @@ const docTemplatenotificationservice = `{
                         "$ref": "#/definitions/models.OriginReference"
                     }
                 }
+            }
+        },
+        "models.ValidationErrors": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
             }
         },
         "paging.Request": {
