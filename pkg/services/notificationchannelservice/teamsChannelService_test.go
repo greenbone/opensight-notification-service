@@ -46,12 +46,12 @@ func TestSendTeamsTestMessage_ErrorOnTransport(t *testing.T) {
 	svc := &teamsChannelService{
 		transport: &http.Client{
 			Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-				return nil, assert.AnError
+				return nil, ErrTeamsMessageDelivery
 			})},
 	}
 
 	err := svc.SendTeamsTestMessage("https://example.com:443/workflows/01fa130f2e134641b2cf39d8a710a002")
-	require.ErrorContains(t, err, "can not send teams test message")
+	require.ErrorContains(t, err, "teams message could not be send")
 }
 
 func TestTeamsChannelLimit(t *testing.T) {

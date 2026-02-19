@@ -60,7 +60,10 @@ func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) 
 
 	resp, err := m.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return fmt.Errorf("can not send mattermost test message: %w", err)
+		if errors.Is(err, context.DeadlineExceeded) {
+			return fmt.Errorf("%w: timeout", ErrMattermostMassageDelivery)
+		}
+		return fmt.Errorf("%w: %s", ErrMattermostMassageDelivery, err.Error())
 	}
 
 	defer func() {
