@@ -40,12 +40,12 @@ func TestSendMattermostTestMessage_ErrorOnTransport(t *testing.T) {
 	svc := &mattermostChannelService{
 		transport: &http.Client{
 			Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-				return nil, assert.AnError
+				return nil, ErrMattermostMassageDelivery
 			})},
 	}
 
 	err := svc.SendMattermostTestMessage("https://example.com:443/workflows/01fa130f2e134641b2cf39d8a710a002")
-	require.ErrorContains(t, err, "can not send mattermost test message")
+	require.ErrorContains(t, err, "mattermost message could not be send")
 }
 
 func TestMattermostChannelLimit(t *testing.T) {
