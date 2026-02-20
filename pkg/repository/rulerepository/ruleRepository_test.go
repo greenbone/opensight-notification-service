@@ -75,7 +75,6 @@ func Test_GetRule_NotFound(t *testing.T) {
 
 func Test_CreateRule_GetRule(t *testing.T) {
 	t.Parallel()
-
 	tests := map[string]struct {
 		setupData func(t *testing.T, db *sqlx.DB) (channelID string)
 		rule      models.Rule
