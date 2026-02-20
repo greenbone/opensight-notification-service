@@ -136,7 +136,7 @@ func Test_GetRule(t *testing.T) {
 				"active": false,
 				"errors": {
 					"trigger.origins": "At least one origin is required.",
-					"trigger.action.channel.id": "A channel is required."
+					"action.channel.id": "A channel is required."
 				}
 			}`,
 				map[string]any{

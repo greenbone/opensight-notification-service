@@ -66,7 +66,7 @@ func setupTestEnvironmentWithRepoReturn(t *testing.T, origins []entities.Origin,
 
 	ruleRepo, err := rulerepository.NewRuleRepository(db)
 	require.NoError(t, err)
-	ruleService := ruleservice.NewRuleService(ruleRepo, notificationChannelRepo, ruleLimit)
+	ruleService := ruleservice.NewRuleService(ruleRepo, notificationChannelRepo, originRepo, ruleLimit)
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
@@ -160,7 +160,7 @@ func Test_CreateRule(t *testing.T) {
 					"name": "A name is required.",
 					"trigger.origins": "At least one origin is required.",
 					"trigger.levels": "At least one level is required.",
-					"trigger.action.channel.id": "A channel is required."
+					"action.channel.id": "A channel is required."
 				}
 			}`)
 	})
@@ -192,7 +192,7 @@ func Test_CreateRule(t *testing.T) {
 					"name": "A name is required.",
 					"trigger.origins[0].class": "An origin class is required.",
 					"trigger.levels[0]": "A level is required.",
-					"trigger.action.channel.id": "Channel ID must be a valid UUIDv4."
+					"action.channel.id": "Channel ID must be a valid UUIDv4."
 				}
 			}`)
 	})
@@ -320,7 +320,7 @@ func Test_CreateRule(t *testing.T) {
 				"type": "greenbone/validation-error",
 				"title": "",
 				"errors": {
-					"trigger.action.channel.id": "Channel does not exist."
+					"action.channel.id": "Channel does not exist."
 				}
 			}`)
 	})

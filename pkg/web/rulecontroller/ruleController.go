@@ -81,7 +81,7 @@ func (c *RuleController) configureMappings(r *errmap.Registry) {
 		ruleservice.ErrChannelNotFound,
 		http.StatusBadRequest,
 		errorResponses.NewErrorValidationResponse("", "",
-			map[string]string{"trigger.action.channel.id": translation.ChannelNotFound},
+			map[string]string{"action.channel.id": translation.ChannelNotFound},
 		),
 	)
 	r.Register(
@@ -90,7 +90,7 @@ func (c *RuleController) configureMappings(r *errmap.Registry) {
 		errorResponses.NewErrorValidationResponse(translation.InvalidID, "", nil),
 	)
 	r.Register(
-		rulerepository.ErrOriginsNotFound,
+		ruleservice.ErrOriginsNotFound,
 		http.StatusBadRequest,
 		errorResponses.NewErrorValidationResponse("", "",
 			map[string]string{"trigger.origins": translation.OriginsNotFound},

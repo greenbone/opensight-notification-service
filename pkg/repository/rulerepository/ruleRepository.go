@@ -20,7 +20,6 @@ import (
 const pgErrorUniqueViolationCode = "23505"
 
 var ErrInvalidID error = errors.New("id is not a valid uuid-v4")
-var ErrOriginsNotFound error = errors.New("one or more origins do not exist")
 var ErrDuplicateRuleName error = errors.New("rule with the same name already exists")
 
 type RuleRepository struct {
@@ -75,12 +74,6 @@ func (r *RuleRepository) List(ctx context.Context) ([]models.Rule, error) {
 func (r *RuleRepository) Create(ctx context.Context, rule models.Rule) (models.Rule, error) {
 	rowIn := toRuleRow(rule)
 
-	// Validate that all origins exist (we don't have foreign key constraints here)
-	err := r.checkOriginsExist(ctx, rowIn.TriggerOrigins)
-	if err != nil {
-		return models.Rule{}, err
-	}
-
 	createStatement, err := r.client.PrepareNamedContext(ctx, createRuleQuery)
 	if err != nil {
 		return models.Rule{}, fmt.Errorf("could not prepare sql statement: %w", err)
@@ -103,11 +96,6 @@ func (r *RuleRepository) Update(ctx context.Context, id string, rule models.Rule
 	}
 
 	rowIn := toRuleRow(rule)
-
-	err = r.checkOriginsExist(ctx, rowIn.TriggerOrigins)
-	if err != nil {
-		return models.Rule{}, err
-	}
 
 	updateStatement, err := r.client.PrepareNamedContext(ctx, updateRuleQuery)
 	if err != nil {
@@ -134,28 +122,6 @@ func (r *RuleRepository) Delete(ctx context.Context, id string) error {
 	_, err = r.client.ExecContext(ctx, deleteQuery, id)
 	if err != nil {
 		return fmt.Errorf("delete failed: %w", err)
-	}
-
-	return nil
-}
-
-func (r *RuleRepository) checkOriginsExist(ctx context.Context, origins []string) error {
-	if len(origins) == 0 {
-		return nil
-	}
-
-	var count int
-	err := r.client.GetContext(
-		ctx,
-		&count,
-		`SELECT COUNT(DISTINCT class) FROM notification_service.origins WHERE class = ANY($1)`,
-		pq.Array(origins),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to validate origins: %w", err)
-	}
-	if count != len(origins) {
-		return ErrOriginsNotFound
 	}
 
 	return nil

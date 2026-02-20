@@ -83,11 +83,11 @@ func (r *Rule) Validate() ValidationErrors {
 	}
 
 	if r.Action.Channel.ID == "" {
-		errs["trigger.action.channel.id"] = translation.ChannelIsRequired
+		errs["action.channel.id"] = translation.ChannelIsRequired
 	} else {
 		err := validation.Validate.Var(r.Action.Channel.ID, "uuid4")
 		if err != nil {
-			errs["trigger.action.channel.id"] = translation.InvalidChannelID
+			errs["action.channel.id"] = translation.InvalidChannelID
 		}
 	}
 

@@ -206,7 +206,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{
-						ID:   "",
+						ID:   "set below in test",
 						Name: "test-channel",
 						Type: "mattermost",
 					},
@@ -214,9 +214,9 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				Active: false,
 			},
 		},
-		"create rule with non-existent origin should fail": {
+		"create rule with non-existent origins, but returns empty origins": {
 			setupData: func(t *testing.T, db *sqlx.DB) string {
-				channelID := createTestChannel(t, db, "test-channel", "mail")
+				channelID := createTestChannel(t, db, "test-channel", "mattermost")
 				return channelID
 			},
 			rule: models.Rule{
@@ -230,7 +230,17 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				},
 				Active: true,
 			},
-			wantErr: ErrOriginsNotFound,
+			wantRule: models.Rule{
+				Name: "Invalid Rule",
+				Trigger: models.Trigger{
+					Levels:  []string{"medium"},
+					Origins: []models.OriginReference{}, // origins not found, so empty origins expected
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "set below in test", Name: "test-channel", Type: "mattermost"},
+				},
+				Active: true,
+			},
 		},
 		"create rule with non-existent channel works, but returns an empty channel ID": {
 			setupData: func(t *testing.T, db *sqlx.DB) string {
@@ -463,7 +473,7 @@ func Test_UpdateRule(t *testing.T) {
 				Active: true,
 			},
 		},
-		"update with non-existent origin should fail": {
+		"update with non-existent origin works, but returns empty origins": {
 			setupData: setupData,
 			rule: models.Rule{
 				Name: "Updated Rule",
@@ -475,7 +485,16 @@ func Test_UpdateRule(t *testing.T) {
 					Channel: models.ChannelReference{ID: "set below in test"},
 				},
 			},
-			wantErr: ErrOriginsNotFound,
+			wantRule: models.Rule{
+				Name: "Updated Rule",
+				Trigger: models.Trigger{
+					Levels:  []string{"high"},
+					Origins: []models.OriginReference{}, // origins not found, so empty origins expected
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "set below in test", Name: channel2.Name, Type: channel2.Type},
+				},
+			},
 		},
 		"update rule with non-existent channel works, but returns an empty channel ID": {
 			setupData: func(t *testing.T, db *sqlx.DB, repo *RuleRepository) (channelID string, ruleID string) {
