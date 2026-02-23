@@ -5,6 +5,7 @@
 package usecases
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -17,7 +18,10 @@ import (
 )
 
 func Test_DeleteRule(t *testing.T) {
+	t.Parallel()
+
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{
 			{Name: "origin0", Class: "serviceA/origin0"},
@@ -27,18 +31,18 @@ func Test_DeleteRule(t *testing.T) {
 		}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		ruleID := createRule(t, router, models.Rule{
-			Name: "Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		})
+				"action": {
+					"channel": {
+						"id": "%s"
+					}
+				}
+			}`, *channels[0].Id))
 
 		httpassert.New(t, router).Deletef("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -53,6 +57,7 @@ func Test_DeleteRule(t *testing.T) {
 	})
 
 	t.Run("deleting non-existing rule is a no-op", func(t *testing.T) {
+		t.Parallel()
 		router := setupTestEnvironment(t, nil, nil, 10)
 
 		httpassert.New(t, router).Deletef("/rules/%s", uuid.NewString()).
@@ -62,6 +67,7 @@ func Test_DeleteRule(t *testing.T) {
 	})
 
 	t.Run("failure due to invalid id", func(t *testing.T) {
+		t.Parallel()
 		ruleLimit := 10
 		router := setupTestEnvironment(t, nil, nil, ruleLimit)
 

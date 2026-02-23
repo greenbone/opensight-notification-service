@@ -5,6 +5,7 @@
 package usecases
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -15,14 +16,13 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func createRule(t *testing.T, router *gin.Engine, rule models.Rule) (ruleID string) {
+func createRule(t *testing.T, router *gin.Engine, ruleJSON string) (ruleID string) {
 	httpassert.New(t, router).Post("/rules").
 		AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-		JsonContentObject(rule).
+		JsonContent(ruleJSON).
 		Expect().
 		StatusCode(http.StatusCreated).
 		JsonPath("$.id", httpassert.ExtractTo(&ruleID))
@@ -31,6 +31,8 @@ func createRule(t *testing.T, router *gin.Engine, rule models.Rule) (ruleID stri
 }
 
 func Test_UpdateRule(t *testing.T) {
+	t.Parallel()
+
 	t.Run("update all values", func(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
@@ -44,63 +46,68 @@ func Test_UpdateRule(t *testing.T) {
 		}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		originalRule := models.Rule{
-			Name: "Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
+				"action": {
+					"channel": { "id": "%s" }
+				}
+			}`, *channels[0].Id))
 
-		updatedRule := models.Rule{
-			Name: "Updated Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"urgent"},
-				Origins: []models.OriginReference{{Name: "read-only,ignored", Class: "serviceA/origin1", ServiceID: "read-only,ignored"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[1].Id,
-				},
-				Recipient: "test@example.com",
-			},
-			Active: true,
-		}
-		wantUpdatedRule := models.Rule{
-			Name: "Updated Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"urgent"},
-				Origins: []models.OriginReference{{Name: "origin1", Class: "serviceA/origin1", ServiceID: origins[1].ServiceID}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID:   *channels[1].Id,
-					Name: "channel-name-1",
-					Type: "mail",
-				},
-				Recipient: "test@example.com",
-			},
-			Active: true,
-		}
-
-		ruleID := createRule(t, router, originalRule)
-
-		resp := httpassert.New(t, router).Putf("/rules/%s", ruleID).
+		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(fmt.Sprintf(`{
+				"name": "Updated Test Rule",
+				"trigger": {
+					"levels": ["urgent"],
+					"origins": [{
+						"name": "read-only,ignored",
+						"class": "serviceA/origin1",
+						"serviceID": "read-only,ignored"
+					}]
+				},
+				"action": {
+					"channel": {
+						"id": "%s",
+						"name": "read-only,ignored",
+						"type": "read-only,ignored"
+					},
+					"recipient": "test@example.org"
+				},
+				"active": true
+			}`, *channels[1].Id)).
 			Expect().
-			StatusCode(http.StatusOK)
-		var gotUpdatedRule models.Rule
-		resp.GetJsonBodyObject(&gotUpdatedRule)
-
-		assert.NotEmpty(t, gotUpdatedRule.ID)
-		gotUpdatedRule.ID = ""
-		assert.Equal(t, wantUpdatedRule, gotUpdatedRule)
+			StatusCode(http.StatusOK).
+			JsonTemplate(`{
+				"id": "<value>",
+				"name": "Updated Test Rule",
+				"trigger": {
+					"levels": ["urgent"],
+					"origins": [{
+						"name": "origin1",
+						"class": "serviceA/origin1",
+						"serviceID": "<value>"
+					}]
+				},
+				"action": {
+					"channel": {
+						"id": "<value>",
+						"name": "channel-name-1",
+						"type": "mail"
+					},
+					"recipient": "test@example.org"
+				},
+				"active": true
+			}`,
+				map[string]any{
+					"$.id":                           ruleID,
+					"$.trigger.origins[0].serviceID": origins[1].ServiceID,
+					"$.action.channel.id":            *channels[1].Id,
+				},
+			)
 	})
 
 	t.Run("failure due to missing required fields", func(t *testing.T) {
@@ -110,26 +117,20 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		originalRule := models.Rule{
-			Name: "Test Rule",
-
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
-		updatedRule := models.Rule{} // missing required fields
-
-		ruleID := createRule(t, router, originalRule)
+				"action": {
+					"channel": { "id": "%s" }
+				}
+		}`, *channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(`{}`). // missing required fields
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -151,37 +152,28 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		originalRule := models.Rule{
-			Name: "Test Rule",
-
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
-
-		updatedRule := models.Rule{
-			Trigger: models.Trigger{
-				Origins: []models.OriginReference{{}},
-				Levels:  []string{""},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: "invalid-uuid",
-				},
-			},
-		}
-
-		ruleID := createRule(t, router, originalRule)
+				"action": {
+					"channel": { "id": "%s" }
+				}
+		}`, *channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(`{
+				"trigger": {
+					"levels": [""],
+					"origins": [{}]
+				},
+				"action": {
+					"channel": {"id": "invalid-uuid"}
+				}	
+			}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -203,35 +195,31 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("mail-1"), ChannelType: "mail"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		originalRule := models.Rule{
-			Name: "Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel:   models.ChannelReference{ID: *channels[0].Id},
-				Recipient: "a@example.com",
-			},
-		}
-
-		updatedRule := models.Rule{
-			Name: "Test Rule Updated",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel:   models.ChannelReference{ID: *channels[0].Id},
-				Recipient: "", // missing but required for mail channel
-			},
-		}
-
-		ruleID := createRule(t, router, originalRule)
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"},
+					"recipient": "a@example.com"
+				}
+		}`, *channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(fmt.Sprintf(`{
+				"name": "Test Rule Updated",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"},
+					"recipient": ""
+				}
+			}`, *channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -250,34 +238,30 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("mattermost-1"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		originalRule := models.Rule{
-			Name: "Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{ID: *channels[0].Id},
-			},
-		}
-
-		updatedRule := models.Rule{
-			Name: "Test Rule Updated",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel:   models.ChannelReference{ID: *channels[0].Id},
-				Recipient: "not@supported.com",
-			},
-		}
-
-		ruleID := createRule(t, router, originalRule)
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"}
+				}
+		}`, *channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(fmt.Sprintf(`{
+				"name": "Test Rule Updated",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"},
+					"recipient": "not@supported.com"
+				}
+			}`, *channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -296,37 +280,29 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		originalRule := models.Rule{
-			Name: "Test Rule",
-
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
-		updatedRule := models.Rule{
-			Name: "Updated Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "non-existent"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
-				},
-			},
-		}
-
-		ruleID := createRule(t, router, originalRule)
+				"action": {
+					"channel": {"id": "%s"}
+				}
+		}`, *channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(fmt.Sprintf(`{
+				"name": "Updated Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "non-existent" }]
+				},
+				"action": {
+					"channel": {"id": "%s"}
+				}
+			}`, *channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -345,37 +321,29 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		originalRule := models.Rule{
-			Name: "Test Rule",
-
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
-		updatedRule := models.Rule{
-			Name: "Updated Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: uuid.NewString(), // non-existing channel ID
-				},
-			},
-		}
-
-		ruleID := createRule(t, router, originalRule)
+				"action": {
+					"channel": { "id": "%s" }
+				}
+		}`, *channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(`{
+				"name": "Updated Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "839bbc13-24ec-4079-be42-63af9a9b66ac"}
+				}
+			}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -395,51 +363,40 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		otherUntouchedRule := models.Rule{
-			Name: "Other Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		createRule(t, router, fmt.Sprintf(`{
+				"name": "Other Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
-		originalRule := models.Rule{
-			Name: "Test Rule",
+				"action": {
+					"channel": {"id": "%s"}
+				}
+		}`, *channels[0].Id))
 
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
-		updatedRule := models.Rule{
-			Name: "Other Rule", // name already used by other rule
-
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
-				},
-			},
-		}
-
-		createRule(t, router, otherUntouchedRule)
-		ruleID := createRule(t, router, originalRule)
+				"action": {
+					"channel": {"id": "%s"}
+				}
+		}`, *channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updatedRule).
+			JsonContent(fmt.Sprintf(`{
+				"name": "Other Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"}
+				}
+			}`, *channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -458,23 +415,19 @@ func Test_UpdateRule(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		updateRule := models.Rule{
-			Name: "Test Rule",
-
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
-				},
-			},
-		}
-
 		httpassert.New(t, router).Putf("/rules/%s", uuid.New().String()).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
-			JsonContentObject(updateRule).
+			JsonContent(fmt.Sprintf(`{
+				"name": "Test Rule",
+				
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"}
+				}
+			}`, *channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusNotFound)
 	})

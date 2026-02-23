@@ -5,6 +5,7 @@
 package usecases
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -13,10 +14,11 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_ListRules(t *testing.T) {
+	t.Parallel()
+
 	t.Run("get empty list of rules", func(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
@@ -36,75 +38,88 @@ func Test_ListRules(t *testing.T) {
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		rule1 := models.Rule{
-			Name: "Rule A",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+		createRule(t, router, fmt.Sprintf(`{
+				"name": "Rule B",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
 				},
-			},
-		}
-		rule2 := models.Rule{
-			Name: "Rule B",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
-				},
-			},
-		}
-		wantRule1 := models.Rule{
-			Name: "Rule A",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Name: "origin0", Class: "serviceA/origin0", ServiceID: origins[0].ServiceID}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID:   *channels[0].Id,
-					Name: "channel-name",
-					Type: "mattermost",
-				},
-			},
-		}
-		wantRule2 := models.Rule{
-			Name: "Rule B",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Name: "origin0", Class: "serviceA/origin0", ServiceID: origins[0].ServiceID}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID:   *channels[0].Id,
-					Name: "channel-name",
-					Type: "mattermost",
-				},
-			},
-		}
+				"action": {
+					"channel": {"id": "%s"}
+				}
+			}`, *channels[0].Id))
 
-		ruleID2 := createRule(t, router, rule2)
-		ruleID1 := createRule(t, router, rule1)
-		// set ids for comparison
-		wantRule1.ID = ruleID1
-		wantRule2.ID = ruleID2
+		createRule(t, router, fmt.Sprintf(`{
+				"name": "Rule A",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"}
+				}
+			}`, *channels[0].Id))
 
-		wantRules := []models.Rule{wantRule1, wantRule2} // alphabetical order by name
-
-		resp := httpassert.New(t, router).Get("/rules").
+		httpassert.New(t, router).Get("/rules").
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			Expect().
-			StatusCode(http.StatusOK)
-
-		var gotRules []models.Rule
-		resp.GetJsonBodyObject(&gotRules)
-
-		assert.Equal(t, wantRules, gotRules)
+			StatusCode(http.StatusOK).
+			JsonPath("$[0].id", httpassert.NotEmpty()).
+			JsonPath("$[1].id", httpassert.NotEmpty()).
+			JsonTemplate(`[
+					{
+						"id": "<value>",
+						"name": "Rule A",
+						"trigger": {
+							"levels": ["info"],
+							"origins": [
+								{ 
+									"name": "origin0", 
+									"class": "serviceA/origin0", 
+									"serviceID": "<value>" 
+								}
+							]
+						},
+						"action": {
+							"channel": {
+								"id": "<value>",
+								"name": "channel-name",
+								"type": "mattermost"
+							}
+						},
+						"active": false
+					},
+					{
+						"id": "<value>",
+						"name": "Rule B",
+						"trigger": {
+							"levels": ["info"],
+							"origins": [
+								{ 
+									"name": "origin0", 
+									"class": "serviceA/origin0", 
+									"serviceID": "<value>" 
+								}
+							]
+						},
+						"action": {
+							"channel": {
+								"id": "<value>",
+								"name": "channel-name",
+								"type": "mattermost"
+							}
+						},
+						"active": false
+					}
+				]`,
+				map[string]any{
+					"$.0.id":                           httpassert.IgnoreJsonValue,
+					"$.0.trigger.origins[0].serviceID": origins[0].ServiceID,
+					"$.0.action.channel.id":            *channels[0].Id,
+					"$.1.id":                           httpassert.IgnoreJsonValue,
+					"$.1.trigger.origins[0].serviceID": origins[0].ServiceID,
+					"$.1.action.channel.id":            *channels[0].Id,
+				},
+			)
 	})
 }

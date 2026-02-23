@@ -5,6 +5,7 @@
 package usecases
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -14,61 +15,77 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_GetRule(t *testing.T) {
+	t.Parallel()
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
 		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mail"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
-		rule := models.Rule{
-			Name: "Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Name: "read-only,ignored", Class: "serviceA/origin0", ServiceID: "read-only-ignored"}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID:   *channels[0].Id,
-					Name: "read-only,ignored",
-					Type: "read-only,ignored",
+		ruleID := createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [
+						{ 
+							"name": "read-only,ignored", 
+							"class": "serviceA/origin0", 
+							"serviceID": "read-only-ignored" 
+						}
+					]
 				},
-				Recipient: "a@example.com",
-			},
-		}
-		wantRule := models.Rule{
-			Name: "Test Rule",
-			Trigger: models.Trigger{
-				Levels:  []string{"info"},
-				Origins: []models.OriginReference{{Name: "origin0", Class: "serviceA/origin0", ServiceID: origins[0].ServiceID}},
-			},
-			Action: models.Action{
-				Channel: models.ChannelReference{
-					ID:   *channels[0].Id,
-					Name: "channel-name-0",
-					Type: "mail",
+				"action": {
+					"channel": {
+						"id": "%s",
+						"name": "read-only,ignored",
+						"type": "read-only,ignored"
+					},
+					"recipient": "a@example.com"
 				},
-				Recipient: "a@example.com",
-			},
-		}
+				"active": true
+		}`, *channels[0].Id))
 
-		ruleID := createRule(t, router, rule)
-		wantRule.ID = ruleID
-
-		var gotRule models.Rule
-		resp := httpassert.New(t, router).Getf("/rules/%s", ruleID).
+		httpassert.New(t, router).Getf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
 			Expect().
-			StatusCode(http.StatusOK)
-
-		resp.GetJsonBodyObject(&gotRule)
-		require.Equal(t, wantRule, gotRule)
+			StatusCode(http.StatusOK).
+			JsonPath("$.id", httpassert.NotEmpty()).
+			JsonTemplate(`{
+				"id": "<value>",
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [
+						{ 
+							"name": "origin0", 
+							"class": "serviceA/origin0", 
+							"serviceID": "<value>" 
+						}
+					]
+				},
+				"action": {
+					"channel": {
+						"id": "<value>",
+						"name": "channel-name-0",
+						"type": "mail"
+					},
+					"recipient": "a@example.com"
+				},
+				"active": true
+			}`,
+				map[string]any{
+					"$.id":                           httpassert.IgnoreJsonValue,
+					"$.trigger.origins[0].serviceID": origins[0].ServiceID,
+					"$.action.channel.id":            *channels[0].Id,
+				})
 	})
 
 	t.Run("not found", func(t *testing.T) {
+		t.Parallel()
 		ruleLimit := 10
 		router := setupTestEnvironment(t, nil, nil, ruleLimit)
 
@@ -79,6 +96,7 @@ func Test_GetRule(t *testing.T) {
 	})
 
 	t.Run("failure due to invalid id", func(t *testing.T) {
+		t.Parallel()
 		ruleLimit := 10
 		router := setupTestEnvironment(t, nil, nil, ruleLimit)
 
