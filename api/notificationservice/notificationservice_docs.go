@@ -1219,6 +1219,18 @@ const docTemplatenotificationservice = `{
                                 "description": "API version"
                             }
                         }
+                    },
+                    "400": {
+                        "description": "invalid id",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
                     }
                 }
             }
@@ -1252,6 +1264,18 @@ const docTemplatenotificationservice = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.Rule"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "invalid id",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponses.ErrorResponse"
                         },
                         "headers": {
                             "api-version": {

@@ -74,6 +74,7 @@ func Test_GetRule_NotFound(t *testing.T) {
 }
 
 func Test_CreateRule_GetRule(t *testing.T) {
+	t.Parallel()
 
 	tests := map[string]struct {
 		setupData func(t *testing.T, db *sqlx.DB) (channelID string)
@@ -88,7 +89,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				return channelID
 			},
 			rule: models.Rule{
-				Name: "Test Rule 11",
+				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Levels: []string{"high"},
 					Origins: []models.OriginReference{
@@ -101,7 +102,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				Active: true,
 			},
 			wantRule: models.Rule{
-				Name: "Test Rule 11",
+				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Levels: []string{"high"},
 					Origins: []models.OriginReference{
@@ -170,6 +171,47 @@ func Test_CreateRule_GetRule(t *testing.T) {
 					},
 				},
 				Active: true,
+			},
+		},
+		"create deactivated rule": {
+			setupData: func(t *testing.T, db *sqlx.DB) string {
+				channelID := createTestChannel(t, db, "test-channel", "mattermost")
+				createTestOrigin(t, db, "Origin1", "class1", "service1")
+				return channelID
+			},
+			rule: models.Rule{
+				Name: "Test Rule",
+				Trigger: models.Trigger{
+					Levels: []string{"high"},
+					Origins: []models.OriginReference{
+						{Class: "class1", Name: "read-only,ignored", ServiceID: "read-only,ignored"},
+					},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "set below in test", Name: "read-only,ignored", Type: "read-only,ignored"},
+				},
+				Active: false,
+			},
+			wantRule: models.Rule{
+				Name: "Test Rule",
+				Trigger: models.Trigger{
+					Levels: []string{"high"},
+					Origins: []models.OriginReference{
+						{
+							Name:      "Origin1",
+							Class:     "class1",
+							ServiceID: "service1",
+						},
+					},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{
+						ID:   "",
+						Name: "test-channel",
+						Type: "mattermost",
+					},
+				},
+				Active: false,
 			},
 		},
 		"create rule with non-existent origin should fail": {
@@ -306,6 +348,8 @@ func Test_UpdateRule_NotFound(t *testing.T) {
 }
 
 func Test_UpdateRule(t *testing.T) {
+	t.Parallel()
+
 	origin1 := models.OriginReference{Name: "Origin1", Class: "class1", ServiceID: "service1"}
 	origin2 := models.OriginReference{Name: "Origin2", Class: "class2", ServiceID: "service2"}
 
@@ -482,6 +526,8 @@ func Test_UpdateRule(t *testing.T) {
 }
 
 func Test_ListRules(t *testing.T) {
+	t.Parallel()
+
 	t.Run("get empty list of rules", func(t *testing.T) {
 		t.Parallel()
 		db := pgtesting.NewDB(t)
@@ -598,11 +644,13 @@ func Test_DeleteRule(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("deleting non-existing rule is a no-op", func(t *testing.T) {
+		t.Parallel()
 		err := repo.Delete(ctx, uuid.NewString())
 		assert.NoError(t, err)
 	})
 
 	t.Run("insert and delete rule", func(t *testing.T) {
+		t.Parallel()
 		channelID := createTestChannel(t, db, "test-channel", "mattermost")
 		createTestOrigin(t, db, "Test Origin", "class1", "test-ns")
 		rule := models.Rule{

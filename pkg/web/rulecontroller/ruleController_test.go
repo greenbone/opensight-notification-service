@@ -32,6 +32,7 @@ func setup(t *testing.T) *gin.Engine {
 }
 
 func TestRuleController(t *testing.T) {
+	t.Parallel()
 	setup(t)
 
 	wantStatus := http.StatusForbidden
@@ -64,6 +65,7 @@ func TestRuleController(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			httpassert.New(t, setup(t)).
 				Perform(tt.method, tt.endpoint).
 				AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).

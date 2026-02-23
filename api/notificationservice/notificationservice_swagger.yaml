@@ -1205,6 +1205,14 @@ paths:
             api-version:
               description: API version
               type: string
+        "400":
+          description: invalid id
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
       security:
       - KeycloakAuth: []
       summary: Delete Rule
@@ -1278,6 +1286,14 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/models.Rule'
+        "400":
+          description: invalid id
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/errorResponses.ErrorResponse'
         "404":
           description: Not Found
           headers:

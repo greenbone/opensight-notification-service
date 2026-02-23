@@ -115,8 +115,8 @@ func (c *RuleController) configureMappings(r *errmap.Registry) {
 //	@Security		KeycloakAuth
 //	@Param			rule	body		models.Rule	true	"new rule"
 //	@Success		201		{object}	models.Rule
-//	@Success		400		{object}	errorResponses.ErrorResponse
-//	@Success		422		{object}	errorResponses.ErrorResponse
+//	@Failure		400		{object}	errorResponses.ErrorResponse
+//	@Failure		422		{object}	errorResponses.ErrorResponse
 //	@Header			all		{string}	api-version	"API version"
 //	@Router			/rules [post]
 func (c *RuleController) CreateRule(gc *gin.Context) {
@@ -126,8 +126,7 @@ func (c *RuleController) CreateRule(gc *gin.Context) {
 	}
 
 	createdRule, err := c.ruleService.Create(gc.Request.Context(), rule)
-	if err != nil {
-		ginEx.AddError(gc, err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 
@@ -145,7 +144,7 @@ func (c *RuleController) CreateRule(gc *gin.Context) {
 //	@Param			id		path		string		true	"unique ID of the rule"
 //	@Param			rule	body		models.Rule	true	"updated rule"
 //	@Success		200		{object}	models.Rule
-//	@Success		400		{object}	errorResponses.ErrorResponse
+//	@Failure		400		{object}	errorResponses.ErrorResponse
 //	@Failure		404		{object}	errorResponses.ErrorResponse
 //	@Header			all		{string}	api-version	"API version"
 //	@Router			/rules/{id} [put]
@@ -158,8 +157,7 @@ func (c *RuleController) UpdateRule(gc *gin.Context) {
 	}
 
 	updatedRule, err := c.ruleService.Update(gc.Request.Context(), id, rule)
-	if err != nil {
-		ginEx.AddError(gc, err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 
@@ -174,13 +172,13 @@ func (c *RuleController) UpdateRule(gc *gin.Context) {
 //	@Security		KeycloakAuth
 //	@Param			id	path	string	true	"unique ID of the rule"
 //	@Success		204	"deleted"
+//	@Failure		400 {object}	errorResponses.ErrorResponse "invalid id"
 //	@Header			all	{string}	api-version	"API version"
 //	@Router			/rules/{id} [delete]
 func (c *RuleController) DeleteRule(gc *gin.Context) {
 	id := gc.Param("id")
 	err := c.ruleService.Delete(gc.Request.Context(), id)
-	if err != nil {
-		ginEx.AddError(gc, err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 
@@ -196,14 +194,14 @@ func (c *RuleController) DeleteRule(gc *gin.Context) {
 //	@Security		KeycloakAuth
 //	@Param			id	path		string	true	"unique id of the rule"
 //	@Success		200	{object}	models.Rule
+//	@Failure		400 {object}	errorResponses.ErrorResponse "invalid id"
 //	@Failure		404	{object}	errorResponses.ErrorResponse
 //	@Header			all	{string}	api-version	"API version"
 //	@Router			/rulse/{id} [get]
 func (c *RuleController) GetRule(gc *gin.Context) {
 	id := gc.Param("id")
 	rule, err := c.ruleService.Get(gc.Request.Context(), id)
-	if err != nil {
-		ginEx.AddError(gc, err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 
@@ -223,8 +221,7 @@ func (c *RuleController) GetRule(gc *gin.Context) {
 //	@Router			/rules [get]
 func (c *RuleController) ListRules(gc *gin.Context) {
 	rules, err := c.ruleService.List(gc.Request.Context())
-	if err != nil {
-		ginEx.AddError(gc, err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 	if len(rules) == 0 { // return empty array rather than null
