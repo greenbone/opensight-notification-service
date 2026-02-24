@@ -104,7 +104,7 @@ func TestRuleService_Create(t *testing.T) {
 			},
 			mockChannelRepoGet: mockChannelGetCall{
 				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-				channel:   models.NotificationChannel{ChannelType: string(models.ChannelTypeMattermost)},
+				channel:   models.NotificationChannel{ChannelType: models.ChannelTypeMattermost},
 				err:       nil,
 			},
 			mockOriginRepoList: mockOriginListCall{
@@ -131,7 +131,7 @@ func TestRuleService_Create(t *testing.T) {
 			},
 			mockChannelRepoGet: mockChannelGetCall{
 				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-				channel:   models.NotificationChannel{ChannelType: string(models.ChannelTypeMail)},
+				channel:   models.NotificationChannel{ChannelType: models.ChannelTypeMail},
 				err:       nil,
 			},
 			mockOriginRepoList: mockOriginListCall{
@@ -155,7 +155,7 @@ func TestRuleService_Create(t *testing.T) {
 			},
 			mockChannelRepoGet: mockChannelGetCall{
 				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-				channel:   models.NotificationChannel{ChannelType: string(models.ChannelTypeMattermost)},
+				channel:   models.NotificationChannel{ChannelType: models.ChannelTypeMattermost},
 				err:       nil,
 			},
 			mockOriginRepoList: mockOriginListCall{
@@ -397,7 +397,7 @@ func TestRuleService_Update(t *testing.T) {
 			},
 			mockChannelRepoGet: mockChannelGetCall{
 				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-				channel:   models.NotificationChannel{ChannelType: string(models.ChannelTypeMattermost)},
+				channel:   models.NotificationChannel{ChannelType: models.ChannelTypeMattermost},
 				err:       nil,
 			},
 			mockOriginRepoList: mockOriginListCall{
@@ -424,7 +424,7 @@ func TestRuleService_Update(t *testing.T) {
 			},
 			mockChannelRepoGet: mockChannelGetCall{
 				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-				channel:   models.NotificationChannel{ChannelType: string(models.ChannelTypeMail)},
+				channel:   models.NotificationChannel{ChannelType: models.ChannelTypeMail},
 				err:       nil,
 			},
 			mockOriginRepoList: mockOriginListCall{
@@ -449,7 +449,7 @@ func TestRuleService_Update(t *testing.T) {
 			},
 			mockChannelRepoGet: mockChannelGetCall{
 				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-				channel:   models.NotificationChannel{ChannelType: string(models.ChannelTypeMattermost)},
+				channel:   models.NotificationChannel{ChannelType: models.ChannelTypeMattermost},
 				err:       nil,
 			},
 			mockOriginRepoList: mockOriginListCall{

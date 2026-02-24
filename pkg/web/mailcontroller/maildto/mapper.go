@@ -20,7 +20,7 @@ func MapNotificationChannelToMail(channel models.NotificationChannel) MailNotifi
 
 func MapMailToNotificationChannel(mail MailNotificationChannelRequest) models.NotificationChannel {
 	return models.NotificationChannel{
-		ChannelType:              string(models.ChannelTypeMail),
+		ChannelType:              models.ChannelTypeMail,
 		Id:                       mail.Id,
 		ChannelName:              &mail.ChannelName,
 		Domain:                   &mail.Domain,
