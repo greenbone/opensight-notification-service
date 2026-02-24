@@ -44,9 +44,9 @@ type OriginReference struct {
 }
 
 type ChannelReference struct {
-	ID   string `json:"id" validate:"required"`
-	Name string `json:"name" readonly:"true"`
-	Type string `json:"type" readonly:"true"`
+	ID   string      `json:"id" validate:"required"`
+	Name string      `json:"name" readonly:"true"`
+	Type ChannelType `json:"type" readonly:"true"`
 }
 
 func (r *Rule) Cleanup() {

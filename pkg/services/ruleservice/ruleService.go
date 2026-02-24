@@ -126,7 +126,7 @@ func (s *RuleService) validateAction(ctx context.Context, action models.Action) 
 		return fmt.Errorf("failed to get notification channel: %w", err)
 	}
 
-	if channel.ChannelType == string(models.ChannelTypeMail) {
+	if channel.ChannelType == models.ChannelTypeMail {
 		if action.Recipient == "" {
 			return ErrRecipientRequired
 		}

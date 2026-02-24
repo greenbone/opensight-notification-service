@@ -17,7 +17,7 @@ func MapNotificationChannelToMattermost(channel models.NotificationChannel) Matt
 
 func MapMattermostToNotificationChannel(mail MattermostNotificationChannelRequest) models.NotificationChannel {
 	return models.NotificationChannel{
-		ChannelType: string(models.ChannelTypeMattermost),
+		ChannelType: models.ChannelTypeMattermost,
 		ChannelName: &mail.ChannelName,
 		WebhookUrl:  &mail.WebhookUrl,
 		Description: &mail.Description,
