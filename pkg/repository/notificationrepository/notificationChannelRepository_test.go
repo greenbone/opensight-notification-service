@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/greenbone/opensight-notification-service/pkg/config"
+	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/pgtesting"
@@ -84,6 +85,20 @@ func Test_NotificationChannelRepository_CreateWithMissingRequiredFields(t *testi
 	invalidChannel := models.NotificationChannel{}
 	_, err := repo.CreateNotificationChannel(ctx, invalidChannel)
 	assert.Error(t, err, "expected error for missing required fields")
+}
+
+func Test_NotificationChannelRepository_GetNonExistentChannelByID(t *testing.T) {
+	ctx, repo := setupTestRepo(t)
+	nonExistentId := "00000000-0000-0000-0000-000000000000"
+	_, err := repo.GetNotificationChannelById(ctx, nonExistentId)
+	assert.ErrorIs(t, err, errs.ErrItemNotFound)
+}
+
+func Test_NotificationChannelRepository_GetNonExistentChannelByIDAndType(t *testing.T) {
+	ctx, repo := setupTestRepo(t)
+	nonExistentId := "00000000-0000-0000-0000-000000000000"
+	_, err := repo.GetNotificationChannelByIdAndType(ctx, nonExistentId, models.ChannelTypeMail)
+	assert.ErrorIs(t, err, errs.ErrItemNotFound)
 }
 
 func Test_NotificationChannelRepository_UpdateNonExistentChannel(t *testing.T) {
