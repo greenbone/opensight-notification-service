@@ -83,7 +83,7 @@ type ruleRow struct {
 	Name            string         `db:"name"`
 	TriggerOrigins  pq.StringArray `db:"trigger_origins"`
 	TriggerLevels   pq.StringArray `db:"trigger_levels"`
-	ActionChannelID string         `db:"action_channel_id"`
+	ActionChannelID *string        `db:"action_channel_id"`
 	ActionRecipient *string        `db:"action_recipient"`
 	Active          bool           `db:"active"`
 	channelRow
@@ -92,8 +92,8 @@ type ruleRow struct {
 
 // columns joined from notification_channel table
 type channelRow struct {
-	ChannelName string `db:"channel_name"`
-	ChannelType string `db:"channel_type"`
+	ChannelName *string `db:"channel_name"`
+	ChannelType *string `db:"channel_type"`
 }
 
 // data joined from origins table
@@ -102,6 +102,7 @@ type originRow struct {
 }
 
 // ToModel converts a ruleRow to a models.Rule
+// If joined data does not exist anymore, related data is not populated.
 func (r ruleRow) ToModel() (models.Rule, error) {
 	// Unmarshal origins JSON
 	var originsParsed []models.OriginReference
@@ -113,6 +114,11 @@ func (r ruleRow) ToModel() (models.Rule, error) {
 		}
 	}
 
+	channelID := helper.SafeDereference(r.ActionChannelID)
+	if r.ChannelName == nil && r.ChannelType == nil {
+		channelID = "" // don't set the channel ID if the channel doesn't exist anymore
+	}
+
 	rule := models.Rule{
 		ID:   r.ID,
 		Name: r.Name,
@@ -122,9 +128,9 @@ func (r ruleRow) ToModel() (models.Rule, error) {
 		},
 		Action: models.Action{
 			Channel: models.ChannelReference{
-				ID:   r.ActionChannelID,
-				Name: r.ChannelName,
-				Type: r.ChannelType,
+				ID:   channelID,
+				Name: helper.SafeDereference(r.ChannelName),
+				Type: helper.SafeDereference(r.ChannelType),
 			},
 			Recipient: helper.SafeDereference(r.ActionRecipient),
 		},
@@ -146,7 +152,7 @@ func toRuleRow(rule models.Rule) ruleRow {
 		Name:            rule.Name,
 		TriggerOrigins:  originClasses,
 		TriggerLevels:   rule.Trigger.Levels,
-		ActionChannelID: rule.Action.Channel.ID, // take only the writable field
+		ActionChannelID: helper.ToNullablePtr(rule.Action.Channel.ID), // take only the writable field
 		ActionRecipient: helper.ToPtr(rule.Action.Recipient),
 		Active:          rule.Active,
 	}

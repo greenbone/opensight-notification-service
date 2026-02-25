@@ -75,7 +75,6 @@ func Test_GetRule_NotFound(t *testing.T) {
 
 func Test_CreateRule_GetRule(t *testing.T) {
 	t.Parallel()
-
 	tests := map[string]struct {
 		setupData func(t *testing.T, db *sqlx.DB) (channelID string)
 		rule      models.Rule
@@ -115,7 +114,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{
-						ID:   "",
+						ID:   "set below in test",
 						Name: "test-channel",
 						Type: "mattermost",
 					},
@@ -165,7 +164,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				Action: models.Action{
 					Recipient: "security@example.com",
 					Channel: models.ChannelReference{
-						ID:   "",
+						ID:   "set below in test",
 						Name: "test-channel",
 						Type: "mail",
 					},
@@ -206,7 +205,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{
-						ID:   "",
+						ID:   "set below in test",
 						Name: "test-channel",
 						Type: "mattermost",
 					},
@@ -214,9 +213,9 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				Active: false,
 			},
 		},
-		"create rule with non-existent origin should fail": {
+		"create rule with non-existent origins, but returns empty origins": {
 			setupData: func(t *testing.T, db *sqlx.DB) string {
-				channelID := createTestChannel(t, db, "test-channel", "mail")
+				channelID := createTestChannel(t, db, "test-channel", "mattermost")
 				return channelID
 			},
 			rule: models.Rule{
@@ -230,12 +229,22 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				},
 				Active: true,
 			},
-			wantErr: ErrOriginsNotFound,
+			wantRule: models.Rule{
+				Name: "Invalid Rule",
+				Trigger: models.Trigger{
+					Levels:  []string{"medium"},
+					Origins: []models.OriginReference{}, // origins not found, so empty origins expected
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "set below in test", Name: "test-channel", Type: "mattermost"},
+				},
+				Active: true,
+			},
 		},
-		"create rule with non-existent channel should fail": {
+		"create rule with non-existent channel works, but returns an empty channel ID": {
 			setupData: func(t *testing.T, db *sqlx.DB) string {
 				channelID := uuid.NewString() // non-existent channel ID
-				createTestOrigin(t, db, "name1", "class1", "ns1")
+				createTestOrigin(t, db, "name1", "class1", "service1")
 				return channelID
 			},
 			rule: models.Rule{
@@ -249,7 +258,23 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				},
 				Active: true,
 			},
-			wantErr: ErrChannelNotFound,
+			wantRule: models.Rule{
+				Name: "Invalid Rule",
+				Trigger: models.Trigger{
+					Levels: []string{"medium"},
+					Origins: []models.OriginReference{
+						{
+							Name:      "name1",
+							Class:     "class1",
+							ServiceID: "service1",
+						},
+					},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{}, // channel not found, so empty channel reference expected
+				},
+				Active: true,
+			},
 		},
 		"create rule with duplicate name should fail": {
 			setupData: func(t *testing.T, db *sqlx.DB) string {
@@ -309,9 +334,12 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.NotEmpty(t, createdRule.ID)        // Verify created rule has ID
-			tt.wantRule.ID = createdRule.ID           // set id for comparison (not known beforehand)
-			tt.wantRule.Action.Channel.ID = channelID // set id for comparison (not known beforehand)
+			assert.NotEmpty(t, createdRule.ID) // Verify created rule has ID
+			tt.wantRule.ID = createdRule.ID    // set id for comparison (not known beforehand)
+			if tt.wantRule.Action.Channel.ID != "" {
+				tt.wantRule.Action.Channel.ID = channelID // set id for comparison (not known beforehand)
+			}
+
 			assert.Equal(t, tt.wantRule, createdRule)
 
 			// Retrieve rule and verify
@@ -444,7 +472,7 @@ func Test_UpdateRule(t *testing.T) {
 				Active: true,
 			},
 		},
-		"update with non-existent origin should fail": {
+		"update with non-existent origin works, but returns empty origins": {
 			setupData: setupData,
 			rule: models.Rule{
 				Name: "Updated Rule",
@@ -456,12 +484,21 @@ func Test_UpdateRule(t *testing.T) {
 					Channel: models.ChannelReference{ID: "set below in test"},
 				},
 			},
-			wantErr: ErrOriginsNotFound,
+			wantRule: models.Rule{
+				Name: "Updated Rule",
+				Trigger: models.Trigger{
+					Levels:  []string{"high"},
+					Origins: []models.OriginReference{}, // origins not found, so empty origins expected
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "set below in test", Name: channel2.Name, Type: channel2.Type},
+				},
+			},
 		},
-		"update with non-existent channel should fail": {
+		"update rule with non-existent channel works, but returns an empty channel ID": {
 			setupData: func(t *testing.T, db *sqlx.DB, repo *RuleRepository) (channelID string, ruleID string) {
 				_, ruleID = setupData(t, db, repo)
-				return uuid.NewString(), ruleID // return non-existent channel ID
+				return "", ruleID // return non-existent channel ID
 			},
 			rule: models.Rule{
 				Name: "Updated Rule",
@@ -473,7 +510,22 @@ func Test_UpdateRule(t *testing.T) {
 					Channel: models.ChannelReference{ID: "set below in test"},
 				},
 			},
-			wantErr: ErrChannelNotFound,
+			wantRule: models.Rule{
+				Name: "Updated Rule",
+				Trigger: models.Trigger{
+					Levels: []string{"high"},
+					Origins: []models.OriginReference{
+						{
+							Name:      "Origin2",
+							Class:     "class2",
+							ServiceID: "service2",
+						},
+					},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{}, // channel not found, so empty channel reference expected
+				},
+			},
 		},
 		"update with duplicate name should fail": {
 			setupData: setupData,
@@ -505,7 +557,9 @@ func Test_UpdateRule(t *testing.T) {
 
 			channelIDNew, ruleID := tt.setupData(t, db, repo)
 			tt.wantRule.ID = ruleID
-			tt.wantRule.Action.Channel.ID = channelIDNew
+			if tt.wantRule.Action.Channel.ID != "" {
+				tt.wantRule.Action.Channel.ID = channelIDNew
+			}
 			tt.rule.ID = ruleID                      // set ID for update
 			tt.rule.Action.Channel.ID = channelIDNew // set channel ID for update
 
@@ -541,7 +595,7 @@ func Test_ListRules(t *testing.T) {
 		assert.Empty(t, rules)
 	})
 
-	t.Run("get all rules ordered by name", func(t *testing.T) {
+	t.Run("get all rules ordered by name and references to non-existent channel are returned empty", func(t *testing.T) {
 		t.Parallel()
 		db := pgtesting.NewDB(t)
 		repo, err := NewRuleRepository(db)
@@ -555,6 +609,17 @@ func Test_ListRules(t *testing.T) {
 
 		rulesIn := []models.Rule{
 			{
+				Name: "Rule 2",
+				Trigger: models.Trigger{
+					Levels:  []string{"low"},
+					Origins: []models.OriginReference{{Class: "class2"}},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: channelID2},
+				},
+				Active: true,
+			},
+			{
 				Name: "Rule 1",
 				Trigger: models.Trigger{
 					Levels:  []string{"high"},
@@ -566,13 +631,13 @@ func Test_ListRules(t *testing.T) {
 				Active: true,
 			},
 			{
-				Name: "Rule 2",
+				Name: "Rule 3",
 				Trigger: models.Trigger{
-					Levels:  []string{"low"},
-					Origins: []models.OriginReference{{Class: "class2"}},
+					Levels:  []string{"high"},
+					Origins: []models.OriginReference{{Class: "class1"}},
 				},
 				Action: models.Action{
-					Channel: models.ChannelReference{ID: channelID2},
+					Channel: models.ChannelReference{ID: uuid.NewString()}, // non-existent channel ID
 				},
 				Active: true,
 			},
@@ -620,16 +685,36 @@ func Test_ListRules(t *testing.T) {
 				},
 				Active: true,
 			},
+			{
+				Name: "Rule 3",
+				Trigger: models.Trigger{
+					Levels: []string{"high"},
+					Origins: []models.OriginReference{
+						{
+							Name:      "Origin1",
+							Class:     "class1",
+							ServiceID: "service1",
+						},
+					},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{}, // channel not found, so empty channel reference expected
+				},
+				Active: true,
+			},
 		}
 		require.Equal(t, len(rulesIn), len(wantRules), "test setup error: rulesIn and wantRules must have same length")
 
 		for i := range rulesIn {
-			createdRule, err := repo.Create(ctx, rulesIn[i])
+			_, err := repo.Create(ctx, rulesIn[i])
 			require.NoError(t, err)
-			wantRules[i].ID = createdRule.ID // set ID for later comparison
 		}
 
 		gotRules, err := repo.List(ctx)
+		for i := range gotRules {
+			require.NotEmpty(t, gotRules[i].ID)
+			gotRules[i].ID = "" // set ID to empty for comparison as they are not known beforehand
+		}
 		require.NoError(t, err)
 		assert.Equal(t, wantRules, gotRules)
 	})

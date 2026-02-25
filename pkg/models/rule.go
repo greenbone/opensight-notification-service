@@ -16,11 +16,12 @@ import (
 // Each incoming event is matched with the trigger conditions.
 // If the condition is fulfilled, the provided action is triggered.
 type Rule struct {
-	ID      string  `json:"id" readonly:"true"`
-	Name    string  `json:"name" validate:"required"`
-	Trigger Trigger `json:"trigger" validate:"required"`
-	Action  Action  `json:"action" validate:"required"`
-	Active  bool    `json:"active"`
+	ID      string           `json:"id" readonly:"true"`
+	Name    string           `json:"name" validate:"required"`
+	Trigger Trigger          `json:"trigger" validate:"required"`
+	Action  Action           `json:"action" validate:"required"`
+	Active  bool             `json:"active"`
+	Errors  ValidationErrors `json:"errors,omitempty" readonly:"true"` // populated if the rule is invalid, this can be useful to highlight rules which need action from the user.
 }
 
 // Trigger condition, fulfilled if both one of `origins` and `levels` match the ones from the incoming event.
@@ -52,6 +53,8 @@ func (r *Rule) Cleanup() {
 	r.Name = strings.TrimSpace(r.Name)
 }
 
+// Validate checks if the rule is valid and returns validation errors if not.
+// Furthermore it populates the `Errors` field with these validation errors.
 func (r *Rule) Validate() ValidationErrors {
 	errs := make(ValidationErrors)
 
@@ -80,15 +83,16 @@ func (r *Rule) Validate() ValidationErrors {
 	}
 
 	if r.Action.Channel.ID == "" {
-		errs["trigger.action.channel.id"] = translation.ChannelIsRequired
+		errs["action.channel.id"] = translation.ChannelIsRequired
 	} else {
 		err := validation.Validate.Var(r.Action.Channel.ID, "uuid4")
 		if err != nil {
-			errs["trigger.action.channel.id"] = translation.InvalidChannelID
+			errs["action.channel.id"] = translation.InvalidChannelID
 		}
 	}
 
 	if len(errs) > 0 {
+		r.Errors = errs
 		return errs
 	}
 

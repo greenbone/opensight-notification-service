@@ -137,7 +137,8 @@ func run(config config.Config) error {
 	teamsChannelService := notificationchannelservice.NewTeamsChannelService(
 		notificationChannelService, config.ChannelLimit.TeamsLimit, &notificationTransport)
 	originService := originservice.NewOriginService(originsRepository)
-	ruleService := ruleservice.NewRuleService(ruleRepository, notificationChannelRepository, config.RuleLimit)
+	ruleService := ruleservice.NewRuleService(
+		ruleRepository, notificationChannelRepository, originsRepository, config.RuleLimit)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler

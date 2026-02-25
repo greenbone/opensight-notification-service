@@ -8,16 +8,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
+	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 )
 
 var ErrRuleLimitReached = fmt.Errorf("alert rule limit reached")
 var ErrRecipientRequired = fmt.Errorf("recipient is required for the selected channel")
 var ErrRecipientNotSupported = fmt.Errorf("recipient is not supported for the selected channel")
 var ErrChannelNotFound = fmt.Errorf("notification channel not found")
+var ErrOriginsNotFound error = errors.New("one or more origins do not exist")
 
 type RuleRepository interface {
 	Get(ctx context.Context, id string) (models.Rule, error)
@@ -27,26 +29,56 @@ type RuleRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
+type NotificationChannelRepository interface {
+	GetNotificationChannelById(ctx context.Context, id string) (models.NotificationChannel, error)
+}
+
+type OriginRepository interface {
+	ListOrigins(ctx context.Context) ([]entities.Origin, error)
+}
+
 type RuleService struct {
 	store        RuleRepository
-	channelStore notificationrepository.NotificationChannelRepository
+	channelStore NotificationChannelRepository
+	originStore  OriginRepository
 	ruleLimit    int
 }
 
-func NewRuleService(store RuleRepository, channelStore notificationrepository.NotificationChannelRepository, ruleLimit int) *RuleService {
+func NewRuleService(store RuleRepository, channelStore NotificationChannelRepository, originStore OriginRepository, ruleLimit int) *RuleService {
 	return &RuleService{
 		store:        store,
 		channelStore: channelStore,
+		originStore:  originStore,
 		ruleLimit:    ruleLimit,
 	}
 }
 
+// Get retrieves a rule by its ID.
+// If the rule is invalid due to missing references, it is deactivated, but still returned.
 func (s *RuleService) Get(ctx context.Context, id string) (models.Rule, error) {
-	return s.store.Get(ctx, id)
+	rule, err := s.store.Get(ctx, id)
+	if err != nil {
+		return models.Rule{}, err
+	}
+
+	return deactivateRuleIfInvalid(rule), nil
 }
 
+// List retrieves all rules.
+// If any rule is invalid due to missing references, it is deactivated, but still returned.
 func (s *RuleService) List(ctx context.Context) ([]models.Rule, error) {
-	return s.store.List(ctx)
+	rules, err := s.store.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list rules: %w", err)
+	}
+	for i := range rules {
+		// NOTE: for now we don't update the entry in the database,
+		// however if we ever want to filter the rules in the future,
+		// this needs to be done
+		rules[i] = deactivateRuleIfInvalid(rules[i])
+	}
+
+	return rules, nil
 }
 
 func (s *RuleService) Create(ctx context.Context, rule models.Rule) (models.Rule, error) {
@@ -58,7 +90,7 @@ func (s *RuleService) Create(ctx context.Context, rule models.Rule) (models.Rule
 		return models.Rule{}, ErrRuleLimitReached
 	}
 
-	err = s.validateAction(ctx, rule.Action)
+	err = s.validateRule(ctx, rule)
 	if err != nil {
 		return models.Rule{}, err
 	}
@@ -67,7 +99,7 @@ func (s *RuleService) Create(ctx context.Context, rule models.Rule) (models.Rule
 }
 
 func (s *RuleService) Update(ctx context.Context, id string, rule models.Rule) (models.Rule, error) {
-	err := s.validateAction(ctx, rule.Action)
+	err := s.validateRule(ctx, rule)
 	if err != nil {
 		return models.Rule{}, err
 	}
@@ -77,6 +109,12 @@ func (s *RuleService) Update(ctx context.Context, id string, rule models.Rule) (
 
 func (s *RuleService) Delete(ctx context.Context, id string) error {
 	return s.store.Delete(ctx, id)
+}
+
+func (s *RuleService) validateRule(ctx context.Context, rule models.Rule) error {
+	err1 := s.validateAction(ctx, rule.Action)
+	err2 := s.validateOrigins(ctx, rule.Trigger.Origins)
+	return errors.Join(err1, err2)
 }
 
 func (s *RuleService) validateAction(ctx context.Context, action models.Action) error {
@@ -97,4 +135,28 @@ func (s *RuleService) validateAction(ctx context.Context, action models.Action) 
 	}
 
 	return nil
+}
+
+func (s *RuleService) validateOrigins(ctx context.Context, origins []models.OriginReference) error {
+	existingOrigins, err := s.originStore.ListOrigins(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to list origins: %w", err)
+	}
+
+	for _, origin := range origins {
+		if !slices.ContainsFunc(existingOrigins, func(o entities.Origin) bool { return o.Class == origin.Class }) {
+			return ErrOriginsNotFound
+		}
+	}
+	return nil
+}
+
+// deactivateRuleIfInvalid checks is the Rule is valid, if not it deactivates the rule
+// and returns the updated rule with populated validation errors.
+func deactivateRuleIfInvalid(rule models.Rule) models.Rule {
+	errValidation := rule.Validate()
+	if len(errValidation) > 0 {
+		rule.Active = false
+	}
+	return rule
 }

@@ -5,6 +5,7 @@
 package usecases
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_ListRules(t *testing.T) {
@@ -119,6 +121,65 @@ func Test_ListRules(t *testing.T) {
 					"$.1.id":                           httpassert.IgnoreJsonValue,
 					"$.1.trigger.origins[0].serviceID": origins[0].ServiceID,
 					"$.1.action.channel.id":            *channels[0].Id,
+				},
+			)
+	})
+
+	t.Run("list invalid rules as deactived and with errors set", func(t *testing.T) {
+		t.Parallel()
+		ruleLimit := 10
+		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
+		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		router, channelRepo, originRepo := setupTestEnvironmentWithRepoReturn(t, origins, channels, ruleLimit)
+
+		createRule(t, router, fmt.Sprintf(`{
+				"name": "Test Rule",
+				"trigger": {
+					"levels": ["info"],
+					"origins": [{ "class": "serviceA/origin0" }]
+				},
+				"action": {
+					"channel": {"id": "%s"}
+				},
+				"active": true
+		}`, *channels[0].Id))
+
+		// delete the origin and channel to make the rule invalid
+		ctx := context.Background()
+		err := originRepo.UpsertOrigins(ctx, origins[0].ServiceID, []entities.Origin{})
+		require.NoError(t, err)
+		err = channelRepo.DeleteNotificationChannel(ctx, *channels[0].Id)
+		require.NoError(t, err)
+
+		httpassert.New(t, router).Get("/rules").
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			Expect().
+			StatusCode(http.StatusOK).
+			JsonPath("$[0].id", httpassert.IsUUID()).
+			JsonTemplate(`[
+				{
+					"id": "<value>",
+					"name": "Test Rule",
+					"trigger": {
+						"levels": ["info"],
+						"origins": []
+					},
+					"action": {
+						"channel": {
+							"id": "",
+							"name": "",
+							"type": ""
+						}
+					},
+					"active": false,
+					"errors": {
+						"trigger.origins": "At least one origin is required.",
+						"action.channel.id": "A channel is required."
+					}
+				}
+			]`,
+				map[string]any{
+					"0.id": httpassert.IgnoreJsonValue,
 				},
 			)
 	})

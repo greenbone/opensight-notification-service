@@ -1,0 +1,1 @@
+ALTER TABLE notification_service.rules DROP CONSTRAINT rules_action_channel_id_fkey;
