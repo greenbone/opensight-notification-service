@@ -72,6 +72,9 @@ func (s *RuleService) List(ctx context.Context) ([]models.Rule, error) {
 		return nil, fmt.Errorf("failed to list rules: %w", err)
 	}
 	for i := range rules {
+		// NOTE: for now we don't update the entry in the database,
+		// however if we ever want to filter the rules in the future,
+		// this needs to be done
 		rules[i] = deactivateRuleIfInvalid(rules[i])
 	}
 

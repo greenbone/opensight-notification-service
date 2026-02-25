@@ -595,19 +595,6 @@ func Test_ListRules(t *testing.T) {
 		assert.Empty(t, rules)
 	})
 
-	t.Run("get empty list of rules", func(t *testing.T) {
-		t.Parallel()
-		db := pgtesting.NewDB(t)
-		repo, err := NewRuleRepository(db)
-		require.NoError(t, err)
-
-		ctx := context.Background()
-
-		rules, err := repo.List(ctx)
-		require.NoError(t, err)
-		assert.Empty(t, rules)
-	})
-
 	t.Run("get all rules ordered by name and references to non-existent channel are returned empty", func(t *testing.T) {
 		t.Parallel()
 		db := pgtesting.NewDB(t)
