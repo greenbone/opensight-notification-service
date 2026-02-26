@@ -24,7 +24,7 @@ import (
 
 // Helper functions
 
-func createTestChannel(t *testing.T, db *sqlx.DB, name, channelType string) (channelID string) {
+func createTestChannel(t *testing.T, db *sqlx.DB, name string, channelType models.ChannelType) (channelID string) {
 	// create channel repo
 	encryptMgr := security.NewEncryptManager()
 	encryptMgr.UpdateKeys(config.DatabaseEncryptionKey{
