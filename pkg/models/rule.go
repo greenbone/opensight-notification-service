@@ -6,8 +6,11 @@ package models
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
+	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/greenbone/opensight-notification-service/pkg/validation"
 )
@@ -24,10 +27,17 @@ type Rule struct {
 	Errors  ValidationErrors `json:"errors,omitempty" readonly:"true"` // populated if the rule is invalid, this can be useful to highlight rules which need action from the user.
 }
 
+// RuleOptions Represents a list of all options required for the creation of a Rule
+type RuleOptions struct {
+	Origins  []entities.Origin     `json:"origins"`
+	Levels   []notifications.Level `json:"levels"`
+	Channels []NotificationChannel `json:"channels"`
+}
+
 // Trigger condition, fulfilled if both one of `origins` and `levels` match the ones from the incoming event.
 type Trigger struct {
-	Origins []OriginReference `json:"origins" validate:"required"`
-	Levels  []string          `json:"levels" validate:"required"`
+	Origins []OriginReference     `json:"origins" validate:"required"`
+	Levels  []notifications.Level `json:"levels" validate:"required"`
 }
 
 // Action determines to which channel the event is forwarded.
@@ -78,6 +88,8 @@ func (r *Rule) Validate() ValidationErrors {
 		for i, level := range r.Trigger.Levels {
 			if level == "" {
 				errs[fmt.Sprintf("trigger.levels[%d]", i)] = translation.LevelIsRequired
+			} else if !slices.Contains(notifications.AllowedLevels, level) {
+				errs[fmt.Sprintf("trigger.levels[%d]", i)] = translation.InvalidLevel
 			}
 		}
 	}

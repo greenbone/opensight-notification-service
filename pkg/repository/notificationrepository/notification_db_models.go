@@ -7,6 +7,7 @@ package notificationrepository
 import (
 	"encoding/json"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
@@ -19,15 +20,15 @@ const (
 )
 
 type notificationRow struct {
-	Id               string  `db:"id"`
-	Origin           string  `db:"origin"`
-	OriginClass      string  `db:"origin_class"`
-	OriginResourceID *string `db:"origin_resource_id"`
-	Timestamp        string  `db:"timestamp"`
-	Title            string  `db:"title"`
-	Detail           string  `db:"detail"`
-	Level            string  `db:"level"`
-	CustomFields     []byte  `db:"custom_fields"`
+	Id               string              `db:"id"`
+	Origin           string              `db:"origin"`
+	OriginClass      string              `db:"origin_class"`
+	OriginResourceID *string             `db:"origin_resource_id"`
+	Timestamp        string              `db:"timestamp"`
+	Title            string              `db:"title"`
+	Detail           string              `db:"detail"`
+	Level            notifications.Level `db:"level"`
+	CustomFields     []byte              `db:"custom_fields"`
 }
 
 func notificationFieldMapping() map[string]string {

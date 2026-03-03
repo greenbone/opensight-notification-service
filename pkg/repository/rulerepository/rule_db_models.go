@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
 	"github.com/greenbone/opensight-notification-service/pkg/helper"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/lib/pq"
@@ -119,12 +120,19 @@ func (r ruleRow) ToModel() (models.Rule, error) {
 		channelID = "" // don't set the channel ID if the channel doesn't exist anymore
 	}
 
+	var levels []notifications.Level
+	if r.TriggerLevels != nil {
+		for _, l := range r.TriggerLevels {
+			levels = append(levels, notifications.Level(l))
+		}
+	}
+
 	rule := models.Rule{
 		ID:   r.ID,
 		Name: r.Name,
 		Trigger: models.Trigger{
 			Origins: originsParsed,
-			Levels:  []string(r.TriggerLevels),
+			Levels:  levels,
 		},
 		Action: models.Action{
 			Channel: models.ChannelReference{
@@ -148,10 +156,15 @@ func toRuleRow(rule models.Rule) ruleRow {
 		originClasses = append(originClasses, origin.Class)
 	}
 
+	triggerLevels := make(pq.StringArray, len(rule.Trigger.Levels))
+	for i, l := range rule.Trigger.Levels {
+		triggerLevels[i] = string(l)
+	}
+
 	row := ruleRow{
 		Name:            rule.Name,
 		TriggerOrigins:  originClasses,
-		TriggerLevels:   rule.Trigger.Levels,
+		TriggerLevels:   triggerLevels,
 		ActionChannelID: helper.ToNullablePtr(rule.Action.Channel.ID), // take only the writable field
 		ActionRecipient: helper.ToPtr(rule.Action.Recipient),
 		Active:          rule.Active,

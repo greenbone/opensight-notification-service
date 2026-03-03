@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
@@ -31,6 +32,7 @@ type RuleRepository interface {
 
 type NotificationChannelRepository interface {
 	GetNotificationChannelById(ctx context.Context, id string) (models.NotificationChannel, error)
+	ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error)
 }
 
 type OriginRepository interface {
@@ -109,6 +111,28 @@ func (s *RuleService) Update(ctx context.Context, id string, rule models.Rule) (
 
 func (s *RuleService) Delete(ctx context.Context, id string) error {
 	return s.store.Delete(ctx, id)
+}
+
+func (s *RuleService) GetAllRuleOptionsFiltered(ctx context.Context) (*models.RuleOptions, error) {
+	origins, err := s.originStore.ListOrigins(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list origins: %w", err)
+	}
+
+	var channels []models.NotificationChannel
+	for _, channelType := range []models.ChannelType{models.ChannelTypeMail, models.ChannelTypeMattermost, models.ChannelTypeTeams} {
+		ch, err := s.channelStore.ListNotificationChannelsByType(ctx, channelType)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list channels of type %s: %w", channelType, err)
+		}
+		channels = append(channels, ch...)
+	}
+
+	return &models.RuleOptions{
+		Origins:  origins,
+		Levels:   notifications.AllowedLevels,
+		Channels: channels,
+	}, nil
 }
 
 func (s *RuleService) validateRule(ctx context.Context, rule models.Rule) error {
