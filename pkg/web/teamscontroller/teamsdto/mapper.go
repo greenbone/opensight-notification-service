@@ -17,7 +17,7 @@ func MapNotificationChannelToTeams(channel models.NotificationChannel) TeamsNoti
 
 func MapTeamsToNotificationChannel(mail TeamsNotificationChannelRequest) models.NotificationChannel {
 	return models.NotificationChannel{
-		ChannelType: string(models.ChannelTypeTeams),
+		ChannelType: models.ChannelTypeTeams,
 		ChannelName: &mail.ChannelName,
 		WebhookUrl:  &mail.WebhookUrl,
 		Description: &mail.Description,

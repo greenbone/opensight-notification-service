@@ -241,11 +241,22 @@ definitions:
         readOnly: true
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/models.ChannelType'
         readOnly: true
-        type: string
     required:
     - id
     type: object
+  models.ChannelType:
+    enum:
+    - mail
+    - mattermost
+    - teams
+    type: string
+    x-enum-varnames:
+    - ChannelTypeMail
+    - ChannelTypeMattermost
+    - ChannelTypeTeams
   models.Notification:
     properties:
       customFields:
