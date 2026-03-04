@@ -37,7 +37,7 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 
 	// Create
 	channelIn := models.NotificationChannel{
-		ChannelType:              string(models.ChannelTypeMail),
+		ChannelType:              models.ChannelTypeMail,
 		ChannelName:              helper.ToPtr("Test Channel"),
 		WebhookUrl:               nil,
 		Domain:                   helper.ToPtr("example.com"),

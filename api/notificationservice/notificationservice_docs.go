@@ -1627,10 +1627,27 @@ const docTemplatenotificationservice = `{
                     "readOnly": true
                 },
                 "type": {
-                    "type": "string",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ChannelType"
+                        }
+                    ],
                     "readOnly": true
                 }
             }
+        },
+        "models.ChannelType": {
+            "type": "string",
+            "enum": [
+                "mail",
+                "mattermost",
+                "teams"
+            ],
+            "x-enum-varnames": [
+                "ChannelTypeMail",
+                "ChannelTypeMattermost",
+                "ChannelTypeTeams"
+            ]
         },
         "models.Notification": {
             "type": "object",

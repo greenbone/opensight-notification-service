@@ -130,7 +130,7 @@ func (r ruleRow) ToModel() (models.Rule, error) {
 			Channel: models.ChannelReference{
 				ID:   channelID,
 				Name: helper.SafeDereference(r.ChannelName),
-				Type: helper.SafeDereference(r.ChannelType),
+				Type: models.ChannelType(helper.SafeDereference(r.ChannelType)),
 			},
 			Recipient: helper.SafeDereference(r.ActionRecipient),
 		},
