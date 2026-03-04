@@ -1115,6 +1115,40 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/rules/ruleoptions": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns all required options to create a new notification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Options to create a new notification",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.RuleOptions"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/rules/{id}": {
             "put": {
                 "security": [
@@ -1301,6 +1335,21 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
+        "entities.Origin": {
+            "type": "object",
+            "properties": {
+                "class": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "serviceID": {
+                    "description": "read-only",
+                    "type": "string"
+                }
+            }
+        },
         "errorResponses.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -1672,12 +1721,16 @@ const docTemplatenotificationservice = `{
                     "readOnly": true
                 },
                 "level": {
-                    "type": "string",
                     "enum": [
                         "info",
                         "warning",
                         "error",
                         "urgent"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/notifications.Level"
+                        }
                     ]
                 },
                 "origin": {
@@ -1697,6 +1750,64 @@ const docTemplatenotificationservice = `{
                     "format": "date-time"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NotificationChannel": {
+            "type": "object",
+            "required": [
+                "channelType"
+            ],
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "channelType": {
+                    "$ref": "#/definitions/models.ChannelType"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "description": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "isAuthenticationRequired": {
+                    "type": "boolean"
+                },
+                "isTlsEnforced": {
+                    "type": "boolean"
+                },
+                "maxEmailAttachmentSizeMb": {
+                    "type": "integer"
+                },
+                "maxEmailIncludeSizeMb": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "senderEmailAddress": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "webhookUrl": {
                     "type": "string"
                 }
             }
@@ -1777,6 +1888,29 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "models.RuleOptions": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NotificationChannel"
+                    }
+                },
+                "levels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/notifications.Level"
+                    }
+                },
+                "origins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Origin"
+                    }
+                }
+            }
+        },
         "models.Trigger": {
             "type": "object",
             "required": [
@@ -1787,7 +1921,7 @@ const docTemplatenotificationservice = `{
                 "levels": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/notifications.Level"
                     }
                 },
                 "origins": {
@@ -1803,6 +1937,21 @@ const docTemplatenotificationservice = `{
             "additionalProperties": {
                 "type": "string"
             }
+        },
+        "notifications.Level": {
+            "type": "string",
+            "enum": [
+                "info",
+                "warning",
+                "error",
+                "urgent"
+            ],
+            "x-enum-varnames": [
+                "LevelInfo",
+                "LevelWarning",
+                "LevelError",
+                "LevelUrgent"
+            ]
         },
         "paging.Request": {
             "type": "object",
