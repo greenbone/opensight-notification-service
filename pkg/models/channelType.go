@@ -7,3 +7,5 @@ const (
 	ChannelTypeMattermost ChannelType = "mattermost"
 	ChannelTypeTeams      ChannelType = "teams"
 )
+
+var AllowedChannels = []ChannelType{ChannelTypeMail, ChannelTypeMattermost, ChannelTypeTeams}

@@ -173,6 +173,29 @@ func TestRuleService_Create(t *testing.T) {
 			},
 			wantErr: ErrRecipientNotSupported,
 		},
+		"channel with disallowed type should fail": {
+			rule: models.Rule{
+				Name: "Test Rule",
+				Trigger: models.Trigger{
+					Origins: []models.OriginReference{{Class: "test"}},
+					Levels:  []notifications.Level{notifications.LevelInfo},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
+				},
+				Active: true,
+			},
+			mockChannelRepoGet: mockChannelGetCall{
+				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+				channel:   models.NotificationChannel{ChannelType: "unsupported-channel-type"},
+				err:       nil,
+			},
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{{Class: "test"}},
+				err:     nil,
+			},
+			wantErr: ErrChannelNotFound,
+		},
 	}
 
 	for name, tt := range tests {
@@ -466,6 +489,29 @@ func TestRuleService_Update(t *testing.T) {
 				err:     nil,
 			},
 			wantErr: ErrRecipientNotSupported,
+		},
+		"channel with disallowed type should fail": {
+			ruleID: "rule-1",
+			rule: models.Rule{
+				Name: "Updated Rule",
+				Trigger: models.Trigger{
+					Origins: []models.OriginReference{{Class: "test"}},
+					Levels:  []notifications.Level{notifications.LevelInfo},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
+				},
+			},
+			mockChannelRepoGet: mockChannelGetCall{
+				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+				channel:   models.NotificationChannel{ChannelType: "unsupported-channel-type"},
+				err:       nil,
+			},
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{{Class: "test"}},
+				err:     nil,
+			},
+			wantErr: ErrChannelNotFound,
 		},
 	}
 

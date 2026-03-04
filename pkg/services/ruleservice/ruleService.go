@@ -120,7 +120,7 @@ func (s *RuleService) GetAllRuleOptionsFiltered(ctx context.Context) (*models.Ru
 	}
 
 	var channels []models.NotificationChannel
-	for _, channelType := range []models.ChannelType{models.ChannelTypeMail, models.ChannelTypeMattermost, models.ChannelTypeTeams} {
+	for _, channelType := range models.AllowedChannels {
 		ch, err := s.channelStore.ListNotificationChannelsByType(ctx, channelType)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list channels of type %s: %w", channelType, err)
@@ -148,6 +148,10 @@ func (s *RuleService) validateAction(ctx context.Context, action models.Action) 
 			return ErrChannelNotFound // from perspective of the service this is not a generic not found, but an issue with the passed object
 		}
 		return fmt.Errorf("failed to get notification channel: %w", err)
+	}
+
+	if !slices.Contains(models.AllowedChannels, models.ChannelType(channel.ChannelType)) {
+		return ErrChannelNotFound
 	}
 
 	if channel.ChannelType == string(models.ChannelTypeMail) {
