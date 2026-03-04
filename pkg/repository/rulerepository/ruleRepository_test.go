@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
@@ -90,7 +91,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Test Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{Class: "class1", Name: "read-only,ignored", ServiceID: "read-only,ignored"},
 					},
@@ -103,7 +104,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Test Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Origin1",
@@ -132,7 +133,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Security Alerts",
 				Trigger: models.Trigger{
-					Levels: []string{"high", "critical"},
+					Levels: []notifications.Level{notifications.LevelError, notifications.LevelUrgent},
 					Origins: []models.OriginReference{
 						{Class: "vuln", ServiceID: "read-only,ignored", Name: "read-only,ignored"},
 						{Class: "compliance", ServiceID: "read-only,ignored", Name: "read-only,ignored"},
@@ -147,7 +148,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Security Alerts",
 				Trigger: models.Trigger{
-					Levels: []string{"high", "critical"},
+					Levels: []notifications.Level{notifications.LevelError, notifications.LevelUrgent},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Vulnerability",
@@ -181,7 +182,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Test Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{Class: "class1", Name: "read-only,ignored", ServiceID: "read-only,ignored"},
 					},
@@ -194,7 +195,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Test Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Origin1",
@@ -221,7 +222,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Invalid Rule",
 				Trigger: models.Trigger{
-					Levels:  []string{"medium"},
+					Levels:  []notifications.Level{notifications.LevelWarning},
 					Origins: []models.OriginReference{{Class: "non-existent"}},
 				},
 				Action: models.Action{
@@ -232,7 +233,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Invalid Rule",
 				Trigger: models.Trigger{
-					Levels:  []string{"medium"},
+					Levels:  []notifications.Level{notifications.LevelWarning},
 					Origins: []models.OriginReference{}, // origins not found, so empty origins expected
 				},
 				Action: models.Action{
@@ -250,7 +251,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Invalid Rule",
 				Trigger: models.Trigger{
-					Levels:  []string{"medium"},
+					Levels:  []notifications.Level{notifications.LevelWarning},
 					Origins: []models.OriginReference{{Class: "class1"}},
 				},
 				Action: models.Action{
@@ -261,7 +262,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Invalid Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"medium"},
+					Levels: []notifications.Level{notifications.LevelWarning},
 					Origins: []models.OriginReference{
 						{
 							Name:      "name1",
@@ -285,7 +286,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 				existingRule := models.Rule{
 					Name: "Existing Rule",
 					Trigger: models.Trigger{
-						Levels:  []string{"medium"},
+						Levels:  []notifications.Level{notifications.LevelWarning},
 						Origins: []models.OriginReference{{Class: "class1"}},
 					},
 					Action: models.Action{
@@ -300,7 +301,7 @@ func Test_CreateRule_GetRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Existing Rule",
 				Trigger: models.Trigger{
-					Levels:  []string{"high"},
+					Levels:  []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{{Class: "class1"}},
 				},
 				Action: models.Action{
@@ -361,7 +362,7 @@ func Test_UpdateRule_NotFound(t *testing.T) {
 	rule := models.Rule{
 		Name: "Non-existent Rule",
 		Trigger: models.Trigger{
-			Levels:  []string{"low"},
+			Levels:  []notifications.Level{notifications.LevelInfo},
 			Origins: []models.OriginReference{{Class: "class1"}},
 		},
 		Action: models.Action{
@@ -387,7 +388,7 @@ func Test_UpdateRule(t *testing.T) {
 	existingUntouchedRule := models.Rule{
 		Name: "Existing untouched Rule",
 		Trigger: models.Trigger{
-			Levels:  []string{"low"},
+			Levels:  []notifications.Level{notifications.LevelInfo},
 			Origins: []models.OriginReference{{Class: "class1"}},
 		},
 		Action: models.Action{
@@ -398,7 +399,7 @@ func Test_UpdateRule(t *testing.T) {
 	existingRule := models.Rule{
 		Name: "Existing Rule",
 		Trigger: models.Trigger{
-			Levels:  []string{"medium"},
+			Levels:  []notifications.Level{notifications.LevelWarning},
 			Origins: []models.OriginReference{{Class: "class1", Name: "read-only,ignored", ServiceID: "read-only,ignored"}},
 		},
 		Action: models.Action{
@@ -442,7 +443,7 @@ func Test_UpdateRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{Class: "class2", Name: "read-only,ignored", ServiceID: "read-only,ignored"},
 					},
@@ -456,7 +457,7 @@ func Test_UpdateRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Origin2",
@@ -477,7 +478,7 @@ func Test_UpdateRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
-					Levels:  []string{"high"},
+					Levels:  []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{{Class: "non-existent"}},
 				},
 				Action: models.Action{
@@ -487,7 +488,7 @@ func Test_UpdateRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
-					Levels:  []string{"high"},
+					Levels:  []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{}, // origins not found, so empty origins expected
 				},
 				Action: models.Action{
@@ -503,7 +504,7 @@ func Test_UpdateRule(t *testing.T) {
 			rule: models.Rule{
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
-					Levels:  []string{"high"},
+					Levels:  []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{{Class: "class2"}},
 				},
 				Action: models.Action{
@@ -513,7 +514,7 @@ func Test_UpdateRule(t *testing.T) {
 			wantRule: models.Rule{
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Origin2",
@@ -532,7 +533,7 @@ func Test_UpdateRule(t *testing.T) {
 			rule: models.Rule{
 				Name: existingUntouchedRule.Name, // duplicate name
 				Trigger: models.Trigger{
-					Levels:  []string{"high"},
+					Levels:  []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{{Class: "class2"}},
 				},
 				Action: models.Action{
@@ -611,7 +612,7 @@ func Test_ListRules(t *testing.T) {
 			{
 				Name: "Rule 2",
 				Trigger: models.Trigger{
-					Levels:  []string{"low"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 					Origins: []models.OriginReference{{Class: "class2"}},
 				},
 				Action: models.Action{
@@ -622,7 +623,7 @@ func Test_ListRules(t *testing.T) {
 			{
 				Name: "Rule 1",
 				Trigger: models.Trigger{
-					Levels:  []string{"high"},
+					Levels:  []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{{Class: "class1"}},
 				},
 				Action: models.Action{
@@ -633,7 +634,7 @@ func Test_ListRules(t *testing.T) {
 			{
 				Name: "Rule 3",
 				Trigger: models.Trigger{
-					Levels:  []string{"high"},
+					Levels:  []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{{Class: "class1"}},
 				},
 				Action: models.Action{
@@ -646,7 +647,7 @@ func Test_ListRules(t *testing.T) {
 			{
 				Name: "Rule 1",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Origin1",
@@ -667,7 +668,7 @@ func Test_ListRules(t *testing.T) {
 			{
 				Name: "Rule 2",
 				Trigger: models.Trigger{
-					Levels: []string{"low"},
+					Levels: []notifications.Level{notifications.LevelInfo},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Origin2",
@@ -688,7 +689,7 @@ func Test_ListRules(t *testing.T) {
 			{
 				Name: "Rule 3",
 				Trigger: models.Trigger{
-					Levels: []string{"high"},
+					Levels: []notifications.Level{notifications.LevelError},
 					Origins: []models.OriginReference{
 						{
 							Name:      "Origin1",
@@ -741,7 +742,7 @@ func Test_DeleteRule(t *testing.T) {
 		rule := models.Rule{
 			Name: "Test Rule 11",
 			Trigger: models.Trigger{
-				Levels:  []string{"high"},
+				Levels:  []notifications.Level{notifications.LevelInfo},
 				Origins: []models.OriginReference{{Class: "class1"}},
 			},
 			Action: models.Action{
