@@ -66,7 +66,8 @@ func setupTestEnvironmentWithRepoReturn(t *testing.T, origins []entities.Origin,
 
 	ruleRepo, err := rulerepository.NewRuleRepository(db)
 	require.NoError(t, err)
-	ruleService := ruleservice.NewRuleService(ruleRepo, notificationChannelRepo, originRepo, ruleLimit)
+	ruleService, err := ruleservice.NewRuleService(ruleRepo, notificationChannelRepo, originRepo, ruleLimit)
+	require.NoError(t, err)
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)

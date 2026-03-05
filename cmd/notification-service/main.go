@@ -126,19 +126,31 @@ func run(config config.Config) error {
 		return fmt.Errorf("error creating Notification Channel Repository: %w", err)
 	}
 
+	notificationTransport := http.Client{Timeout: 15 * time.Second}
 	mailService := notificationchannelservice.NewMailService()
-	notificationService := notificationservice.NewNotificationService(notificationRepository)
+	mattermostService := notificationchannelservice.NewMattermostService(&notificationTransport)
+	teamsService := notificationchannelservice.NewTeamsService(&notificationTransport)
 	notificationChannelService := notificationchannelservice.NewNotificationChannelService(notificationChannelRepository)
 	mailChannelService := notificationchannelservice.NewMailChannelService(
 		notificationChannelService, notificationChannelRepository, mailService, config.ChannelLimit.EMailLimit)
-	notificationTransport := http.Client{Timeout: 15 * time.Second}
 	mattermostChannelService := notificationchannelservice.NewMattermostChannelService(
 		notificationChannelService, config.ChannelLimit.MattermostLimit, &notificationTransport)
 	teamsChannelService := notificationchannelservice.NewTeamsChannelService(
 		notificationChannelService, config.ChannelLimit.TeamsLimit, &notificationTransport)
 	originService := originservice.NewOriginService(originsRepository)
-	ruleService := ruleservice.NewRuleService(
+	ruleService, err := ruleservice.NewRuleService(
 		ruleRepository, notificationChannelRepository, originsRepository, config.RuleLimit)
+	if err != nil {
+		return fmt.Errorf("failed to initialize origin service: %w", err)
+	}
+	notificationService := notificationservice.NewNotificationService(
+		notificationRepository,
+		ruleService,
+		notificationChannelService,
+		mailService,
+		mattermostService,
+		teamsService,
+	)
 	healthService := healthservice.NewHealthService(pgClient)
 
 	// scheduler

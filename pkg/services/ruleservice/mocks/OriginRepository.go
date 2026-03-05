@@ -99,3 +99,66 @@ func (_c *OriginRepository_ListOrigins_Call) RunAndReturn(run func(ctx context.C
 	_c.Call.Return(run)
 	return _c
 }
+
+// UpsertOrigins provides a mock function for the type OriginRepository
+func (_mock *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error {
+	ret := _mock.Called(ctx, serviceID, origins)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpsertOrigins")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []entities.Origin) error); ok {
+		r0 = returnFunc(ctx, serviceID, origins)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// OriginRepository_UpsertOrigins_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertOrigins'
+type OriginRepository_UpsertOrigins_Call struct {
+	*mock.Call
+}
+
+// UpsertOrigins is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceID string
+//   - origins []entities.Origin
+func (_e *OriginRepository_Expecter) UpsertOrigins(ctx interface{}, serviceID interface{}, origins interface{}) *OriginRepository_UpsertOrigins_Call {
+	return &OriginRepository_UpsertOrigins_Call{Call: _e.mock.On("UpsertOrigins", ctx, serviceID, origins)}
+}
+
+func (_c *OriginRepository_UpsertOrigins_Call) Run(run func(ctx context.Context, serviceID string, origins []entities.Origin)) *OriginRepository_UpsertOrigins_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []entities.Origin
+		if args[2] != nil {
+			arg2 = args[2].([]entities.Origin)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *OriginRepository_UpsertOrigins_Call) Return(err error) *OriginRepository_UpsertOrigins_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *OriginRepository_UpsertOrigins_Call) RunAndReturn(run func(ctx context.Context, serviceID string, origins []entities.Origin) error) *OriginRepository_UpsertOrigins_Call {
+	_c.Call.Return(run)
+	return _c
+}

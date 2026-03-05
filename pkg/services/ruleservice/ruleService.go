@@ -22,6 +22,13 @@ var ErrRecipientNotSupported = fmt.Errorf("recipient is not supported for the se
 var ErrChannelNotFound = fmt.Errorf("notification channel not found")
 var ErrOriginsNotFound error = errors.New("one or more origins do not exist")
 
+const (
+	originAllServiceID = "global"
+	originAllName      = "All"
+	// special origin which matches all origins in a notification
+	originAllClass = "/global/all"
+)
+
 type RuleRepository interface {
 	Get(ctx context.Context, id string) (models.Rule, error)
 	List(ctx context.Context) ([]models.Rule, error)
@@ -36,6 +43,7 @@ type NotificationChannelRepository interface {
 }
 
 type OriginRepository interface {
+	UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error
 	ListOrigins(ctx context.Context) ([]entities.Origin, error)
 }
 
@@ -46,13 +54,20 @@ type RuleService struct {
 	ruleLimit    int
 }
 
-func NewRuleService(store RuleRepository, channelStore NotificationChannelRepository, originStore OriginRepository, ruleLimit int) *RuleService {
+// NewRuleService creates a new RuleService and registers the special "All" origin
+// which is used to match all notifications.
+func NewRuleService(store RuleRepository, channelStore NotificationChannelRepository, originStore OriginRepository, ruleLimit int) (*RuleService, error) {
+	err := originStore.UpsertOrigins(context.Background(), originAllServiceID, []entities.Origin{{Name: originAllName, Class: originAllClass}})
+	if err != nil {
+		return nil, fmt.Errorf("failed to register Origin 'All': %w", err)
+	}
+
 	return &RuleService{
 		store:        store,
 		channelStore: channelStore,
 		originStore:  originStore,
 		ruleLimit:    ruleLimit,
-	}
+	}, nil
 }
 
 // Get retrieves a rule by its ID.
@@ -187,4 +202,32 @@ func deactivateRuleIfInvalid(rule models.Rule) models.Rule {
 		rule.Active = false
 	}
 	return rule
+}
+
+func (s *RuleService) ProcessRules(ctx context.Context, notification models.Notification) ([]models.Action, error) {
+	rules, err := s.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list rules: %w", err)
+	}
+
+	var actions []models.Action
+	for _, rule := range rules {
+		if !rule.Active {
+			continue
+		}
+
+		if isRuleTriggered(notification, rule.Trigger) {
+			actions = append(actions, rule.Action)
+		}
+	}
+	return actions, nil
+}
+
+func isRuleTriggered(notification models.Notification, trigger models.Trigger) bool {
+	originMatch := slices.ContainsFunc(trigger.Origins, func(origin models.OriginReference) bool {
+		return origin.Class == originAllClass || origin.Class == notification.OriginClass
+	})
+	levelMatch := slices.Contains(trigger.Levels, notification.Level)
+
+	return originMatch && levelMatch
 }

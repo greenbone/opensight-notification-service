@@ -37,6 +37,8 @@ func NewMailService() MailService {
 	return &mailService{}
 }
 
+// SendMail sends an email to the given receiver.
+// The message has to be in HTML format.
 func (m *mailService) SendMail(
 	ctx context.Context,
 	mailServer models.NotificationChannel,
