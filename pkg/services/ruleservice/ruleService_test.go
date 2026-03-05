@@ -646,7 +646,6 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 
 			mockOriginRepo.EXPECT().ListOrigins(mock.Anything).Return(tt.mockOriginRepoList.origins, tt.mockOriginRepoList.err).Once()
 
-			// Only set up channel mocks if origin listing succeeds (channels are fetched after origins)
 			if tt.mockChannelListByType != nil {
 				for _, channelType := range []models.ChannelType{models.ChannelTypeMail, models.ChannelTypeMattermost, models.ChannelTypeTeams} {
 					if call, ok := tt.mockChannelListByType[channelType]; ok {
