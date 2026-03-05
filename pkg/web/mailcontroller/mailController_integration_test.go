@@ -158,7 +158,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 	mailService := notificationchannelservice.NewMailService()
-	mailSvc := notificationchannelservice.NewMailChannelService(svc, repo, mailService, 1)
+	mailSvc := notificationchannelservice.NewMailChannelService(svc, mailService, 1)
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)

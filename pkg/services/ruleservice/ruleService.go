@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
@@ -36,6 +37,7 @@ type NotificationChannelRepository interface {
 }
 
 type OriginRepository interface {
+	UpsertOrigins(ctx context.Context, serviceID string, origins []entities.Origin) error
 	ListOrigins(ctx context.Context) ([]entities.Origin, error)
 }
 
@@ -46,13 +48,20 @@ type RuleService struct {
 	ruleLimit    int
 }
 
-func NewRuleService(store RuleRepository, channelStore NotificationChannelRepository, originStore OriginRepository, ruleLimit int) *RuleService {
+// NewRuleService creates a new RuleService and registers the special "All" origin
+// which is used to match all notifications.
+func NewRuleService(store RuleRepository, channelStore NotificationChannelRepository, originStore OriginRepository, ruleLimit int) (*RuleService, error) {
+	err := originStore.UpsertOrigins(context.Background(), models.OriginAllServiceID, []entities.Origin{{Name: models.OriginAllName, Class: models.OriginAllClass}})
+	if err != nil {
+		return nil, fmt.Errorf("failed to register Origin 'All': %w", err)
+	}
+
 	return &RuleService{
 		store:        store,
 		channelStore: channelStore,
 		originStore:  originStore,
 		ruleLimit:    ruleLimit,
-	}
+	}, nil
 }
 
 // Get retrieves a rule by its ID.
@@ -187,4 +196,32 @@ func deactivateRuleIfInvalid(rule models.Rule) models.Rule {
 		rule.Active = false
 	}
 	return rule
+}
+
+func (s *RuleService) ProcessRules(ctx context.Context, notification models.Notification) ([]models.Action, error) {
+	rules, err := s.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list rules: %w", err)
+	}
+
+	var actions []models.Action
+	for _, rule := range rules {
+		if !rule.Active {
+			continue
+		}
+
+		if rule.IsTriggered(notification) {
+			if rule.Action.Channel.Type.HasRecipient() {
+				// recipient(s) can be a comma separated list
+				for recipient := range strings.SplitSeq(rule.Action.Recipient, `,`) {
+					action := rule.Action
+					action.Recipient = strings.TrimSpace(recipient)
+					actions = append(actions, action)
+				}
+			} else {
+				actions = append(actions, rule.Action)
+			}
+		}
+	}
+	return actions, nil
 }

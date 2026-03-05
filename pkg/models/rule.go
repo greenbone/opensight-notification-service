@@ -15,6 +15,13 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/validation"
 )
 
+const (
+	OriginAllServiceID = "global"
+	OriginAllName      = "All"
+	// special origin which matches all origins in a notification
+	OriginAllClass = "/global/all"
+)
+
 // A rule determines which events cause which action.
 // Each incoming event is matched with the trigger conditions.
 // If the condition is fulfilled, the provided action is triggered.
@@ -141,4 +148,17 @@ func (r *Rule) Validate() ValidationErrors {
 	}
 
 	return nil
+}
+
+func (r *Rule) IsTriggered(notification Notification) bool {
+	if !r.Active {
+		return false
+	}
+
+	originMatch := slices.ContainsFunc(r.Trigger.Origins, func(origin OriginReference) bool {
+		return origin.Class == OriginAllClass || origin.Class == notification.OriginClass
+	})
+	levelMatch := slices.Contains(r.Trigger.Levels, notification.Level)
+
+	return originMatch && levelMatch
 }

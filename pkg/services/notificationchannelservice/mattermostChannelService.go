@@ -1,12 +1,8 @@
 package notificationchannelservice
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"net/http"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mattermostcontroller/mattermostdto"
@@ -35,46 +31,23 @@ type MattermostChannelService interface {
 type mattermostChannelService struct {
 	notificationChannelService NotificationChannelService
 	mattermostChannelLimit     int
-	transport                  *http.Client
+	mattermostService          *MattermostService
 }
 
 func NewMattermostChannelService(
 	notificationChannelService NotificationChannelService,
 	mattermostChannelLimit int,
-	transport *http.Client,
+	mattermostService *MattermostService,
 ) MattermostChannelService {
 	return &mattermostChannelService{
 		notificationChannelService: notificationChannelService,
 		mattermostChannelLimit:     mattermostChannelLimit,
-		transport:                  transport,
+		mattermostService:          mattermostService,
 	}
 }
 
 func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) error {
-	body, err := json.Marshal(map[string]string{
-		"text": "Hello, This is a test message",
-	})
-	if err != nil {
-		return fmt.Errorf("can not marshal mattermost message: %w", err)
-	}
-
-	resp, err := m.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			return fmt.Errorf("%w: timeout", ErrMattermostMassageDelivery)
-		}
-		return fmt.Errorf("%w: %s", ErrMattermostMassageDelivery, err.Error())
-	}
-
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("%w: http status: %s", ErrMattermostMassageDelivery, resp.Status)
-	}
-
-	return nil
+	return m.mattermostService.SendMessage(webhookUrl, "Hello, This is a test message")
 }
 
 func (m *mattermostChannelService) CreateMattermostChannel(

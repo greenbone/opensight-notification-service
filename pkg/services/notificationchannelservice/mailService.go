@@ -3,6 +3,7 @@ package notificationchannelservice
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
@@ -37,6 +38,8 @@ func NewMailService() MailService {
 	return &mailService{}
 }
 
+// SendMail sends an email to the given receiver.
+// The message has to be in HTML format.
 func (m *mailService) SendMail(
 	ctx context.Context,
 	mailServer models.NotificationChannel,
@@ -60,6 +63,7 @@ func (m *mailService) SendMail(
 	if err := message.To(receiver); err != nil {
 		return errors.Join(err, ErrCreatingMailMessage)
 	}
+	body = strings.ReplaceAll(body, "\n", "<br>") // Convert newlines to HTML line breaks
 	message.Subject(subject)
 	message.SetBodyString(mail.TypeTextHTML, body)
 

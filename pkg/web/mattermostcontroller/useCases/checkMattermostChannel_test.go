@@ -27,14 +27,15 @@ func setup(t *testing.T, transport http.Client) *gin.Engine {
 
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
-	mattermostSvc := notificationchannelservice.NewMattermostChannelService(svc, 20, &transport)
+	mattermostService := notificationchannelservice.NewMattermostService(&transport)
+	mattermostChannelSvc := notificationchannelservice.NewMattermostChannelService(svc, 20, mattermostService)
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
-	mattermostcontroller.NewMattermostController(router, svc, mattermostSvc, authMiddleware, registry)
+	mattermostcontroller.NewMattermostController(router, svc, mattermostChannelSvc, authMiddleware, registry)
 	defer db.Close()
 	return router
 }

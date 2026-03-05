@@ -21,7 +21,8 @@ import (
 func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
-	teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 20, &http.Client{Timeout: 15 * time.Second})
+	teamsService := notificationchannelservice.NewTeamsService(&http.Client{Timeout: 15 * time.Second})
+	teamsSvc := notificationchannelservice.NewTeamsChannelService(svc, 20, teamsService)
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
