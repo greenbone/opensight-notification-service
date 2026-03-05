@@ -561,18 +561,18 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 			mockChannelListByType: map[models.ChannelType]mockChannelListByTypeCall{
 				models.ChannelTypeMail: {
 					channels: []models.NotificationChannel{
-						{ChannelType: string(models.ChannelTypeMail), ChannelName: strPtr("Mail Channel 1")},
+						{ChannelType: models.ChannelTypeMail, ChannelName: strPtr("Mail Channel 1")},
 					},
 				},
 				models.ChannelTypeMattermost: {
 					channels: []models.NotificationChannel{
-						{ChannelType: string(models.ChannelTypeMattermost), ChannelName: strPtr("Mattermost Channel 1")},
-						{ChannelType: string(models.ChannelTypeMattermost), ChannelName: strPtr("Mattermost Channel 2")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 1")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 2")},
 					},
 				},
 				models.ChannelTypeTeams: {
 					channels: []models.NotificationChannel{
-						{ChannelType: string(models.ChannelTypeTeams), ChannelName: strPtr("Teams Channel 1")},
+						{ChannelType: models.ChannelTypeTeams, ChannelName: strPtr("Teams Channel 1")},
 					},
 				},
 			},
@@ -605,7 +605,7 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 				models.ChannelTypeMail: {channels: []models.NotificationChannel{}},
 				models.ChannelTypeMattermost: {
 					channels: []models.NotificationChannel{
-						{ChannelType: string(models.ChannelTypeMattermost), ChannelName: strPtr("Mattermost Only")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Only")},
 					},
 				},
 				models.ChannelTypeTeams: {channels: []models.NotificationChannel{}},
