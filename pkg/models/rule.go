@@ -29,9 +29,16 @@ type Rule struct {
 
 // RuleOptions Represents a list of all options required for the creation of a Rule
 type RuleOptions struct {
-	Origins  []entities.Origin     `json:"origins"`
+	Origins  []OriginReference     `json:"origins"`
 	Levels   []notifications.Level `json:"levels"`
-	Channels []NotificationChannel `json:"channels"`
+	Channels []RuleOptionChannel   `json:"channels"`
+}
+
+type RuleOptionChannel struct {
+	Id           *string     `json:"id" readonly:"true"`
+	ChannelType  ChannelType `json:"channelType" binding:"required"`
+	ChannelName  *string     `json:"channelName,omitempty"`
+	HasRecipient bool        `json:"hasRecipient"`
 }
 
 // Trigger condition, fulfilled if both one of `origins` and `levels` match the ones from the incoming event.
@@ -57,6 +64,31 @@ type ChannelReference struct {
 	ID   string      `json:"id" validate:"required"`
 	Name string      `json:"name" readonly:"true"`
 	Type ChannelType `json:"type" readonly:"true"`
+}
+
+func ToRuleOptionChannels(channels []NotificationChannel) []RuleOptionChannel {
+	result := make([]RuleOptionChannel, len(channels))
+	for i, channel := range channels {
+		result[i] = RuleOptionChannel{
+			Id:           channel.Id,
+			ChannelType:  channel.ChannelType,
+			ChannelName:  channel.ChannelName,
+			HasRecipient: channel.ChannelType == ChannelTypeMail,
+		}
+	}
+	return result
+}
+
+func ToOriginReferences(origins []entities.Origin) []OriginReference {
+	result := make([]OriginReference, len(origins))
+	for i, origin := range origins {
+		result[i] = OriginReference{
+			Name:      origin.Name,
+			Class:     origin.Class,
+			ServiceID: origin.ServiceID,
+		}
+	}
+	return result
 }
 
 func (r *Rule) Cleanup() {

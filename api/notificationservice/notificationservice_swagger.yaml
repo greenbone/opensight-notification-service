@@ -1,15 +1,5 @@
 basePath: /api/notification-service
 definitions:
-  entities.Origin:
-    properties:
-      class:
-        type: string
-      name:
-        type: string
-      serviceID:
-        description: read-only
-        type: string
-    type: object
   errorResponses.ErrorResponse:
     properties:
       details:
@@ -309,45 +299,6 @@ definitions:
     - timestamp
     - title
     type: object
-  models.NotificationChannel:
-    properties:
-      channelName:
-        type: string
-      channelType:
-        $ref: '#/definitions/models.ChannelType'
-      createdAt:
-        readOnly: true
-        type: string
-      description:
-        type: string
-      domain:
-        type: string
-      id:
-        readOnly: true
-        type: string
-      isAuthenticationRequired:
-        type: boolean
-      isTlsEnforced:
-        type: boolean
-      maxEmailAttachmentSizeMb:
-        type: integer
-      maxEmailIncludeSizeMb:
-        type: integer
-      password:
-        type: string
-      port:
-        type: integer
-      senderEmailAddress:
-        type: string
-      updatedAt:
-        type: string
-      username:
-        type: string
-      webhookUrl:
-        type: string
-    required:
-    - channelType
-    type: object
   models.Origin:
     properties:
       class:
@@ -401,11 +352,25 @@ definitions:
     - name
     - trigger
     type: object
+  models.RuleOptionChannel:
+    properties:
+      channelName:
+        type: string
+      channelType:
+        $ref: '#/definitions/models.ChannelType'
+      hasRecipient:
+        type: boolean
+      id:
+        readOnly: true
+        type: string
+    required:
+    - channelType
+    type: object
   models.RuleOptions:
     properties:
       channels:
         items:
-          $ref: '#/definitions/models.NotificationChannel'
+          $ref: '#/definitions/models.RuleOptionChannel'
         type: array
       levels:
         items:
@@ -413,7 +378,7 @@ definitions:
         type: array
       origins:
         items:
-          $ref: '#/definitions/entities.Origin'
+          $ref: '#/definitions/models.OriginReference'
         type: array
     type: object
   models.Trigger:
@@ -1368,7 +1333,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns all required options to create a new notification
+      description: Returns all required options to create a new alert rule
       produces:
       - application/json
       responses:
@@ -1382,7 +1347,7 @@ paths:
             $ref: '#/definitions/models.RuleOptions'
       security:
       - KeycloakAuth: []
-      summary: Options to create a new notification
+      summary: Options to create a new alert rule
       tags:
       - rule
   /rulse/{id}:

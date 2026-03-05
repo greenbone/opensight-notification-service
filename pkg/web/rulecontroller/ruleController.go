@@ -235,8 +235,8 @@ func (c *RuleController) ListRules(gc *gin.Context) {
 
 // RuleOptions
 //
-//	@Summary		Options to create a new notification
-//	@Description	Returns all required options to create a new notification
+//	@Summary		Options to create a new alert rule
+//	@Description	Returns all required options to create a new alert rule
 //	@Tags			rule
 //	@Accept			json
 //	@Produce		json

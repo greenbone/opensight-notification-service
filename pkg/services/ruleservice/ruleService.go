@@ -129,9 +129,9 @@ func (s *RuleService) GetAllRuleOptions(ctx context.Context) (*models.RuleOption
 	}
 
 	return &models.RuleOptions{
-		Origins:  origins,
+		Origins:  models.ToOriginReferences(origins),
 		Levels:   notifications.AllowedLevels,
-		Channels: channels,
+		Channels: models.ToRuleOptionChannels(channels),
 	}, nil
 }
 

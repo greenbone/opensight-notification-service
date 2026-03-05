@@ -1122,7 +1122,7 @@ const docTemplatenotificationservice = `{
                         "KeycloakAuth": []
                     }
                 ],
-                "description": "Returns all required options to create a new notification",
+                "description": "Returns all required options to create a new alert rule",
                 "consumes": [
                     "application/json"
                 ],
@@ -1132,7 +1132,7 @@ const docTemplatenotificationservice = `{
                 "tags": [
                     "rule"
                 ],
-                "summary": "Options to create a new notification",
+                "summary": "Options to create a new alert rule",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1335,21 +1335,6 @@ const docTemplatenotificationservice = `{
         }
     },
     "definitions": {
-        "entities.Origin": {
-            "type": "object",
-            "properties": {
-                "class": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "serviceID": {
-                    "description": "read-only",
-                    "type": "string"
-                }
-            }
-        },
         "errorResponses.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -1754,64 +1739,6 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
-        "models.NotificationChannel": {
-            "type": "object",
-            "required": [
-                "channelType"
-            ],
-            "properties": {
-                "channelName": {
-                    "type": "string"
-                },
-                "channelType": {
-                    "$ref": "#/definitions/models.ChannelType"
-                },
-                "createdAt": {
-                    "type": "string",
-                    "readOnly": true
-                },
-                "description": {
-                    "type": "string"
-                },
-                "domain": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string",
-                    "readOnly": true
-                },
-                "isAuthenticationRequired": {
-                    "type": "boolean"
-                },
-                "isTlsEnforced": {
-                    "type": "boolean"
-                },
-                "maxEmailAttachmentSizeMb": {
-                    "type": "integer"
-                },
-                "maxEmailIncludeSizeMb": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "senderEmailAddress": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                },
-                "webhookUrl": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Origin": {
             "type": "object",
             "required": [
@@ -1888,13 +1815,34 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "models.RuleOptionChannel": {
+            "type": "object",
+            "required": [
+                "channelType"
+            ],
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "channelType": {
+                    "$ref": "#/definitions/models.ChannelType"
+                },
+                "hasRecipient": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                }
+            }
+        },
         "models.RuleOptions": {
             "type": "object",
             "properties": {
                 "channels": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.NotificationChannel"
+                        "$ref": "#/definitions/models.RuleOptionChannel"
                     }
                 },
                 "levels": {
@@ -1906,7 +1854,7 @@ const docTemplatenotificationservice = `{
                 "origins": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.Origin"
+                        "$ref": "#/definitions/models.OriginReference"
                     }
                 }
             }

@@ -227,7 +227,7 @@ func (_c *RuleService_Get_Call) RunAndReturn(run func(ctx context.Context, id st
 	return _c
 }
 
-// GetAllRuleOptionsFiltered provides a mock function for the type RuleService
+// GetAllRuleOptions provides a mock function for the type RuleService
 func (_mock *RuleService) GetAllRuleOptions(ctx context.Context) (*models.RuleOptions, error) {
 	ret := _mock.Called(ctx)
 
@@ -255,18 +255,18 @@ func (_mock *RuleService) GetAllRuleOptions(ctx context.Context) (*models.RuleOp
 	return r0, r1
 }
 
-// RuleService_GetAllRuleOptionsFiltered_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllRuleOptions'
-type RuleService_GetAllRuleOptionsFiltered_Call struct {
+// RuleService_GetAllRuleOptions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllRuleOptions'
+type RuleService_GetAllRuleOptions_Call struct {
 	*mock.Call
 }
 
-// GetAllRuleOptionsFiltered is a helper method to define mock.On call
+// GetAllRuleOptions is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *RuleService_Expecter) GetAllRuleOptionsFiltered(ctx interface{}) *RuleService_GetAllRuleOptionsFiltered_Call {
-	return &RuleService_GetAllRuleOptionsFiltered_Call{Call: _e.mock.On("GetAllRuleOptions", ctx)}
+func (_e *RuleService_Expecter) GetAllRuleOptions(ctx interface{}) *RuleService_GetAllRuleOptions_Call {
+	return &RuleService_GetAllRuleOptions_Call{Call: _e.mock.On("GetAllRuleOptions", ctx)}
 }
 
-func (_c *RuleService_GetAllRuleOptionsFiltered_Call) Run(run func(ctx context.Context)) *RuleService_GetAllRuleOptionsFiltered_Call {
+func (_c *RuleService_GetAllRuleOptions_Call) Run(run func(ctx context.Context)) *RuleService_GetAllRuleOptions_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -279,12 +279,12 @@ func (_c *RuleService_GetAllRuleOptionsFiltered_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *RuleService_GetAllRuleOptionsFiltered_Call) Return(ruleOptions *models.RuleOptions, err error) *RuleService_GetAllRuleOptionsFiltered_Call {
+func (_c *RuleService_GetAllRuleOptions_Call) Return(ruleOptions *models.RuleOptions, err error) *RuleService_GetAllRuleOptions_Call {
 	_c.Call.Return(ruleOptions, err)
 	return _c
 }
 
-func (_c *RuleService_GetAllRuleOptionsFiltered_Call) RunAndReturn(run func(ctx context.Context) (*models.RuleOptions, error)) *RuleService_GetAllRuleOptionsFiltered_Call {
+func (_c *RuleService_GetAllRuleOptions_Call) RunAndReturn(run func(ctx context.Context) (*models.RuleOptions, error)) *RuleService_GetAllRuleOptions_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -670,7 +670,7 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 				assert.Len(t, result.Origins, tt.wantOriginCount)
 				assert.Len(t, result.Channels, tt.wantChannelCount)
 				assert.Equal(t, tt.wantLevels, result.Levels)
-				assert.Equal(t, tt.mockOriginRepoList.origins, result.Origins)
+				assert.Equal(t, models.ToOriginReferences(tt.mockOriginRepoList.origins), result.Origins)
 			}
 		})
 	}
