@@ -228,11 +228,11 @@ func (_c *RuleService_Get_Call) RunAndReturn(run func(ctx context.Context, id st
 }
 
 // GetAllRuleOptionsFiltered provides a mock function for the type RuleService
-func (_mock *RuleService) GetAllRuleOptionsFiltered(ctx context.Context) (*models.RuleOptions, error) {
+func (_mock *RuleService) GetAllRuleOptions(ctx context.Context) (*models.RuleOptions, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetAllRuleOptionsFiltered")
+		panic("no return value specified for GetAllRuleOptions")
 	}
 
 	var r0 *models.RuleOptions
@@ -255,7 +255,7 @@ func (_mock *RuleService) GetAllRuleOptionsFiltered(ctx context.Context) (*model
 	return r0, r1
 }
 
-// RuleService_GetAllRuleOptionsFiltered_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllRuleOptionsFiltered'
+// RuleService_GetAllRuleOptionsFiltered_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllRuleOptions'
 type RuleService_GetAllRuleOptionsFiltered_Call struct {
 	*mock.Call
 }
@@ -263,7 +263,7 @@ type RuleService_GetAllRuleOptionsFiltered_Call struct {
 // GetAllRuleOptionsFiltered is a helper method to define mock.On call
 //   - ctx context.Context
 func (_e *RuleService_Expecter) GetAllRuleOptionsFiltered(ctx interface{}) *RuleService_GetAllRuleOptionsFiltered_Call {
-	return &RuleService_GetAllRuleOptionsFiltered_Call{Call: _e.mock.On("GetAllRuleOptionsFiltered", ctx)}
+	return &RuleService_GetAllRuleOptionsFiltered_Call{Call: _e.mock.On("GetAllRuleOptions", ctx)}
 }
 
 func (_c *RuleService_GetAllRuleOptionsFiltered_Call) Run(run func(ctx context.Context)) *RuleService_GetAllRuleOptionsFiltered_Call {

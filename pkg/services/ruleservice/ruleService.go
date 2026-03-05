@@ -113,7 +113,7 @@ func (s *RuleService) Delete(ctx context.Context, id string) error {
 	return s.store.Delete(ctx, id)
 }
 
-func (s *RuleService) GetAllRuleOptionsFiltered(ctx context.Context) (*models.RuleOptions, error) {
+func (s *RuleService) GetAllRuleOptions(ctx context.Context) (*models.RuleOptions, error) {
 	origins, err := s.originStore.ListOrigins(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list origins: %w", err)
@@ -150,7 +150,7 @@ func (s *RuleService) validateAction(ctx context.Context, action models.Action) 
 		return fmt.Errorf("failed to get notification channel: %w", err)
 	}
 
-	if !slices.Contains(models.AllowedChannels, models.ChannelType(channel.ChannelType)) {
+	if !slices.Contains(models.AllowedChannels, channel.ChannelType) {
 		return ErrChannelNotFound
 	}
 

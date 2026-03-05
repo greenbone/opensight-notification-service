@@ -28,7 +28,7 @@ type RuleService interface {
 	Create(ctx context.Context, rule models.Rule) (models.Rule, error)
 	Update(ctx context.Context, id string, rule models.Rule) (models.Rule, error)
 	Delete(ctx context.Context, id string) error
-	GetAllRuleOptionsFiltered(ctx context.Context) (*models.RuleOptions, error)
+	GetAllRuleOptions(ctx context.Context) (*models.RuleOptions, error)
 }
 
 type RuleController struct {
@@ -245,7 +245,7 @@ func (c *RuleController) ListRules(gc *gin.Context) {
 //	@Header			all	{string}	api-version	"API version"
 //	@Router			/rules/ruleoptions [get]
 func (c *RuleController) RuleOptions(gc *gin.Context) {
-	result, err := c.ruleService.GetAllRuleOptionsFiltered(gc.Request.Context())
+	result, err := c.ruleService.GetAllRuleOptions(gc.Request.Context())
 	if ginEx.AddError(gc, err) {
 		return
 	}
