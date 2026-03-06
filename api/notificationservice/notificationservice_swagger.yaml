@@ -269,12 +269,13 @@ definitions:
         readOnly: true
         type: string
       level:
+        allOf:
+        - $ref: '#/definitions/notifications.Level'
         enum:
         - info
         - warning
         - error
         - urgent
-        type: string
       origin:
         description: name of the origin, e.g. `SBOM - React`
         type: string
@@ -351,11 +352,40 @@ definitions:
     - name
     - trigger
     type: object
+  models.RuleOptionChannel:
+    properties:
+      channelName:
+        type: string
+      channelType:
+        $ref: '#/definitions/models.ChannelType'
+      hasRecipient:
+        type: boolean
+      id:
+        readOnly: true
+        type: string
+    required:
+    - channelType
+    type: object
+  models.RuleOptions:
+    properties:
+      channels:
+        items:
+          $ref: '#/definitions/models.RuleOptionChannel'
+        type: array
+      levels:
+        items:
+          $ref: '#/definitions/notifications.Level'
+        type: array
+      origins:
+        items:
+          $ref: '#/definitions/models.OriginReference'
+        type: array
+    type: object
   models.Trigger:
     properties:
       levels:
         items:
-          type: string
+          $ref: '#/definitions/notifications.Level'
         type: array
       origins:
         items:
@@ -369,6 +399,18 @@ definitions:
     additionalProperties:
       type: string
     type: object
+  notifications.Level:
+    enum:
+    - info
+    - warning
+    - error
+    - urgent
+    type: string
+    x-enum-varnames:
+    - LevelInfo
+    - LevelWarning
+    - LevelError
+    - LevelUrgent
   paging.Request:
     properties:
       index:
@@ -1285,6 +1327,27 @@ paths:
       security:
       - KeycloakAuth: []
       summary: Update Rule
+      tags:
+      - rule
+  /rules/ruleoptions:
+    get:
+      consumes:
+      - application/json
+      description: Returns all required options to create a new alert rule
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            api-version:
+              description: API version
+              type: string
+          schema:
+            $ref: '#/definitions/models.RuleOptions'
+      security:
+      - KeycloakAuth: []
+      summary: Options to create a new alert rule
       tags:
       - rule
   /rulse/{id}:

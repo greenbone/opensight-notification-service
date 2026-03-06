@@ -6,8 +6,10 @@ package ruleservice
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
@@ -21,7 +23,7 @@ func getValidRule() models.Rule {
 		Name: "Valid Rule",
 		Trigger: models.Trigger{
 			Origins: []models.OriginReference{{Class: "test"}},
-			Levels:  []string{"info"},
+			Levels:  []notifications.Level{notifications.LevelInfo},
 		},
 		Action: models.Action{
 			Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -60,6 +62,13 @@ type mockOriginListCall struct {
 	err     error
 }
 
+type mockChannelListByTypeCall struct {
+	channels []models.NotificationChannel
+	err      error
+}
+
+func strPtr(s string) *string { return &s }
+
 func TestRuleService_Create(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
@@ -73,7 +82,7 @@ func TestRuleService_Create(t *testing.T) {
 				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{ID: "non-existent-channel"},
@@ -95,7 +104,7 @@ func TestRuleService_Create(t *testing.T) {
 				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "non-existent-origin"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -121,7 +130,7 @@ func TestRuleService_Create(t *testing.T) {
 				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel:   models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -145,7 +154,7 @@ func TestRuleService_Create(t *testing.T) {
 				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel:   models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -163,6 +172,29 @@ func TestRuleService_Create(t *testing.T) {
 				err:     nil,
 			},
 			wantErr: ErrRecipientNotSupported,
+		},
+		"channel with disallowed type should fail": {
+			rule: models.Rule{
+				Name: "Test Rule",
+				Trigger: models.Trigger{
+					Origins: []models.OriginReference{{Class: "test"}},
+					Levels:  []notifications.Level{notifications.LevelInfo},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
+				},
+				Active: true,
+			},
+			mockChannelRepoGet: mockChannelGetCall{
+				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+				channel:   models.NotificationChannel{ChannelType: "unsupported-channel-type"},
+				err:       nil,
+			},
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{{Class: "test"}},
+				err:     nil,
+			},
+			wantErr: ErrChannelNotFound,
 		},
 	}
 
@@ -205,7 +237,7 @@ func TestRuleService_Get_InvalidRuleDeactivated(t *testing.T) {
 				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{}, // empty origins
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -221,7 +253,7 @@ func TestRuleService_Get_InvalidRuleDeactivated(t *testing.T) {
 				Name: "Test Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{ID: ""}, // missing channel ID
@@ -237,7 +269,7 @@ func TestRuleService_Get_InvalidRuleDeactivated(t *testing.T) {
 				Name: "Valid Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -292,7 +324,7 @@ func TestRuleService_List_InvalidRulesDeactivated(t *testing.T) {
 			Name: "Valid Rule",
 			Trigger: models.Trigger{
 				Origins: []models.OriginReference{{Class: "test"}},
-				Levels:  []string{"info"},
+				Levels:  []notifications.Level{notifications.LevelInfo},
 			},
 			Action: models.Action{
 				Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -304,7 +336,7 @@ func TestRuleService_List_InvalidRulesDeactivated(t *testing.T) {
 			Name: "Rule 2",
 			Trigger: models.Trigger{
 				Origins: []models.OriginReference{}, // invalid - missing origins
-				Levels:  []string{"info"},
+				Levels:  []notifications.Level{notifications.LevelInfo},
 			},
 			Action: models.Action{
 				Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -316,7 +348,7 @@ func TestRuleService_List_InvalidRulesDeactivated(t *testing.T) {
 			Name: "Rule 3",
 			Trigger: models.Trigger{
 				Origins: []models.OriginReference{{Class: "test"}},
-				Levels:  []string{"info"},
+				Levels:  []notifications.Level{notifications.LevelInfo},
 			},
 			Action: models.Action{
 				Channel: models.ChannelReference{}, // invalid - missing channel ID
@@ -367,7 +399,7 @@ func TestRuleService_Update(t *testing.T) {
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{ID: "non-existent-channel"},
@@ -389,7 +421,7 @@ func TestRuleService_Update(t *testing.T) {
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "non-existent-origin"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -415,7 +447,7 @@ func TestRuleService_Update(t *testing.T) {
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel:   models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -439,7 +471,7 @@ func TestRuleService_Update(t *testing.T) {
 				Name: "Updated Rule",
 				Trigger: models.Trigger{
 					Origins: []models.OriginReference{{Class: "test"}},
-					Levels:  []string{"info"},
+					Levels:  []notifications.Level{notifications.LevelInfo},
 				},
 				Action: models.Action{
 					Channel:   models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
@@ -457,6 +489,29 @@ func TestRuleService_Update(t *testing.T) {
 				err:     nil,
 			},
 			wantErr: ErrRecipientNotSupported,
+		},
+		"channel with disallowed type should fail": {
+			ruleID: "rule-1",
+			rule: models.Rule{
+				Name: "Updated Rule",
+				Trigger: models.Trigger{
+					Origins: []models.OriginReference{{Class: "test"}},
+					Levels:  []notifications.Level{notifications.LevelInfo},
+				},
+				Action: models.Action{
+					Channel: models.ChannelReference{ID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"},
+				},
+			},
+			mockChannelRepoGet: mockChannelGetCall{
+				channelID: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+				channel:   models.NotificationChannel{ChannelType: "unsupported-channel-type"},
+				err:       nil,
+			},
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{{Class: "test"}},
+				err:     nil,
+			},
+			wantErr: ErrChannelNotFound,
 		},
 	}
 
@@ -480,6 +535,142 @@ func TestRuleService_Update(t *testing.T) {
 
 			if tt.wantErr != nil {
 				assert.ErrorIs(t, err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		mockOriginRepoList    mockOriginListCall
+		mockChannelListByType map[models.ChannelType]mockChannelListByTypeCall
+		wantErr               bool
+		wantOriginCount       int
+		wantChannelCount      int
+		wantLevels            []notifications.Level
+	}{
+		"returns origins, levels and channels of different types": {
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{
+					{Class: "origin-1"},
+					{Class: "origin-2"},
+				},
+				err: nil,
+			},
+			mockChannelListByType: map[models.ChannelType]mockChannelListByTypeCall{
+				models.ChannelTypeMail: {
+					channels: []models.NotificationChannel{
+						{ChannelType: models.ChannelTypeMail, ChannelName: strPtr("Mail Channel 1")},
+					},
+				},
+				models.ChannelTypeMattermost: {
+					channels: []models.NotificationChannel{
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 1")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 2")},
+					},
+				},
+				models.ChannelTypeTeams: {
+					channels: []models.NotificationChannel{
+						{ChannelType: models.ChannelTypeTeams, ChannelName: strPtr("Teams Channel 1")},
+					},
+				},
+			},
+			wantErr:          false,
+			wantOriginCount:  2,
+			wantChannelCount: 4,
+			wantLevels:       notifications.AllowedLevels,
+		},
+		"returns empty origins and no channels": {
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{},
+				err:     nil,
+			},
+			mockChannelListByType: map[models.ChannelType]mockChannelListByTypeCall{
+				models.ChannelTypeMail:       {channels: []models.NotificationChannel{}},
+				models.ChannelTypeMattermost: {channels: []models.NotificationChannel{}},
+				models.ChannelTypeTeams:      {channels: []models.NotificationChannel{}},
+			},
+			wantErr:          false,
+			wantOriginCount:  0,
+			wantChannelCount: 0,
+			wantLevels:       notifications.AllowedLevels,
+		},
+		"only mattermost channels configured": {
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{{Class: "origin-1"}},
+				err:     nil,
+			},
+			mockChannelListByType: map[models.ChannelType]mockChannelListByTypeCall{
+				models.ChannelTypeMail: {channels: []models.NotificationChannel{}},
+				models.ChannelTypeMattermost: {
+					channels: []models.NotificationChannel{
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Only")},
+					},
+				},
+				models.ChannelTypeTeams: {channels: []models.NotificationChannel{}},
+			},
+			wantErr:          false,
+			wantOriginCount:  1,
+			wantChannelCount: 1,
+			wantLevels:       notifications.AllowedLevels,
+		},
+		"origin repo error": {
+			mockOriginRepoList: mockOriginListCall{
+				origins: nil,
+				err:     fmt.Errorf("database error"),
+			},
+			mockChannelListByType: nil,
+			wantErr:               true,
+		},
+		"channel repo error for mail type": {
+			mockOriginRepoList: mockOriginListCall{
+				origins: []entities.Origin{{Class: "origin-1"}},
+				err:     nil,
+			},
+			mockChannelListByType: map[models.ChannelType]mockChannelListByTypeCall{
+				models.ChannelTypeMail: {err: fmt.Errorf("mail channel db error")},
+			},
+			wantErr: true,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			mockRuleRepo := mocks.NewRuleRepository(t)
+			mockChannelRepo := mocks.NewNotificationChannelRepository(t)
+			mockOriginRepo := mocks.NewOriginRepository(t)
+
+			service := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+
+			mockOriginRepo.EXPECT().ListOrigins(mock.Anything).Return(tt.mockOriginRepoList.origins, tt.mockOriginRepoList.err).Once()
+
+			if tt.mockChannelListByType != nil {
+				for _, channelType := range []models.ChannelType{models.ChannelTypeMail, models.ChannelTypeMattermost, models.ChannelTypeTeams} {
+					if call, ok := tt.mockChannelListByType[channelType]; ok {
+						mockChannelRepo.EXPECT().ListNotificationChannelsByType(mock.Anything, channelType).
+							Return(call.channels, call.err).Once()
+						if call.err != nil {
+							break // service stops iterating on first error
+						}
+					}
+				}
+			}
+
+			ctx := context.Background()
+			result, err := service.GetAllRuleOptions(ctx)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Len(t, result.Origins, tt.wantOriginCount)
+				assert.Len(t, result.Channels, tt.wantChannelCount)
+				assert.Equal(t, tt.wantLevels, result.Levels)
+				assert.Equal(t, models.ToOriginReferences(tt.mockOriginRepoList.origins), result.Origins)
 			}
 		})
 	}

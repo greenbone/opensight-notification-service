@@ -1115,6 +1115,40 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "/rules/ruleoptions": {
+            "get": {
+                "security": [
+                    {
+                        "KeycloakAuth": []
+                    }
+                ],
+                "description": "Returns all required options to create a new alert rule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule"
+                ],
+                "summary": "Options to create a new alert rule",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.RuleOptions"
+                        },
+                        "headers": {
+                            "api-version": {
+                                "type": "string",
+                                "description": "API version"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/rules/{id}": {
             "put": {
                 "security": [
@@ -1672,12 +1706,16 @@ const docTemplatenotificationservice = `{
                     "readOnly": true
                 },
                 "level": {
-                    "type": "string",
                     "enum": [
                         "info",
                         "warning",
                         "error",
                         "urgent"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/notifications.Level"
+                        }
                     ]
                 },
                 "origin": {
@@ -1777,6 +1815,50 @@ const docTemplatenotificationservice = `{
                 }
             }
         },
+        "models.RuleOptionChannel": {
+            "type": "object",
+            "required": [
+                "channelType"
+            ],
+            "properties": {
+                "channelName": {
+                    "type": "string"
+                },
+                "channelType": {
+                    "$ref": "#/definitions/models.ChannelType"
+                },
+                "hasRecipient": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                }
+            }
+        },
+        "models.RuleOptions": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.RuleOptionChannel"
+                    }
+                },
+                "levels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/notifications.Level"
+                    }
+                },
+                "origins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OriginReference"
+                    }
+                }
+            }
+        },
         "models.Trigger": {
             "type": "object",
             "required": [
@@ -1787,7 +1869,7 @@ const docTemplatenotificationservice = `{
                 "levels": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/notifications.Level"
                     }
                 },
                 "origins": {
@@ -1803,6 +1885,21 @@ const docTemplatenotificationservice = `{
             "additionalProperties": {
                 "type": "string"
             }
+        },
+        "notifications.Level": {
+            "type": "string",
+            "enum": [
+                "info",
+                "warning",
+                "error",
+                "urgent"
+            ],
+            "x-enum-varnames": [
+                "LevelInfo",
+                "LevelWarning",
+                "LevelError",
+                "LevelUrgent"
+            ]
         },
         "paging.Request": {
             "type": "object",

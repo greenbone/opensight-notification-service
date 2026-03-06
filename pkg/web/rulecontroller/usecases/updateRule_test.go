@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
@@ -443,7 +444,7 @@ func Test_UpdateRule(t *testing.T) {
 			Name: "Test Rule",
 
 			Trigger: models.Trigger{
-				Levels:  []string{"info"},
+				Levels:  []notifications.Level{notifications.LevelInfo},
 				Origins: []models.OriginReference{{Class: "serviceA/origin0"}},
 			},
 			Action: models.Action{

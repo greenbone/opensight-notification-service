@@ -103,3 +103,71 @@ func (_c *NotificationChannelRepository_GetNotificationChannelById_Call) RunAndR
 	_c.Call.Return(run)
 	return _c
 }
+
+// ListNotificationChannelsByType provides a mock function for the type NotificationChannelRepository
+func (_mock *NotificationChannelRepository) ListNotificationChannelsByType(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error) {
+	ret := _mock.Called(ctx, channelType)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListNotificationChannelsByType")
+	}
+
+	var r0 []models.NotificationChannel
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.ChannelType) ([]models.NotificationChannel, error)); ok {
+		return returnFunc(ctx, channelType)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.ChannelType) []models.NotificationChannel); ok {
+		r0 = returnFunc(ctx, channelType)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.NotificationChannel)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, models.ChannelType) error); ok {
+		r1 = returnFunc(ctx, channelType)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// NotificationChannelRepository_ListNotificationChannelsByType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListNotificationChannelsByType'
+type NotificationChannelRepository_ListNotificationChannelsByType_Call struct {
+	*mock.Call
+}
+
+// ListNotificationChannelsByType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - channelType models.ChannelType
+func (_e *NotificationChannelRepository_Expecter) ListNotificationChannelsByType(ctx interface{}, channelType interface{}) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
+	return &NotificationChannelRepository_ListNotificationChannelsByType_Call{Call: _e.mock.On("ListNotificationChannelsByType", ctx, channelType)}
+}
+
+func (_c *NotificationChannelRepository_ListNotificationChannelsByType_Call) Run(run func(ctx context.Context, channelType models.ChannelType)) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 models.ChannelType
+		if args[1] != nil {
+			arg1 = args[1].(models.ChannelType)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *NotificationChannelRepository_ListNotificationChannelsByType_Call) Return(notificationChannels []models.NotificationChannel, err error) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
+	_c.Call.Return(notificationChannels, err)
+	return _c
+}
+
+func (_c *NotificationChannelRepository_ListNotificationChannelsByType_Call) RunAndReturn(run func(ctx context.Context, channelType models.ChannelType) ([]models.NotificationChannel, error)) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
+	_c.Call.Return(run)
+	return _c
+}

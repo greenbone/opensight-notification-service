@@ -28,6 +28,7 @@ type RuleService interface {
 	Create(ctx context.Context, rule models.Rule) (models.Rule, error)
 	Update(ctx context.Context, id string, rule models.Rule) (models.Rule, error)
 	Delete(ctx context.Context, id string) error
+	GetAllRuleOptions(ctx context.Context) (*models.RuleOptions, error)
 }
 
 type RuleController struct {
@@ -57,6 +58,7 @@ func (c *RuleController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFunc
 	group.PUT("/:id", c.UpdateRule)
 	group.DELETE("/:id", c.DeleteRule)
 	group.GET("", c.ListRules)
+	group.GET("/ruleoptions", c.RuleOptions)
 }
 
 func (c *RuleController) configureMappings(r *errmap.Registry) {
@@ -229,4 +231,24 @@ func (c *RuleController) ListRules(gc *gin.Context) {
 	}
 
 	gc.JSON(http.StatusOK, rules)
+}
+
+// RuleOptions
+//
+//	@Summary		Options to create a new alert rule
+//	@Description	Returns all required options to create a new alert rule
+//	@Tags			rule
+//	@Accept			json
+//	@Produce		json
+//	@Security		KeycloakAuth
+//	@Success		200	{object}	models.RuleOptions
+//	@Header			all	{string}	api-version	"API version"
+//	@Router			/rules/ruleoptions [get]
+func (c *RuleController) RuleOptions(gc *gin.Context) {
+	result, err := c.ruleService.GetAllRuleOptions(gc.Request.Context())
+	if ginEx.AddError(gc, err) {
+		return
+	}
+
+	gc.JSON(http.StatusOK, result)
 }

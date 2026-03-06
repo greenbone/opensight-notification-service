@@ -26,6 +26,7 @@ const (
 const (
 	NameIsRequired        = "A name is required."
 	LevelIsRequired       = "A level is required."
+	InvalidLevel          = "Invalid level."
 	OriginClassIsRequired = "An origin class is required."
 	ChannelIsRequired     = "A channel is required."
 	LevelsAreRequired     = "At least one level is required."
