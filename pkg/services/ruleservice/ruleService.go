@@ -154,7 +154,7 @@ func (s *RuleService) validateAction(ctx context.Context, action models.Action) 
 		return ErrChannelNotFound
 	}
 
-	if channel.ChannelType == models.ChannelTypeMail {
+	if channel.ChannelType.HasRecipient() {
 		if action.Recipient == "" {
 			return ErrRecipientRequired
 		}

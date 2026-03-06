@@ -73,7 +73,7 @@ func ToRuleOptionChannels(channels []NotificationChannel) []RuleOptionChannel {
 			Id:           channel.Id,
 			ChannelType:  channel.ChannelType,
 			ChannelName:  channel.ChannelName,
-			HasRecipient: channel.ChannelType == ChannelTypeMail,
+			HasRecipient: channel.ChannelType.HasRecipient(),
 		}
 	}
 	return result
