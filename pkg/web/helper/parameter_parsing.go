@@ -9,7 +9,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greenbone/opensight-notification-service/pkg/errs"
+
+	"github.com/greenbone/opensight-notification-service/pkg/models"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -28,7 +29,7 @@ const (
 func PrepareResultSelector(gc *gin.Context, filterOptions []filter.RequestOption, allowedSortFields []string, defaults query.ResultSelector) (resultSelector query.ResultSelector, err error) {
 	resultSelector = query.ResultSelector{}
 	if err = gc.ShouldBindJSON(&resultSelector); err != nil {
-		return resultSelector, &errs.ErrValidation{Message: fmt.Sprintf("can't parse body: %v", err)}
+		return resultSelector, models.ValidationErrors{"$": fmt.Sprintf("can't parse body: %v", err)}
 	}
 
 	//apply defaults
@@ -36,7 +37,7 @@ func PrepareResultSelector(gc *gin.Context, filterOptions []filter.RequestOption
 
 	err = validate(resultSelector, filterOptions, allowedSortFields)
 	if err != nil {
-		return resultSelector, &errs.ErrValidation{Message: fmt.Sprintf("error validating result selector %v", err)}
+		return resultSelector, models.ValidationErrors{"$": fmt.Sprintf("error validating result selector: %v", err)}
 	}
 
 	return resultSelector, nil

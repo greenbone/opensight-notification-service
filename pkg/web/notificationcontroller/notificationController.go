@@ -5,22 +5,17 @@
 package notificationcontroller
 
 import (
-	"errors"
-	"fmt"
-	"io"
 	"net/http"
-	"time"
 
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
-	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/restErrorHandler"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/helper"
 )
@@ -63,15 +58,13 @@ func AddNotificationController(
 func (c *NotificationController) CreateNotification(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
-	notification, err := parseAndValidateNotification(gc)
-	if err != nil {
-		restErrorHandler.ErrorHandler(gc, "could not get notification", err)
+	var notification models.Notification
+	if !ginEx.BindAndValidateBody(gc, &notification) {
 		return
 	}
 
 	notificationNew, err := c.notificationService.CreateNotification(gc, notification)
-	if err != nil {
-		restErrorHandler.ErrorHandler(gc, "could not create notification", err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 
@@ -94,14 +87,12 @@ func (c *NotificationController) ListNotifications(gc *gin.Context) {
 	gc.Header(web.APIVersionKey, web.APIVersion)
 
 	resultSelector, err := helper.PrepareResultSelector(gc, NotificationsRequestOptions, AllowedNotificationsSortFields, helper.ResultSelectorDefaults(DefaultSortingRequest))
-	if err != nil {
-		restErrorHandler.ErrorHandler(gc, "could not prepare result selector", err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 
 	notifications, totalResults, err := c.notificationService.ListNotifications(gc, resultSelector)
-	if err != nil {
-		restErrorHandler.ErrorHandler(gc, "could not list notifications", err)
+	if ginEx.AddError(gc, err) {
 		return
 	}
 
@@ -129,28 +120,4 @@ func (c *NotificationController) GetOptions(gc *gin.Context) {
 		Data: requestOptions,
 	}
 	gc.JSON(http.StatusOK, response)
-}
-
-func parseAndValidateNotification(gc *gin.Context) (notification models.Notification, err error) {
-	var empty models.Notification
-	err = gc.ShouldBindJSON(&notification)
-	if err != nil {
-		switch {
-		case errors.Is(err, io.EOF):
-			return empty, &errs.ErrValidation{Message: "body must not be empty"}
-		case errors.Is(err, io.ErrUnexpectedEOF):
-			return empty, &errs.ErrValidation{Message: "body is not valid json"}
-		default:
-			return empty, &errs.ErrValidation{Message: fmt.Sprintf("invalid input: %v", err)}
-		}
-	}
-
-	// validating the timestamp format via gin is rather clumsy, as it does not allow usage of the time layout constants and returns only a cryptic error message,
-	// so instead we do it manually here
-	_, err = time.Parse(time.RFC3339Nano, notification.Timestamp)
-	if err != nil {
-		return empty, &errs.ErrValidation{Message: fmt.Sprintf("invalid timestamp format: %v", err)}
-	}
-
-	return notification, nil
 }
