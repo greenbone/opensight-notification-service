@@ -5,6 +5,7 @@
 package iam
 
 const (
-	User  = "user"
-	Admin = "admin"
+	User         = "user"
+	Admin        = "admin"
+	Notification = "opensight_notification_role"
 )

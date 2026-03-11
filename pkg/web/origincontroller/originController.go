@@ -15,6 +15,7 @@ import (
 	_ "github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
@@ -42,7 +43,7 @@ func NewOriginController(
 
 func (c *OriginController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFunc) {
 	group := router.Group("/origins").
-		Use(middleware.AuthorizeRoles(auth, middleware.NotificationRole)...)
+		Use(middleware.AuthorizeRoles(auth, iam.Notification)...)
 	group.PUT("/:serviceID", c.RegisterOrigins)
 }
 

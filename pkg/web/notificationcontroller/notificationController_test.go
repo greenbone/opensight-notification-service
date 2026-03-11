@@ -7,14 +7,18 @@ package notificationcontroller
 import (
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
+	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/dtos"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -23,6 +27,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func getNotification() models.Notification {
@@ -34,6 +39,49 @@ func getNotification() models.Notification {
 		Title:       "Example Task XY failed",
 		Detail:      "Example Task XY failed because ...",
 		Level:       "error",
+	}
+}
+
+func setup(t *testing.T) (*gin.Engine, *mocks.NotificationService) {
+	registry := errmap.NewRegistry()
+	router := testhelper.NewTestWebEngine(registry)
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
+	mockNotificationService := mocks.NewNotificationService(t)
+	AddNotificationController(router, mockNotificationService, authMiddleware)
+
+	return router, mockNotificationService
+}
+
+func TestRuleController_Role(t *testing.T) {
+	t.Parallel()
+
+	wantStatus := http.StatusForbidden
+
+	tests := map[string]struct {
+		role string
+	}{
+		"Create notification is forbidden for role user": {
+			role: iam.User,
+		},
+		"Create notification is forbidden for role admin": {
+			role: iam.Admin,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			router, _ := setup(t)
+
+			httpassert.New(t, router).
+				Post("/notifications").
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(tt.role)).
+				Expect().
+				StatusCode(wantStatus)
+		})
 	}
 }
 
@@ -107,11 +155,7 @@ func TestListNotifications(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockNotificationService := mocks.NewNotificationService(t)
-
-			registry := errmap.NewRegistry()
-			engine := testhelper.NewTestWebEngine(registry)
-			AddNotificationController(engine, mockNotificationService, testhelper.MockAuthMiddleware)
+			router, mockNotificationService := setup(t)
 
 			if tt.want.serviceCall {
 				mockNotificationService.EXPECT().ListNotifications(mock.Anything, tt.want.serviceArg).
@@ -119,16 +163,14 @@ func TestListNotifications(t *testing.T) {
 					Once()
 			}
 
-			req, err := testhelper.NewJSONRequest(http.MethodPut, "/notifications", tt.requestBody)
-			if err != nil {
-				t.Error("could not build request", err)
-				return
-			}
-
-			resp := httptest.NewRecorder()
-			engine.ServeHTTP(resp, req)
-
-			testhelper.VerifyResponseWithMetadata(t, tt.want.responseCode, tt.want.responseParsed, resp)
+			var gotResponse query.ResponseListWithMetadata[models.Notification]
+			httpassert.New(t, router).Put("/notifications").
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
+				JsonContentObject(tt.requestBody).
+				Expect().
+				StatusCode(tt.want.responseCode).
+				GetJsonBodyObject(&gotResponse)
+			require.Equal(t, tt.want.responseParsed, gotResponse)
 		})
 	}
 }
@@ -184,16 +226,11 @@ func TestCreateNotification(t *testing.T) {
 		},
 	}
 
-	httpMethod := http.MethodPost
 	requestUrl := "/notifications"
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockNotificationService := mocks.NewNotificationService(t)
-
-			registry := errmap.NewRegistry()
-			engine := testhelper.NewTestWebEngine(registry)
-			AddNotificationController(engine, mockNotificationService, testhelper.MockAuthMiddleware)
+			router, mockNotificationService := setup(t)
 
 			if tt.want.notificationServiceArg != nil {
 				mockNotificationService.EXPECT().CreateNotification(mock.Anything, *tt.want.notificationServiceArg).
@@ -201,16 +238,15 @@ func TestCreateNotification(t *testing.T) {
 					Once()
 			}
 
-			req, err := testhelper.NewJSONRequest(httpMethod, requestUrl, tt.notificationToCreate)
-			if err != nil {
-				t.Error("could not build request", err)
-				return
-			}
+			var gotResponse query.ResponseWithMetadata[models.Notification]
+			httpassert.New(t, router).Post(requestUrl).
+				JsonContentObject(tt.notificationToCreate).
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Notification)).
+				Expect().
+				StatusCode(tt.want.responseCode).
+				GetJsonBodyObject(&gotResponse)
 
-			resp := httptest.NewRecorder()
-			engine.ServeHTTP(resp, req)
-
-			testhelper.VerifyResponseWithMetadata(t, tt.want.responseCode, tt.want.responseParsed, resp)
+			require.Equal(t, tt.want.responseParsed, gotResponse)
 		})
 	}
 }
