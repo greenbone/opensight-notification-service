@@ -64,7 +64,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 		// --- Update ---
 		updated := valid
-		updated.Id = &mailId
+		updated.Id = mailId
 		newName := "updated"
 		updated.ChannelName = newName
 		request.Put("/notification-channel/mail/"+mailId).

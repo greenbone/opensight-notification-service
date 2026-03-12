@@ -160,11 +160,11 @@ func (t *teamsChannelService) teamsChannelValidations(
 	}
 
 	for _, ch := range channels {
-		if ch.Id != nil && *ch.Id == excludeId {
+		if ch.Id == excludeId {
 			continue
 		}
 
-		if ch.ChannelName != nil && *ch.ChannelName == channelName {
+		if ch.ChannelName == channelName {
 			return ErrTeamsChannelNameExists
 		}
 	}

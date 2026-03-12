@@ -1,11 +1,11 @@
 package models
 
 type NotificationChannel struct {
-	Id                       *string     `json:"id" readonly:"true"`
+	Id                       string      `json:"id" readonly:"true"`
 	CreatedAt                string      `json:"createdAt" readonly:"true"`
 	UpdatedAt                *string     `json:"updatedAt,omitempty"`
 	ChannelType              ChannelType `json:"channelType" binding:"required"`
-	ChannelName              *string     `json:"channelName,omitempty"`
+	ChannelName              string      `json:"channelName" binding:"required"`
 	WebhookUrl               *string     `json:"webhookUrl,omitempty"`
 	Description              *string     `json:"description,omitempty"`
 	Domain                   *string     `json:"domain,omitempty"`

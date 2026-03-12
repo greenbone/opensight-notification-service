@@ -5,11 +5,11 @@ import "github.com/greenbone/opensight-notification-service/pkg/models"
 var empty = notificationChannelRow{}
 
 type notificationChannelRow struct {
-	Id                       *string `db:"id"`
+	Id                       string  `db:"id"`
 	CreatedAt                string  `db:"created_at"`
 	UpdatedAt                *string `db:"updated_at"`
 	ChannelType              string  `db:"channel_type"`
-	ChannelName              *string `db:"channel_name"`
+	ChannelName              string  `db:"channel_name"`
 	WebhookUrl               *string `db:"webhook_url"`
 	Description              *string `db:"description"`
 	Domain                   *string `db:"domain"`

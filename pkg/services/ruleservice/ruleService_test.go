@@ -67,8 +67,6 @@ type mockChannelListByTypeCall struct {
 	err      error
 }
 
-func strPtr(s string) *string { return &s }
-
 func TestRuleService_Create(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
@@ -561,18 +559,18 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 			mockChannelListByType: map[models.ChannelType]mockChannelListByTypeCall{
 				models.ChannelTypeMail: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeMail, ChannelName: strPtr("Mail Channel 1")},
+						{ChannelType: models.ChannelTypeMail, ChannelName: "Mail Channel 1"},
 					},
 				},
 				models.ChannelTypeMattermost: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 1")},
-						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 2")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: "Mattermost Channel 1"},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: "Mattermost Channel 2"},
 					},
 				},
 				models.ChannelTypeTeams: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeTeams, ChannelName: strPtr("Teams Channel 1")},
+						{ChannelType: models.ChannelTypeTeams, ChannelName: "Teams Channel 1"},
 					},
 				},
 			},
@@ -605,7 +603,7 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 				models.ChannelTypeMail: {channels: []models.NotificationChannel{}},
 				models.ChannelTypeMattermost: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Only")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: "Mattermost Only"},
 					},
 				},
 				models.ChannelTypeTeams: {channels: []models.NotificationChannel{}},
