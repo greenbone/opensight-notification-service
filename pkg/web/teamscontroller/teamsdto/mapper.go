@@ -8,8 +8,8 @@ import (
 // MapNotificationChannelToTeams maps NotificationChannel to TeamsNotificationChannelRequest.
 func MapNotificationChannelToTeams(channel models.NotificationChannel) TeamsNotificationChannelResponse {
 	return TeamsNotificationChannelResponse{
-		Id:          *channel.Id,
-		ChannelName: helper.SafeDereference(channel.ChannelName),
+		Id:          channel.Id,
+		ChannelName: channel.ChannelName,
 		WebhookUrl:  helper.SafeDereference(channel.WebhookUrl),
 		Description: helper.SafeDereference(channel.Description),
 	}
@@ -18,7 +18,7 @@ func MapNotificationChannelToTeams(channel models.NotificationChannel) TeamsNoti
 func MapTeamsToNotificationChannel(mail TeamsNotificationChannelRequest) models.NotificationChannel {
 	return models.NotificationChannel{
 		ChannelType: models.ChannelTypeTeams,
-		ChannelName: &mail.ChannelName,
+		ChannelName: mail.ChannelName,
 		WebhookUrl:  &mail.WebhookUrl,
 		Description: &mail.Description,
 	}

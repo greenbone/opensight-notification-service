@@ -102,7 +102,7 @@ func (v CheckMailServerEntityRequest) Validate() models.ValidationErrors {
 
 // MailNotificationChannelRequest mail notification channel request
 type MailNotificationChannelRequest struct {
-	Id                       *string `json:"id,omitempty"`
+	Id                       string  `json:"id" readonly:"true"`
 	ChannelName              string  `json:"channelName"`
 	Domain                   string  `json:"domain"`
 	Port                     int     `json:"port"`

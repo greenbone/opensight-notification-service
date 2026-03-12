@@ -198,7 +198,7 @@ func (r *notificationChannelRepository) UpdateNotificationChannel(
 	in models.NotificationChannel,
 ) (models.NotificationChannel, error) {
 	rowIn := toNotificationChannelRow(in)
-	rowIn.Id = &id
+	rowIn.Id = id
 
 	rowWithEncryption, err := r.encrypt(rowIn)
 	if err != nil {

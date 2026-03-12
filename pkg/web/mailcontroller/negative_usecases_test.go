@@ -44,7 +44,7 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 
 		// --- Update ---
 		updated := valid
-		updated.Id = &mailId
+		updated.Id = mailId
 		newName := "updated"
 		updated.ChannelName = newName
 		updateBody := request.Put("/notification-channel/mail/"+mailId).
