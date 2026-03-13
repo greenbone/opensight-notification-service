@@ -19,6 +19,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/translation"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
 
@@ -52,7 +53,7 @@ func NewRuleController(
 
 func (c *RuleController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFunc) {
 	group := router.Group("/rules").
-		Use(middleware.AuthorizeRoles(auth, middleware.AdminRole)...)
+		Use(middleware.AuthorizeRoles(auth, iam.Admin)...)
 	group.GET("/:id", c.GetRule)
 	group.POST("", c.CreateRule)
 	group.PUT("/:id", c.UpdateRule)

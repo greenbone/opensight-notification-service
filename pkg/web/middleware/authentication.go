@@ -12,10 +12,6 @@ import (
 	"github.com/samber/lo"
 )
 
-const UserRole = "user"
-const AdminRole = "admin"
-const NotificationRole = "opensight_notification_role"
-
 // AuthorizeRoles adds role-based authorization middleware to the provided handler.
 // It first executes the provided authentication function, then checks if the user has one of the required roles.
 func AuthorizeRoles(authFunc gin.HandlerFunc, roles ...string) []gin.HandlerFunc {

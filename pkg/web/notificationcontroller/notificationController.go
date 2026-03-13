@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationservice"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 	"github.com/samber/lo"
 
@@ -37,10 +38,14 @@ func AddNotificationController(
 		notificationService: notificationService,
 	}
 
-	group := router.Group("/notifications").Use(middleware.AuthorizeRoles(auth, middleware.UserRole, middleware.NotificationRole)...)
-	group.POST("", ctrl.CreateNotification)
-	group.PUT("", ctrl.ListNotifications)
-	group.GET("/options", ctrl.GetOptions)
+	groupPath := "/notifications"
+
+	router.Group(groupPath).Use(middleware.AuthorizeRoles(auth, iam.User)...).
+		PUT("", ctrl.ListNotifications).
+		GET("/options", ctrl.GetOptions)
+	// only to be used by other backend services
+	router.Group(groupPath).Use(middleware.AuthorizeRoles(auth, iam.Notification)...).
+		POST("", ctrl.CreateNotification)
 }
 
 // CreateNotification
