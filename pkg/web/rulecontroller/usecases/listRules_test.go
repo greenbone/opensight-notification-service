@@ -37,7 +37,7 @@ func Test_ListRules(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		createRule(t, router, fmt.Sprintf(`{
@@ -49,7 +49,7 @@ func Test_ListRules(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-			}`, *channels[0].Id))
+			}`, channels[0].Id))
 
 		createRule(t, router, fmt.Sprintf(`{
 				"name": "Rule A",
@@ -60,7 +60,7 @@ func Test_ListRules(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-			}`, *channels[0].Id))
+			}`, channels[0].Id))
 
 		httpassert.New(t, router).Get("/rules").
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -117,10 +117,10 @@ func Test_ListRules(t *testing.T) {
 				map[string]any{
 					"$.0.id":                           httpassert.IgnoreJsonValue,
 					"$.0.trigger.origins[0].serviceID": origins[0].ServiceID,
-					"$.0.action.channel.id":            *channels[0].Id,
+					"$.0.action.channel.id":            channels[0].Id,
 					"$.1.id":                           httpassert.IgnoreJsonValue,
 					"$.1.trigger.origins[0].serviceID": origins[0].ServiceID,
-					"$.1.action.channel.id":            *channels[0].Id,
+					"$.1.action.channel.id":            channels[0].Id,
 				},
 			)
 	})
@@ -129,7 +129,7 @@ func Test_ListRules(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router, channelRepo, originRepo := setupTestEnvironmentWithRepoReturn(t, origins, channels, ruleLimit)
 
 		createRule(t, router, fmt.Sprintf(`{
@@ -142,13 +142,13 @@ func Test_ListRules(t *testing.T) {
 					"channel": {"id": "%s"}
 				},
 				"active": true
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		// delete the origin and channel to make the rule invalid
 		ctx := context.Background()
 		err := originRepo.UpsertOrigins(ctx, origins[0].ServiceID, []entities.Origin{})
 		require.NoError(t, err)
-		err = channelRepo.DeleteNotificationChannel(ctx, *channels[0].Id)
+		err = channelRepo.DeleteNotificationChannel(ctx, channels[0].Id)
 		require.NoError(t, err)
 
 		httpassert.New(t, router).Get("/rules").

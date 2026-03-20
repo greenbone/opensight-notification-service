@@ -1,11 +1,8 @@
 package notificationchannelservice
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
@@ -51,30 +48,7 @@ func NewMattermostChannelService(
 }
 
 func (m *mattermostChannelService) SendMattermostTestMessage(webhookUrl string) error {
-	body, err := json.Marshal(map[string]string{
-		"text": "Hello, This is a test message",
-	})
-	if err != nil {
-		return fmt.Errorf("can not marshal mattermost message: %w", err)
-	}
-
-	resp, err := m.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			return fmt.Errorf("%w: timeout", ErrMattermostMassageDelivery)
-		}
-		return fmt.Errorf("%w: %s", ErrMattermostMassageDelivery, err.Error())
-	}
-
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("%w: http status: %s", ErrMattermostMassageDelivery, resp.Status)
-	}
-
-	return nil
+	return sendMattermostMessage(m.transport, webhookUrl, "Hello, This is a test message")
 }
 
 func (m *mattermostChannelService) CreateMattermostChannel(
@@ -128,11 +102,11 @@ func (m *mattermostChannelService) mattermostChannelValidations(
 	}
 
 	for _, ch := range channels {
-		if ch.Id != nil && *ch.Id == excludeId {
+		if ch.Id == excludeId {
 			continue
 		}
 
-		if ch.ChannelName != nil && *ch.ChannelName == channelName {
+		if ch.ChannelName == channelName {
 			return ErrMattermostChannelNameExists
 		}
 	}

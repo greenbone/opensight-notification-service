@@ -6,6 +6,7 @@ package ruleservice
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -13,10 +14,176 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
+
 	"github.com/greenbone/opensight-notification-service/pkg/services/ruleservice/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
+
+func Test_ProcessRules(t *testing.T) {
+
+	// notification processed in all tests
+	notification := models.Notification{
+		Origin:      "Test Origin",
+		OriginClass: "/serviceID/origin1",
+		Timestamp:   "2024-01-01T00:00:00Z",
+		Title:       "Test Notification",
+		Detail:      "This is a test notification",
+		Level:       notifications.LevelInfo,
+	}
+	channel := models.NotificationChannel{
+		Id:          "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+		ChannelType: models.ChannelTypeMattermost,
+		ChannelName: "Test Channel",
+		WebhookUrl:  new("url"),
+	}
+
+	ruleWithTrigger := func(trigger models.Trigger, active bool) models.Rule {
+		return models.Rule{
+			Name:    "Test Rule",
+			Trigger: trigger,
+			Action: models.Action{
+				Channel: models.ChannelReference{
+					ID:   channel.Id,
+					Type: channel.ChannelType,
+					Name: channel.ChannelName,
+				},
+			},
+			Active: active,
+		}
+	}
+
+	wantAction := models.Action{
+		Channel: models.ChannelReference{
+			ID:   channel.Id,
+			Type: channel.ChannelType,
+			Name: channel.ChannelName,
+		},
+	}
+
+	tests := map[string]struct {
+		rules       []models.Rule
+		ruleRepoErr error
+		wantActions []models.Action
+		wantErr     bool
+	}{
+		"matching origin class and level triggers": {
+			rules: []models.Rule{ruleWithTrigger(
+				models.Trigger{
+					Origins: []models.OriginReference{{Class: "no-match"}, {Class: notification.OriginClass}},
+					Levels:  []notifications.Level{notifications.LevelError, notification.Level},
+				},
+				true,
+			)},
+			wantActions: []models.Action{wantAction},
+		},
+		"deactivated rule does not trigger": {
+			rules: []models.Rule{ruleWithTrigger(
+				models.Trigger{
+					Origins: []models.OriginReference{{Class: notification.OriginClass}},
+					Levels:  []notifications.Level{notification.Level},
+				},
+				false,
+			)},
+			wantActions: nil,
+		},
+		"origin 'Any' always matches": {
+			rules: []models.Rule{ruleWithTrigger(
+				models.Trigger{
+					Origins: []models.OriginReference{{Class: originAllClass}},
+					Levels:  []notifications.Level{notification.Level},
+				},
+				true,
+			)},
+			wantActions: []models.Action{wantAction},
+		},
+		"non-matching origin class does not trigger": {
+			rules: []models.Rule{ruleWithTrigger(
+				models.Trigger{
+					Origins: []models.OriginReference{{Class: "no-match"}},
+					Levels:  []notifications.Level{notification.Level},
+				},
+				true,
+			)},
+			wantActions: nil,
+		},
+		"non-matching level does not trigger": {
+			rules: []models.Rule{ruleWithTrigger(
+				models.Trigger{
+					Origins: []models.OriginReference{{Class: notification.OriginClass}},
+					Levels:  []notifications.Level{notifications.LevelError},
+				},
+				true,
+			)},
+			wantActions: nil,
+		},
+		"multiple rules trigger": {
+			rules: []models.Rule{
+				ruleWithTrigger( // no match
+					models.Trigger{
+						Origins: []models.OriginReference{{Class: notification.OriginClass}},
+						Levels:  []notifications.Level{notifications.LevelError},
+					},
+					true,
+				),
+				ruleWithTrigger( // deactivated -> does not trigger
+					models.Trigger{
+						Origins: []models.OriginReference{{Class: notification.OriginClass}},
+						Levels:  []notifications.Level{notification.Level},
+					},
+					false,
+				),
+				ruleWithTrigger( // triggers
+					models.Trigger{
+						Origins: []models.OriginReference{{Class: notification.OriginClass}},
+						Levels:  []notifications.Level{notification.Level},
+					},
+					true,
+				),
+				ruleWithTrigger( // triggers
+					models.Trigger{
+						Origins: []models.OriginReference{{Class: notification.OriginClass}},
+						Levels:  []notifications.Level{notification.Level},
+					},
+					true,
+				),
+			},
+			wantActions: []models.Action{
+				wantAction,
+				wantAction,
+			},
+		},
+		"error on rule repo failure": {
+			ruleRepoErr: errors.New("db error"),
+			wantActions: nil,
+			wantErr:     true,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ruleRepo := mocks.NewRuleRepository(t)
+			originRepo := initOriginRepoMock(t)
+
+			ruleService, err := NewRuleService(ruleRepo, nil, originRepo, 10)
+			require.NoError(t, err)
+
+			// setup mocks
+			ruleRepo.EXPECT().List(mock.Anything).Return(tt.rules, tt.ruleRepoErr).Once()
+
+			gotActions, err := ruleService.ProcessRules(context.Background(), notification)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.wantActions, gotActions)
+		})
+	}
+}
 
 func getValidRule() models.Rule {
 	return models.Rule{
@@ -32,21 +199,29 @@ func getValidRule() models.Rule {
 	}
 }
 
+// initOriginRepoMock creates the mock and sets up the expectation for the UpsertOrigins call that happens during RuleService initialization
+func initOriginRepoMock(t *testing.T) *mocks.OriginRepository {
+	mockOriginRepo := mocks.NewOriginRepository(t)
+	mockOriginRepo.EXPECT().UpsertOrigins(mock.Anything, originAllServiceID, []entities.Origin{{Name: originAllName, Class: originAllClass}}).Return(nil)
+	return mockOriginRepo
+}
+
 func TestRuleService_Create_RuleLimitReached(t *testing.T) {
 	t.Parallel()
 	mockRuleRepo := mocks.NewRuleRepository(t)
 	mockChannelRepo := mocks.NewNotificationChannelRepository(t)
-	mockOriginRepo := mocks.NewOriginRepository(t)
+	mockOriginRepo := initOriginRepoMock(t)
 
 	ruleLimit := 5
-	service := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, ruleLimit)
+	service, err := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, ruleLimit)
+	require.NoError(t, err)
 
 	// Mock List to return exactly ruleLimit number of rules
 	existingRules := make([]models.Rule, ruleLimit)
 	mockRuleRepo.EXPECT().List(mock.Anything).Return(existingRules, nil)
 
 	ctx := context.Background()
-	_, err := service.Create(ctx, getValidRule())
+	_, err = service.Create(ctx, getValidRule())
 
 	assert.ErrorIs(t, err, ErrRuleLimitReached)
 }
@@ -67,9 +242,7 @@ type mockChannelListByTypeCall struct {
 	err      error
 }
 
-func strPtr(s string) *string { return &s }
-
-func TestRuleService_Create(t *testing.T) {
+func TestRuleService_Create_Failure(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
 		rule               models.Rule
@@ -203,9 +376,10 @@ func TestRuleService_Create(t *testing.T) {
 			t.Parallel()
 			mockRuleRepo := mocks.NewRuleRepository(t)
 			mockChannelRepo := mocks.NewNotificationChannelRepository(t)
-			mockOriginRepo := mocks.NewOriginRepository(t)
+			mockOriginRepo := initOriginRepoMock(t)
 
-			service := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			service, err := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			require.NoError(t, err)
 
 			mockRuleRepo.EXPECT().List(mock.Anything).Return([]models.Rule{}, nil)
 			mockRuleRepo.EXPECT().Create(mock.Anything, tt.rule).Return(models.Rule{}, nil).Maybe()
@@ -215,11 +389,8 @@ func TestRuleService_Create(t *testing.T) {
 			mockOriginRepo.EXPECT().ListOrigins(mock.Anything).Return(tt.mockOriginRepoList.origins, tt.mockOriginRepoList.err).Once()
 
 			ctx := context.Background()
-			_, err := service.Create(ctx, tt.rule)
-
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
-			}
+			_, err = service.Create(ctx, tt.rule)
+			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}
 }
@@ -286,9 +457,10 @@ func TestRuleService_Get_InvalidRuleDeactivated(t *testing.T) {
 			t.Parallel()
 			mockRuleRepo := mocks.NewRuleRepository(t)
 			mockChannelRepo := mocks.NewNotificationChannelRepository(t)
-			mockOriginRepo := mocks.NewOriginRepository(t)
+			mockOriginRepo := initOriginRepoMock(t)
 
-			service := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			service, err := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			require.NoError(t, err)
 
 			mockRuleRepo.EXPECT().Get(mock.Anything, tt.rule.ID).Return(tt.rule, nil)
 
@@ -314,9 +486,10 @@ func TestRuleService_List_InvalidRulesDeactivated(t *testing.T) {
 
 	mockRuleRepo := mocks.NewRuleRepository(t)
 	mockChannelRepo := mocks.NewNotificationChannelRepository(t)
-	mockOriginRepo := mocks.NewOriginRepository(t)
+	mockOriginRepo := initOriginRepoMock(t)
 
-	service := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+	service, err := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+	require.NoError(t, err)
 
 	rulesFromRepo := []models.Rule{
 		{
@@ -520,9 +693,10 @@ func TestRuleService_Update(t *testing.T) {
 			t.Parallel()
 			mockRuleRepo := mocks.NewRuleRepository(t)
 			mockChannelRepo := mocks.NewNotificationChannelRepository(t)
-			mockOriginRepo := mocks.NewOriginRepository(t)
+			mockOriginRepo := initOriginRepoMock(t)
 
-			service := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			service, err := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			require.NoError(t, err)
 
 			mockRuleRepo.EXPECT().Update(mock.Anything, tt.ruleID, tt.rule).Return(models.Rule{}, nil).Maybe()
 
@@ -531,7 +705,7 @@ func TestRuleService_Update(t *testing.T) {
 			mockOriginRepo.EXPECT().ListOrigins(mock.Anything).Return(tt.mockOriginRepoList.origins, tt.mockOriginRepoList.err).Once()
 
 			ctx := context.Background()
-			_, err := service.Update(ctx, tt.ruleID, tt.rule)
+			_, err = service.Update(ctx, tt.ruleID, tt.rule)
 
 			if tt.wantErr != nil {
 				assert.ErrorIs(t, err, tt.wantErr)
@@ -561,18 +735,18 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 			mockChannelListByType: map[models.ChannelType]mockChannelListByTypeCall{
 				models.ChannelTypeMail: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeMail, ChannelName: strPtr("Mail Channel 1")},
+						{ChannelType: models.ChannelTypeMail, ChannelName: "Mail Channel 1"},
 					},
 				},
 				models.ChannelTypeMattermost: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 1")},
-						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Channel 2")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: "Mattermost Channel 1"},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: "Mattermost Channel 2"},
 					},
 				},
 				models.ChannelTypeTeams: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeTeams, ChannelName: strPtr("Teams Channel 1")},
+						{ChannelType: models.ChannelTypeTeams, ChannelName: "Teams Channel 1"},
 					},
 				},
 			},
@@ -605,7 +779,7 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 				models.ChannelTypeMail: {channels: []models.NotificationChannel{}},
 				models.ChannelTypeMattermost: {
 					channels: []models.NotificationChannel{
-						{ChannelType: models.ChannelTypeMattermost, ChannelName: strPtr("Mattermost Only")},
+						{ChannelType: models.ChannelTypeMattermost, ChannelName: "Mattermost Only"},
 					},
 				},
 				models.ChannelTypeTeams: {channels: []models.NotificationChannel{}},
@@ -640,9 +814,10 @@ func TestRuleService_GetAllRuleOptionsFiltered(t *testing.T) {
 			t.Parallel()
 			mockRuleRepo := mocks.NewRuleRepository(t)
 			mockChannelRepo := mocks.NewNotificationChannelRepository(t)
-			mockOriginRepo := mocks.NewOriginRepository(t)
+			mockOriginRepo := initOriginRepoMock(t)
 
-			service := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			service, err := NewRuleService(mockRuleRepo, mockChannelRepo, mockOriginRepo, 10)
+			require.NoError(t, err)
 
 			mockOriginRepo.EXPECT().ListOrigins(mock.Anything).Return(tt.mockOriginRepoList.origins, tt.mockOriginRepoList.err).Once()
 

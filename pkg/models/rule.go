@@ -35,9 +35,9 @@ type RuleOptions struct {
 }
 
 type RuleOptionChannel struct {
-	Id           *string     `json:"id" readonly:"true"`
-	ChannelType  ChannelType `json:"channelType" binding:"required"`
-	ChannelName  *string     `json:"channelName,omitempty"`
+	Id           string      `json:"id" validate:"required"`
+	ChannelType  ChannelType `json:"channelType" validate:"required"`
+	ChannelName  string      `json:"channelName" validate:"required"`
 	HasRecipient bool        `json:"hasRecipient"`
 }
 

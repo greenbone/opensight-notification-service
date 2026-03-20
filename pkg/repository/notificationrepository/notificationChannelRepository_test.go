@@ -38,7 +38,7 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 	// Create
 	channelIn := models.NotificationChannel{
 		ChannelType:              models.ChannelTypeMail,
-		ChannelName:              helper.ToPtr("Test Channel"),
+		ChannelName:              "Test Channel",
 		WebhookUrl:               nil,
 		Domain:                   helper.ToPtr("example.com"),
 		Port:                     helper.ToPtr(587),
@@ -55,7 +55,7 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, created.Id)
 	assert.Equal(t, channelIn.ChannelType, created.ChannelType)
-	assert.Equal(t, *channelIn.ChannelName, *created.ChannelName)
+	assert.Equal(t, channelIn.ChannelName, created.ChannelName)
 
 	// List by type
 	listed, err := repo.ListNotificationChannelsByType(ctx, "mail")
@@ -65,13 +65,13 @@ func Test_NotificationChannelRepository_CRUD(t *testing.T) {
 
 	// Update
 	updatedIn := created
-	updatedIn.ChannelName = helper.ToPtr("Updated Channel")
-	updated, err := repo.UpdateNotificationChannel(ctx, *created.Id, updatedIn)
+	updatedIn.ChannelName = "Updated Channel"
+	updated, err := repo.UpdateNotificationChannel(ctx, created.Id, updatedIn)
 	require.NoError(t, err)
-	assert.Equal(t, "Updated Channel", *updated.ChannelName)
+	assert.Equal(t, "Updated Channel", updated.ChannelName)
 
 	// Delete
-	err = repo.DeleteNotificationChannel(ctx, *created.Id)
+	err = repo.DeleteNotificationChannel(ctx, created.Id)
 	require.NoError(t, err)
 
 	// List after delete

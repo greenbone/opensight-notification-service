@@ -28,8 +28,8 @@ func getValidNotificationChannel() models.NotificationChannel {
 	maxInclude := 5
 	sender := "sender@example.com"
 	return models.NotificationChannel{
-		Id:                       &id,
-		ChannelName:              &name,
+		Id:                       id,
+		ChannelName:              name,
 		Domain:                   &domain,
 		Port:                     &port,
 		IsAuthenticationRequired: &auth,
@@ -261,7 +261,7 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 			resp := req.Expect()
 			resp.StatusCode(tt.wantStatusCode)
 			if tt.wantStatusCode == http.StatusOK {
-				resp.JsonPath("$.channelName", *valid.ChannelName)
+				resp.JsonPath("$.channelName", valid.ChannelName)
 			}
 			if tt.wantStatusCode == http.StatusBadRequest {
 				resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool { return actual != nil }))

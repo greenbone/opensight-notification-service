@@ -27,7 +27,7 @@ func Test_DeleteRule(t *testing.T) {
 			{Name: "origin0", Class: "serviceA/origin0"},
 		}
 		channels := []models.NotificationChannel{
-			{ChannelName: new("channel-name-0"), ChannelType: "mattermost"},
+			{ChannelName: "channel-name-0", ChannelType: "mattermost"},
 		}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
@@ -42,7 +42,7 @@ func Test_DeleteRule(t *testing.T) {
 						"id": "%s"
 					}
 				}
-			}`, *channels[0].Id))
+			}`, channels[0].Id))
 
 		httpassert.New(t, router).Deletef("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
