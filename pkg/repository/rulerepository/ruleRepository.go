@@ -15,9 +15,8 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/validation"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"github.com/lib/pq/pqerror"
 )
-
-const pgErrorUniqueViolationCode = "23505"
 
 var ErrInvalidID error = errors.New("id is not a valid uuid-v4")
 var ErrDuplicateRuleName error = errors.New("rule with the same name already exists")
@@ -145,7 +144,7 @@ func postgresErrorHandling(err error) error {
 	}
 
 	if pgErr, ok := errors.AsType[*pq.Error](err); ok {
-		if pgErr.Code == pgErrorUniqueViolationCode {
+		if pgErr.Code == pqerror.UniqueViolation {
 			return ErrDuplicateRuleName
 		}
 	}

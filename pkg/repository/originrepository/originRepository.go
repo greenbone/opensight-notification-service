@@ -13,10 +13,8 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/errs"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"github.com/lib/pq/pqerror"
 )
-
-// see https://github.com/lib/pq/blob/3d613208bca2e74f2a20e04126ed30bcb5c4cc27/error.go#L78
-const pgErrCodeConflict = "23505"
 
 type OriginRepository struct {
 	client *sqlx.DB
@@ -67,7 +65,7 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, 
 		if err != nil {
 			var pgErr *pq.Error
 			if errors.As(err, &pgErr) { // postgres specific error handling
-				if pgErr.Code == pgErrCodeConflict {
+				if pgErr.Code == pqerror.UniqueViolation {
 					err = &errs.ErrConflict{Message: "duplicate origin class"}
 				}
 			}
