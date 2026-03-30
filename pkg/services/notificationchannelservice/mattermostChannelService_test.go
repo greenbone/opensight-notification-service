@@ -12,21 +12,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSendMattermostTestMessage_PostsToWebhook(t *testing.T) {
+func TestSendMattermostTestMessage(t *testing.T) {
 	var gotMethod, gotURL string
 
-	svc := &mattermostChannelService{
-		transport: &http.Client{
-			Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-				gotMethod = r.Method
-				gotURL = r.URL.String()
-				return &http.Response{
-					StatusCode: http.StatusNoContent,
-					Body:       http.NoBody,
-					Header:     make(http.Header),
-				}, nil
-			})},
-	}
+	notificationChannelService := mocks.NewNotificationChannelService(t)
+	mattermostService := NewMattermostService(&http.Client{
+		Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+			gotMethod = r.Method
+			gotURL = r.URL.String()
+			return &http.Response{
+				StatusCode: http.StatusNoContent,
+				Body:       http.NoBody,
+				Header:     make(http.Header),
+			}, nil
+		})},
+	)
+	svc := NewMattermostChannelService(notificationChannelService, 10, mattermostService)
 
 	webhook := "https://example.com:443/workflows/01fa130f2e134641b2cf39d8a710a002"
 	err := svc.SendMattermostTestMessage(webhook)
@@ -37,12 +38,12 @@ func TestSendMattermostTestMessage_PostsToWebhook(t *testing.T) {
 }
 
 func TestSendMattermostTestMessage_ErrorOnTransport(t *testing.T) {
-	svc := &mattermostChannelService{
-		transport: &http.Client{
-			Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-				return nil, ErrMattermostMassageDelivery
-			})},
-	}
+	notificationChannelService := mocks.NewNotificationChannelService(t)
+	mattermostService := NewMattermostService(&http.Client{
+		Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+			return nil, ErrMattermostMassageDelivery
+		})})
+	svc := NewMattermostChannelService(notificationChannelService, 10, mattermostService)
 
 	err := svc.SendMattermostTestMessage("https://example.com:443/workflows/01fa130f2e134641b2cf39d8a710a002")
 	require.ErrorContains(t, err, "mattermost message could not be send")
@@ -54,8 +55,9 @@ func TestMattermostChannelLimit(t *testing.T) {
 		Return([]models.NotificationChannel{
 			{},
 		}, nil)
+	mattermostService := NewMattermostService(http.DefaultClient)
 
-	service := NewMattermostChannelService(notificationChannelService, 1, http.DefaultClient)
+	service := NewMattermostChannelService(notificationChannelService, 1, mattermostService)
 
 	_, err := service.CreateMattermostChannel(context.Background(), mattermostdto.MattermostNotificationChannelRequest{})
 	require.ErrorIs(t, err, ErrMattermostChannelLimitReached)

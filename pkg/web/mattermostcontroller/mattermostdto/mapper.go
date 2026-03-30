@@ -8,8 +8,8 @@ import (
 // MapNotificationChannelToMattermost maps NotificationChannel to MattermostNotificationChannelRequest.
 func MapNotificationChannelToMattermost(channel models.NotificationChannel) MattermostNotificationChannelResponse {
 	return MattermostNotificationChannelResponse{
-		Id:          *channel.Id,
-		ChannelName: helper.SafeDereference(channel.ChannelName),
+		Id:          channel.Id,
+		ChannelName: channel.ChannelName,
 		WebhookUrl:  helper.SafeDereference(channel.WebhookUrl),
 		Description: helper.SafeDereference(channel.Description),
 	}
@@ -18,7 +18,7 @@ func MapNotificationChannelToMattermost(channel models.NotificationChannel) Matt
 func MapMattermostToNotificationChannel(mail MattermostNotificationChannelRequest) models.NotificationChannel {
 	return models.NotificationChannel{
 		ChannelType: models.ChannelTypeMattermost,
-		ChannelName: &mail.ChannelName,
+		ChannelName: mail.ChannelName,
 		WebhookUrl:  &mail.WebhookUrl,
 		Description: &mail.Description,
 	}

@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/repository/notificationrepository"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 )
 
@@ -33,20 +32,17 @@ type MailChannelService interface {
 
 type mailChannelService struct {
 	notificationChannelService NotificationChannelService
-	store                      notificationrepository.NotificationChannelRepository
 	emailLimit                 int
 	mailService                MailService
 }
 
 func NewMailChannelService(
 	notificationChannelService NotificationChannelService,
-	store notificationrepository.NotificationChannelRepository,
 	mailService MailService,
 	emailLimit int,
 ) MailChannelService {
 	return &mailChannelService{
 		notificationChannelService: notificationChannelService,
-		store:                      store,
 		emailLimit:                 emailLimit,
 		mailService:                mailService,
 	}
@@ -81,7 +77,7 @@ func (m *mailChannelService) CheckNotificationChannelEntityConnectivity(
 	id string,
 	mailServer models.NotificationChannel,
 ) error {
-	channel, err := m.store.GetNotificationChannelByIdAndType(ctx, id, models.ChannelTypeMail)
+	channel, err := m.notificationChannelService.GetNotificationChannelByIdAndType(ctx, id, models.ChannelTypeMail)
 	if err != nil {
 		return errors.Join(ErrGetMailChannel, err)
 	}

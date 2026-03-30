@@ -21,18 +21,19 @@ func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 func TestSendTeamsTestMessage_PostsToWebhook(t *testing.T) {
 	var gotMethod, gotURL string
 
-	svc := &teamsChannelService{
-		transport: &http.Client{
-			Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-				gotMethod = r.Method
-				gotURL = r.URL.String()
-				return &http.Response{
-					StatusCode: http.StatusNoContent,
-					Body:       http.NoBody,
-					Header:     make(http.Header),
-				}, nil
-			})},
-	}
+	notificationChannelService := mocks.NewNotificationChannelService(t)
+	teamsService := NewTeamsService(&http.Client{
+		Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+			gotMethod = r.Method
+			gotURL = r.URL.String()
+			return &http.Response{
+				StatusCode: http.StatusNoContent,
+				Body:       http.NoBody,
+				Header:     make(http.Header),
+			}, nil
+		})},
+	)
+	svc := NewTeamsChannelService(notificationChannelService, 10, teamsService)
 
 	webhook := "https://example.com:443/workflows/01fa130f2e134641b2cf39d8a710a002"
 	err := svc.SendTeamsTestMessage(webhook)
@@ -43,12 +44,12 @@ func TestSendTeamsTestMessage_PostsToWebhook(t *testing.T) {
 }
 
 func TestSendTeamsTestMessage_ErrorOnTransport(t *testing.T) {
-	svc := &teamsChannelService{
-		transport: &http.Client{
-			Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-				return nil, ErrTeamsMessageDelivery
-			})},
-	}
+	notificationChannelService := mocks.NewNotificationChannelService(t)
+	teamsService := NewTeamsService(&http.Client{
+		Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+			return nil, ErrTeamsMessageDelivery
+		})})
+	svc := NewTeamsChannelService(notificationChannelService, 10, teamsService)
 
 	err := svc.SendTeamsTestMessage("https://example.com:443/workflows/01fa130f2e134641b2cf39d8a710a002")
 	require.ErrorContains(t, err, "teams message could not be send")
@@ -60,8 +61,9 @@ func TestTeamsChannelLimit(t *testing.T) {
 		Return([]models.NotificationChannel{
 			{},
 		}, nil)
+	teamsService := NewTeamsService(http.DefaultClient)
 
-	service := NewTeamsChannelService(notificationChannelService, 1, http.DefaultClient)
+	service := NewTeamsChannelService(notificationChannelService, 1, teamsService)
 
 	_, err := service.CreateTeamsChannel(context.Background(), teamsdto.TeamsNotificationChannelRequest{})
 	require.ErrorIs(t, err, ErrTeamsChannelLimitReached)

@@ -66,7 +66,8 @@ func setupTestEnvironmentWithRepoReturn(t *testing.T, origins []entities.Origin,
 
 	ruleRepo, err := rulerepository.NewRuleRepository(db)
 	require.NoError(t, err)
-	ruleService := ruleservice.NewRuleService(ruleRepo, notificationChannelRepo, originRepo, ruleLimit)
+	ruleService, err := ruleservice.NewRuleService(ruleRepo, notificationChannelRepo, originRepo, ruleLimit)
+	require.NoError(t, err)
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
@@ -86,7 +87,7 @@ func Test_CreateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mail"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name", ChannelType: "mail"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		httpassert.New(t, router).Post("/rules").
@@ -110,7 +111,7 @@ func Test_CreateRule(t *testing.T) {
 					"recipient": "a@example.com"
 				},
 				"Active": true
-	}`, *channels[0].Id)).
+	}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusCreated).
 			JsonPath("$.id", httpassert.NotEmpty()).
@@ -138,7 +139,7 @@ func Test_CreateRule(t *testing.T) {
 				map[string]any{
 					"$.id":                           httpassert.IgnoreJsonValue,
 					"$.trigger.origins[0].serviceID": origins[0].ServiceID,
-					"$.action.channel.id":            *channels[0].Id,
+					"$.action.channel.id":            channels[0].Id,
 				},
 			)
 	})
@@ -201,7 +202,7 @@ func Test_CreateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mail"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name", ChannelType: "mail"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		httpassert.New(t, router).Post("/rules").
@@ -218,7 +219,7 @@ func Test_CreateRule(t *testing.T) {
 					}
 				}
 						
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -234,7 +235,7 @@ func Test_CreateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		httpassert.New(t, router).Post("/rules").
@@ -251,7 +252,7 @@ func Test_CreateRule(t *testing.T) {
 					},
 					"recipient": "not@supported.com"
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -266,7 +267,7 @@ func Test_CreateRule(t *testing.T) {
 	t.Run("failure due to non existing notification origin", func(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, nil, channels, ruleLimit)
 
 		httpassert.New(t, router).Post("/rules").
@@ -282,7 +283,7 @@ func Test_CreateRule(t *testing.T) {
 						"id": "%s"
 					}
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -329,7 +330,7 @@ func Test_CreateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		httpassert.New(t, router).Post("/rules").
@@ -345,7 +346,7 @@ func Test_CreateRule(t *testing.T) {
 						"id": "%s"
 					}						
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusCreated)
 
@@ -362,7 +363,7 @@ func Test_CreateRule(t *testing.T) {
 						"id": "%s"
 					}						
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -378,7 +379,7 @@ func Test_CreateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 1
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		httpassert.New(t, router).Post("/rules").
@@ -394,7 +395,7 @@ func Test_CreateRule(t *testing.T) {
 						"id": "%s"
 					}						
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusCreated)
 
@@ -411,7 +412,7 @@ func Test_CreateRule(t *testing.T) {
 						"id": "%s"
 					}						
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusUnprocessableEntity).
 			Json(`{

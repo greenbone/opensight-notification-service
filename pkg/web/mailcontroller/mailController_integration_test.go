@@ -64,7 +64,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 		// --- Update ---
 		updated := valid
-		updated.Id = &mailId
+		updated.Id = mailId
 		newName := "updated"
 		updated.ChannelName = newName
 		request.Put("/notification-channel/mail/"+mailId).
@@ -158,7 +158,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	repo, db := testhelper.SetupNotificationChannelTestEnv(t)
 	svc := notificationchannelservice.NewNotificationChannelService(repo)
 	mailService := notificationchannelservice.NewMailService()
-	mailSvc := notificationchannelservice.NewMailChannelService(svc, repo, mailService, 1)
+	mailSvc := notificationchannelservice.NewMailChannelService(svc, mailService, 1)
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)

@@ -25,7 +25,7 @@ func Test_GetRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mail"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mail"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -49,7 +49,7 @@ func Test_GetRule(t *testing.T) {
 					"recipient": "a@example.com"
 				},
 				"active": true
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Getf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -82,7 +82,7 @@ func Test_GetRule(t *testing.T) {
 				map[string]any{
 					"$.id":                           httpassert.IgnoreJsonValue,
 					"$.trigger.origins[0].serviceID": origins[0].ServiceID,
-					"$.action.channel.id":            *channels[0].Id,
+					"$.action.channel.id":            channels[0].Id,
 				})
 	})
 
@@ -90,7 +90,7 @@ func Test_GetRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mail"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mail"}}
 		router, channelRepo, originRepo := setupTestEnvironmentWithRepoReturn(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -104,13 +104,13 @@ func Test_GetRule(t *testing.T) {
 					"recipient": "a@example.com"
 				},
 				"active": true
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		// delete the origin and channel to make the rule invalid
 		ctx := context.Background()
 		err := originRepo.UpsertOrigins(ctx, origins[0].ServiceID, []entities.Origin{})
 		require.NoError(t, err)
-		err = channelRepo.DeleteNotificationChannel(ctx, *channels[0].Id)
+		err = channelRepo.DeleteNotificationChannel(ctx, channels[0].Id)
 		require.NoError(t, err)
 
 		httpassert.New(t, router).Getf("/rules/%s", ruleID).

@@ -42,8 +42,8 @@ func Test_UpdateRule(t *testing.T) {
 			{Name: "origin1", Class: "serviceA/origin1"},
 		}
 		channels := []models.NotificationChannel{
-			{ChannelName: new("channel-name-0"), ChannelType: "mattermost"},
-			{ChannelName: new("channel-name-1"), ChannelType: "mail"},
+			{ChannelName: "channel-name-0", ChannelType: "mattermost"},
+			{ChannelName: "channel-name-1", ChannelType: "mail"},
 		}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
@@ -56,7 +56,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": { "id": "%s" }
 				}
-			}`, *channels[0].Id))
+			}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -79,7 +79,7 @@ func Test_UpdateRule(t *testing.T) {
 					"recipient": "test@example.org"
 				},
 				"active": true
-			}`, *channels[1].Id)).
+			}`, channels[1].Id)).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonTemplate(`{
@@ -106,7 +106,7 @@ func Test_UpdateRule(t *testing.T) {
 				map[string]any{
 					"$.id":                           ruleID,
 					"$.trigger.origins[0].serviceID": origins[1].ServiceID,
-					"$.action.channel.id":            *channels[1].Id,
+					"$.action.channel.id":            channels[1].Id,
 				},
 			)
 	})
@@ -115,7 +115,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -127,7 +127,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": { "id": "%s" }
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -150,7 +150,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -162,7 +162,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": { "id": "%s" }
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -193,7 +193,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("mail-1"), ChannelType: "mail"}}
+		channels := []models.NotificationChannel{{ChannelName: "mail-1", ChannelType: "mail"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -206,7 +206,7 @@ func Test_UpdateRule(t *testing.T) {
 					"channel": {"id": "%s"},
 					"recipient": "a@example.com"
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -220,7 +220,7 @@ func Test_UpdateRule(t *testing.T) {
 					"channel": {"id": "%s"},
 					"recipient": ""
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -236,7 +236,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("mattermost-1"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "mattermost-1", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -248,7 +248,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -262,7 +262,7 @@ func Test_UpdateRule(t *testing.T) {
 					"channel": {"id": "%s"},
 					"recipient": "not@supported.com"
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -278,7 +278,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -290,7 +290,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -303,7 +303,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -319,7 +319,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
@@ -331,7 +331,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": { "id": "%s" }
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -361,7 +361,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		createRule(t, router, fmt.Sprintf(`{
@@ -373,7 +373,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		ruleID := createRule(t, router, fmt.Sprintf(`{
 				"name": "Test Rule",
@@ -384,7 +384,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-		}`, *channels[0].Id))
+		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
 			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
@@ -397,7 +397,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -413,7 +413,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		httpassert.New(t, router).Putf("/rules/%s", uuid.New().String()).
@@ -428,7 +428,7 @@ func Test_UpdateRule(t *testing.T) {
 				"action": {
 					"channel": {"id": "%s"}
 				}
-			}`, *channels[0].Id)).
+			}`, channels[0].Id)).
 			Expect().
 			StatusCode(http.StatusNotFound)
 	})
@@ -437,7 +437,7 @@ func Test_UpdateRule(t *testing.T) {
 		t.Parallel()
 		ruleLimit := 10
 		origins := []entities.Origin{{Name: "origin0", Class: "serviceA/origin0"}}
-		channels := []models.NotificationChannel{{ChannelName: new("channel-name-0"), ChannelType: "mattermost"}}
+		channels := []models.NotificationChannel{{ChannelName: "channel-name-0", ChannelType: "mattermost"}}
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		updateRule := models.Rule{
@@ -449,7 +449,7 @@ func Test_UpdateRule(t *testing.T) {
 			},
 			Action: models.Action{
 				Channel: models.ChannelReference{
-					ID: *channels[0].Id,
+					ID: channels[0].Id,
 				},
 			},
 		}

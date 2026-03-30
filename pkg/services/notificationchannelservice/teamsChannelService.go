@@ -1,15 +1,10 @@
 package notificationchannelservice
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"net/http"
 
 	"github.com/greenbone/opensight-notification-service/pkg/models"
-	"github.com/greenbone/opensight-notification-service/pkg/policy"
 	"github.com/greenbone/opensight-notification-service/pkg/web/teamscontroller/teamsdto"
 )
 
@@ -36,78 +31,23 @@ type TeamsChannelService interface {
 type teamsChannelService struct {
 	notificationChannelService NotificationChannelService
 	teamsChannelLimit          int
-	transport                  *http.Client
+	teamsService               *TeamsService
 }
 
 func NewTeamsChannelService(
 	notificationChannelService NotificationChannelService,
 	teamsChannelLimit int,
-	transport *http.Client,
+	teamsService *TeamsService,
 ) TeamsChannelService {
 	return &teamsChannelService{
 		notificationChannelService: notificationChannelService,
 		teamsChannelLimit:          teamsChannelLimit,
-		transport:                  transport,
+		teamsService:               teamsService,
 	}
 }
 
 func (t *teamsChannelService) SendTeamsTestMessage(webhookUrl string) error {
-	isTeamsOldWebhookUrl, err := policy.IsTeamsOldWebhookUrl(webhookUrl)
-	if err != nil {
-		return fmt.Errorf("failed to validate teams webhook url: %w", err)
-	}
-
-	var message map[string]interface{}
-	if isTeamsOldWebhookUrl {
-		message = map[string]interface{}{
-			"text": "Hello, This is a test message",
-		}
-
-	} else {
-		message = map[string]interface{}{
-			"type": "message",
-			"attachments": []map[string]interface{}{
-				{
-					"contentType": "application/vnd.microsoft.card.adaptive",
-					"content": map[string]interface{}{
-						"$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-						"type":    "AdaptiveCard",
-						"version": "1.2",
-						"body": []map[string]interface{}{
-							{
-								"type": "TextBlock",
-								"text": "Hello, This is a test message",
-							},
-						},
-					},
-				},
-			},
-		}
-
-	}
-
-	body, err := json.Marshal(message)
-	if err != nil {
-		return fmt.Errorf("can not marshal teams message: %w", err)
-	}
-
-	resp, err := t.transport.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			return fmt.Errorf("%w: timeout", ErrTeamsMessageDelivery)
-		}
-		return fmt.Errorf("%w: %s", ErrTeamsMessageDelivery, err.Error())
-	}
-
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("%w: http status: %s", ErrTeamsMessageDelivery, resp.Status)
-	}
-
-	return nil
+	return t.teamsService.SendMessage(webhookUrl, "Hello, This is a test message")
 }
 
 func (t *teamsChannelService) CreateTeamsChannel(
@@ -160,11 +100,11 @@ func (t *teamsChannelService) teamsChannelValidations(
 	}
 
 	for _, ch := range channels {
-		if ch.Id != nil && *ch.Id == excludeId {
+		if ch.Id == excludeId {
 			continue
 		}
 
-		if ch.ChannelName != nil && *ch.ChannelName == channelName {
+		if ch.ChannelName == channelName {
 			return ErrTeamsChannelNameExists
 		}
 	}

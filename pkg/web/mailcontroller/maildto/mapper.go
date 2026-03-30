@@ -5,8 +5,8 @@ import "github.com/greenbone/opensight-notification-service/pkg/models"
 // MapNotificationChannelToMail maps NotificationChannel to MailNotificationChannelResponse.
 func MapNotificationChannelToMail(channel models.NotificationChannel) MailNotificationChannelResponse {
 	return MailNotificationChannelResponse{
-		Id:                       *channel.Id,
-		ChannelName:              *channel.ChannelName,
+		Id:                       channel.Id,
+		ChannelName:              channel.ChannelName,
 		Domain:                   *channel.Domain,
 		Port:                     *channel.Port,
 		IsAuthenticationRequired: *channel.IsAuthenticationRequired,
@@ -22,7 +22,7 @@ func MapMailToNotificationChannel(mail MailNotificationChannelRequest) models.No
 	return models.NotificationChannel{
 		ChannelType:              models.ChannelTypeMail,
 		Id:                       mail.Id,
-		ChannelName:              &mail.ChannelName,
+		ChannelName:              mail.ChannelName,
 		Domain:                   &mail.Domain,
 		Port:                     &mail.Port,
 		IsAuthenticationRequired: &mail.IsAuthenticationRequired,

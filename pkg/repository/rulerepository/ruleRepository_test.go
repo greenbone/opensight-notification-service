@@ -38,13 +38,13 @@ func createTestChannel(t *testing.T, db *sqlx.DB, name string, channelType model
 
 	// create channel
 	channel, err := repo.CreateNotificationChannel(ctx, models.NotificationChannel{
-		ChannelName: &name,
+		ChannelName: name,
 		ChannelType: channelType,
 	})
 	require.NoError(t, err)
-	require.NotNil(t, channel.Id)
+	require.NotEmpty(t, channel.Id)
 
-	return *channel.Id
+	return channel.Id
 }
 
 func createTestOrigin(t *testing.T, db *sqlx.DB, name, class, serviceID string) {
