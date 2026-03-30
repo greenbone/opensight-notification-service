@@ -21,7 +21,7 @@ jobs:
       - name: Execute unit tests
         run: make test
       - name: Upload unit test coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: cov-unit-tests.txt
           flags: unit-tests
