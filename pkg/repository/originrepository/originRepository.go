@@ -82,7 +82,7 @@ func (r *OriginRepository) UpsertOrigins(ctx context.Context, serviceID string, 
 }
 
 // ListOrigins returns all origins in the database.
-// The origins are ordered by serviceID and name.
+// The origins are ordered by name with serviceID as tie breaker.
 func (r *OriginRepository) ListOrigins(ctx context.Context) ([]entities.Origin, error) {
 	var originRows []originRow
 	err := r.client.SelectContext(ctx, &originRows, listOriginsQuery)

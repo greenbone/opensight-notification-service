@@ -17,7 +17,7 @@ import (
 
 const (
 	OriginAllServiceID = "global"
-	OriginAllName      = "All"
+	OriginAllName      = "--- ALL ---" // should stand out and be alphabetically first
 	// special origin which matches all origins in a notification
 	OriginAllClass = "/global/all"
 )
