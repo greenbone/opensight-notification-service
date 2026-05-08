@@ -185,15 +185,15 @@ func TestListNotifications_Role(t *testing.T) {
 		role       string
 		wantStatus int
 	}{
-		"Create notification is allowed for role user": {
+		"List notification is allowed for role user": {
 			role:       iam.User,
 			wantStatus: http.StatusOK,
 		},
-		"Create notification is allowed for role osi.user": {
+		"List notification is allowed for role osi.user": {
 			role:       iam.OsiUser,
 			wantStatus: http.StatusOK,
 		},
-		"Create notification is forbidden for role admin": {
+		"List notification is forbidden for role admin": {
 			role:       iam.Admin,
 			wantStatus: http.StatusForbidden,
 		},
@@ -214,7 +214,7 @@ func TestListNotifications_Role(t *testing.T) {
 			httpassert.New(t, router).
 				Put("/notifications").
 				AuthJwt(integrationTests.CreateJwtTokenWithRole(tt.role)).
-				JsonContentObject(query.ResultSelector{}).
+				Content("{}").
 				Expect().
 				StatusCode(tt.wantStatus)
 		})
