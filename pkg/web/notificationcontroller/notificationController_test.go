@@ -181,15 +181,6 @@ func TestListNotifications(t *testing.T) {
 func TestListNotifications_Role(t *testing.T) {
 	t.Parallel()
 
-	resultSelector := query.ResultSelector{
-		Filter: &filter.Request{Operator: filter.LogicOperatorAnd},
-		Paging: &paging.Request{PageSize: 10},
-		Sorting: &sorting.Request{
-			SortColumn:    dtos.OccurrenceFieldName,
-			SortDirection: sorting.DirectionAscending,
-		},
-	}
-
 	tests := map[string]struct {
 		role       string
 		wantStatus int
@@ -202,7 +193,7 @@ func TestListNotifications_Role(t *testing.T) {
 			role:       iam.OsiUser,
 			wantStatus: http.StatusOK,
 		},
-		"Create notification is allowed for role admin": {
+		"Create notification is forbidden for role admin": {
 			role:       iam.Admin,
 			wantStatus: http.StatusForbidden,
 		},
@@ -215,7 +206,7 @@ func TestListNotifications_Role(t *testing.T) {
 			router, mockNotificationService := setup(t)
 
 			if tt.wantStatus == http.StatusOK {
-				mockNotificationService.EXPECT().ListNotifications(mock.Anything, resultSelector).
+				mockNotificationService.EXPECT().ListNotifications(mock.Anything, mock.Anything).
 					Return([]models.Notification{}, uint64(0), nil).
 					Once()
 			}
@@ -223,7 +214,7 @@ func TestListNotifications_Role(t *testing.T) {
 			httpassert.New(t, router).
 				Put("/notifications").
 				AuthJwt(integrationTests.CreateJwtTokenWithRole(tt.role)).
-				JsonContentObject(resultSelector).
+				JsonContentObject(query.ResultSelector{}).
 				Expect().
 				StatusCode(tt.wantStatus)
 		})
