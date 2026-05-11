@@ -6,6 +6,7 @@ package iam
 
 const (
 	User         = "user"
+	OsiUser      = "osi.user"
 	Admin        = "admin"
 	Notification = "opensight_notification_role"
 )

@@ -35,7 +35,7 @@ func AddNotificationController(
 
 	groupPath := "/notifications"
 
-	router.Group(groupPath).Use(middleware.AuthorizeRoles(auth, iam.User)...).
+	router.Group(groupPath).Use(middleware.AuthorizeRoles(auth, iam.User, iam.OsiUser)...).
 		PUT("", ctrl.ListNotifications).
 		GET("/options", ctrl.GetOptions)
 	// only to be used by other backend services
