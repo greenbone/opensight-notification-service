@@ -13,6 +13,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,50 +26,57 @@ func setup(t *testing.T) *gin.Engine {
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
+	notificationChannelService.
+		On("ListNotificationChannelsByType", mock.Anything, mock.Anything).
+		Maybe().
+		Return(nil, nil)
+
 	NewTeamsController(router, notificationChannelService, teamsChannelService, authMiddleware, registry)
 	return router
 }
 
-func TestTeamsController(t *testing.T) {
+func TestTeamsController_ForbiddenRoles(t *testing.T) {
 	router := setup(t)
 
-	t.Run("Create teams channel is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Post(`/notification-channel/teams`).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.OsiAdmin, iam.Notification}
 
-	t.Run("Get teams channels is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Get(`/notification-channel/teams`).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	endpoints := []struct {
+		name   string
+		method string
+		path   string
+	}{
+		{"Create teams channel", http.MethodPost, "/notification-channel/teams"},
+		{"List teams channels", http.MethodGet, "/notification-channel/teams"},
+		{"Update teams channel", http.MethodPut, "/notification-channel/teams/" + uuid.NewString()},
+		{"Delete teams channel", http.MethodDelete, "/notification-channel/teams/" + uuid.NewString()},
+		{"Check teams channel", http.MethodPost, "/notification-channel/teams/check"},
+	}
 
-	t.Run("Update teams channel is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Putf(`/notification-channel/teams/%s`, uuid.New()).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	for _, role := range forbiddenRoles {
+		for _, ep := range endpoints {
+			t.Run(ep.name+" is forbidden for role "+role, func(t *testing.T) {
+				httpassert.New(t, router).
+					Perform(ep.method, ep.path).
+					AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
+					Expect().
+					StatusCode(http.StatusForbidden)
+			})
+		}
+	}
+}
 
-	t.Run("Delete teams channel is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Deletef(`/notification-channel/teams/%s`, uuid.New()).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+func TestTeamsController_AllowedRoles(t *testing.T) {
+	router := setup(t)
 
-	t.Run("Check teams channels is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Post(`/notification-channel/teams/check`).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	allowedRoles := []string{iam.Admin, iam.NotificationAdmin}
+
+	for _, role := range allowedRoles {
+		t.Run("Access is granted for role "+role, func(t *testing.T) {
+			httpassert.New(t, router).
+				Get(`/notification-channel/teams`).
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
+				Expect().
+				StatusCode(http.StatusOK)
+		})
+	}
 }

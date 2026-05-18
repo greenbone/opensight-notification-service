@@ -13,6 +13,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,50 +26,60 @@ func setup(t *testing.T) *gin.Engine {
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
+	// We only test permissions, the method ifself is not part of these tests.
+	notificationChannelService.
+		On("ListNotificationChannelsByType", mock.Anything, mock.Anything).
+		Maybe().
+		Return(nil, nil)
+
 	NewMattermostController(router, notificationChannelService, mattermostChannelService, authMiddleware, registry)
 	return router
 }
 
-func TestMattermostController(t *testing.T) {
+func TestMattermostController_ForbiddenRoles(t *testing.T) {
 	router := setup(t)
 
-	t.Run("Create mattermost channel is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Post(`/notification-channel/mattermost`).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.OsiAdmin, iam.Notification}
 
-	t.Run("Get mattermost channels is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Get(`/notification-channel/mattermost`).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	type endpoint struct {
+		name   string
+		method string
+		path   string
+	}
 
-	t.Run("Update mattermost channel is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Putf(`/notification-channel/mattermost/%s`, uuid.New()).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	endpoints := []endpoint{
+		{"Create mattermost channel", http.MethodPost, "/notification-channel/mattermost"},
+		{"List mattermost channels", http.MethodGet, "/notification-channel/mattermost"},
+		{"Update mattermost channel", http.MethodPut, "/notification-channel/mattermost/" + uuid.NewString()},
+		{"Delete mattermost channel", http.MethodDelete, "/notification-channel/mattermost/" + uuid.NewString()},
+		{"Check mattermost channel", http.MethodPost, "/notification-channel/mattermost/check"},
+	}
 
-	t.Run("Delete mattermost channel is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Deletef(`/notification-channel/mattermost/%s`, uuid.New()).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+	for _, role := range forbiddenRoles {
+		for _, ep := range endpoints {
+			t.Run(ep.name+" is forbidden for role "+role, func(t *testing.T) {
+				httpassert.New(t, router).
+					Perform(ep.method, ep.path).
+					AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
+					Expect().
+					StatusCode(http.StatusForbidden)
+			})
+		}
+	}
+}
 
-	t.Run("Check mattermost channels is forbidden for role user", func(t *testing.T) {
-		httpassert.New(t, router).
-			Post(`/notification-channel/mattermost/check`).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
-			Expect().
-			StatusCode(http.StatusForbidden)
-	})
+func TestMattermostController_AllowedRoles(t *testing.T) {
+	router := setup(t)
+
+	allowedRoles := []string{iam.Admin, iam.NotificationAdmin}
+
+	for _, role := range allowedRoles {
+		t.Run("Access is granted for role "+role, func(t *testing.T) {
+			httpassert.New(t, router).
+				Get(`/notification-channel/mattermost`).
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
+				Expect().
+				StatusCode(http.StatusOK)
+		})
+	}
 }

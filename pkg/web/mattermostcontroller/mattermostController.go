@@ -34,7 +34,7 @@ func NewMattermostController(
 	}
 
 	group := router.Group("/notification-channel/mattermost").
-		Use(middleware.AuthorizeRoles(auth, iam.Admin)...)
+		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.NotificationAdmin)...)
 	group.Use(errorHandler(gin.ErrorTypePrivate))
 
 	group.POST("", ctrl.createMattermostChannel)

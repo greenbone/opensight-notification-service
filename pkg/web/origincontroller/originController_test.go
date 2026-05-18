@@ -10,14 +10,18 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/origincontroller/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRegisterOrigins(t *testing.T) {
@@ -127,43 +131,57 @@ func TestRegisterOrigins(t *testing.T) {
 	}
 }
 
-func TestRegisterOrigins_Auth(t *testing.T) {
-	tests := map[string]struct {
-		authMiddleware   gin.HandlerFunc
-		wantResponseCode int
-	}{
-		"notification user is allowed to register origins": {
-			authMiddleware:   testhelper.MockAuthMiddlewareWithNotificationUser,
-			wantResponseCode: http.StatusNoContent,
-		},
-		"normal users are not allowed to register origins": {
-			authMiddleware:   testhelper.MockAuthMiddleware,
-			wantResponseCode: http.StatusForbidden,
-		},
-		"admins are not allowed to register origins": {
-			authMiddleware:   testhelper.MockAuthMiddlewareWithAdmin,
-			wantResponseCode: http.StatusForbidden,
-		},
-	}
+func setupWithAuth(t *testing.T) (*gin.Engine, *mocks.OriginService) {
+	mockService := mocks.NewOriginService(t)
+	registry := errmap.NewRegistry()
+	router := testhelper.NewTestWebEngine(registry)
 
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			mockService := mocks.NewOriginService(t)
-			if tt.wantResponseCode == http.StatusNoContent {
-				mockService.EXPECT().UpsertOrigins(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-			}
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
 
-			registry := errmap.NewRegistry()
-			router := testhelper.NewTestWebEngine(registry)
+	_ = NewOriginController(router, mockService, authMiddleware)
+	return router, mockService
+}
 
-			_ = NewOriginController(router, mockService, tt.authMiddleware)
+func TestRegisterOrigins_ForbiddenRoles(t *testing.T) {
+	t.Parallel()
 
-			request := httpassert.New(t, router)
+	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.Admin, iam.OsiAdmin, iam.NotificationAdmin}
 
-			request.Put("/origins/serviceX").
+	for _, role := range forbiddenRoles {
+		t.Run("Register origins is forbidden for role "+role, func(t *testing.T) {
+			t.Parallel()
+
+			router, _ := setupWithAuth(t)
+
+			httpassert.New(t, router).
+				Put("/origins/serviceX").
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
 				JsonContentObject([]models.Origin{{Name: "Origin", Class: "origin/class"}}).
 				Expect().
-				StatusCode(tt.wantResponseCode)
+				StatusCode(http.StatusForbidden)
+		})
+	}
+}
+
+func TestRegisterOrigins_AllowedRoles(t *testing.T) {
+	t.Parallel()
+
+	allowedRoles := []string{iam.Notification}
+
+	for _, role := range allowedRoles {
+		t.Run("Register origins is allowed for role "+role, func(t *testing.T) {
+			t.Parallel()
+
+			router, mockService := setupWithAuth(t)
+			mockService.EXPECT().UpsertOrigins(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+			httpassert.New(t, router).
+				Put("/origins/serviceX").
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
+				JsonContentObject([]models.Origin{{Name: "Origin", Class: "origin/class"}}).
+				Expect().
+				StatusCode(http.StatusNoContent)
 		})
 	}
 }

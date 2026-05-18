@@ -10,6 +10,7 @@ import (
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/ginEx"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
 	"github.com/greenbone/opensight-notification-service/pkg/web/mailcontroller/maildto"
 	"github.com/greenbone/opensight-notification-service/pkg/web/middleware"
 )
@@ -55,7 +56,7 @@ func (mc *MailController) configureMappings(r errmap.ErrorRegistry) {
 
 func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
 	group := router.Group("/notification-channel/mail").
-		Use(middleware.AuthorizeRoles(auth, "admin")...)
+		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.NotificationAdmin)...)
 	group.POST("", mc.CreateMailChannel)
 	group.GET("", mc.ListMailChannelsByType)
 	group.PUT("/:id", mc.UpdateMailChannel)
