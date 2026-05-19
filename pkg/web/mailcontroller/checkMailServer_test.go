@@ -5,12 +5,16 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func setup(t *testing.T) (*gin.Engine, *mocks.MailChannelService) {
@@ -21,6 +25,20 @@ func setup(t *testing.T) (*gin.Engine, *mocks.MailChannelService) {
 
 	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin, registry)
 	return engine, notificationChannelServicer
+}
+
+func setupCheckMailServerWithAuth(t *testing.T) *gin.Engine {
+	registry := errmap.NewRegistry()
+	engine := testhelper.NewTestWebEngine(registry)
+	mailChannelService := mocks.NewMailChannelService(t)
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
+
+	mailChannelService.On("CheckNotificationChannelConnectivity", mock.Anything, mock.Anything).Maybe().Return(nil)
+
+	AddCheckMailServerController(engine, mailChannelService, authMiddleware, registry)
+	return engine
 }
 
 func TestCheckMailServer(t *testing.T) {
@@ -124,4 +142,46 @@ func TestCheckMailServer(t *testing.T) {
 				"title": "Server is unreachable"
 			}`)
 	})
+}
+
+func TestCheckMailServer_ForbiddenRoles(t *testing.T) {
+	t.Parallel()
+
+	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.OsiAdmin, iam.Notification}
+
+	for _, role := range forbiddenRoles {
+		t.Run("Check mail server is forbidden for role "+role, func(t *testing.T) {
+			t.Parallel()
+
+			router := setupCheckMailServerWithAuth(t)
+
+			httpassert.New(t, router).
+				Post("/notification-channel/mail/check").
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
+				Content(`{"domain":"example.com","port":123}`).
+				Expect().
+				StatusCode(http.StatusForbidden)
+		})
+	}
+}
+
+func TestCheckMailServer_AllowedRoles(t *testing.T) {
+	t.Parallel()
+
+	allowedRoles := []string{iam.Admin, iam.NotificationAdmin}
+
+	for _, role := range allowedRoles {
+		t.Run("Check mail server is allowed for role "+role, func(t *testing.T) {
+			t.Parallel()
+
+			router := setupCheckMailServerWithAuth(t)
+
+			httpassert.New(t, router).
+				Post("/notification-channel/mail/check").
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
+				Content(`{"domain":"example.com","port":123}`).
+				Expect().
+				StatusCode(http.StatusNoContent)
+		})
+	}
 }

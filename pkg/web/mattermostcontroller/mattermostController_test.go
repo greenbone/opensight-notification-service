@@ -26,7 +26,7 @@ func setup(t *testing.T) *gin.Engine {
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
-	// We only test permissions, the method ifself is not part of these tests.
+	// We only test permissions, the method itself is not part of these tests.
 	notificationChannelService.
 		On("ListNotificationChannelsByType", mock.Anything, mock.Anything).
 		Maybe().
