@@ -1,0 +1,45 @@
+# Install via pipx `sudo apt install pipx && pipx ensurepath && pipx install pre-commit`
+# reload your shell `source ~/.bashrc` and then install via `pre-commit install --hook-type pre-push`.
+# This runs basic linting and tests to prevent a failing pipeline
+repos:
+  - repo: local
+    hooks:
+      - id: lint-backend
+        name: Backend Linting
+        entry: make lint
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      - id: test-backend
+        name: Backend Tests
+        entry: make test
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      - id: govulncheck
+        name: Check for Vulnerabilities
+        entry: make govulncheck
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      - id: generate-mocks
+        name: Generate Mocks
+        entry: bash -c "make generate-code && git diff --exit-code"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      - id: generate-api-docs
+        name: Generate API docs
+        entry: bash -c "make api-docs && git diff --exit-code"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
