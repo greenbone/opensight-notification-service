@@ -7,17 +7,22 @@ package origincontroller
 import (
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/entities"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/origincontroller/mocks"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRegisterOrigins(t *testing.T) {
@@ -127,43 +132,62 @@ func TestRegisterOrigins(t *testing.T) {
 	}
 }
 
-func TestRegisterOrigins_Auth(t *testing.T) {
-	tests := map[string]struct {
-		authMiddleware   gin.HandlerFunc
-		wantResponseCode int
+func setupWithAuth(t *testing.T) *gin.Engine {
+	mockService := mocks.NewOriginService(t)
+	registry := errmap.NewRegistry()
+	router := testhelper.NewTestWebEngine(registry)
+
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	require.NoError(t, err)
+
+	NewOriginController(router, mockService, authMiddleware)
+	return router
+}
+
+func TestRegisterOrigins_Permissions(t *testing.T) {
+	t.Parallel()
+
+	var endpoints = []struct {
+		name   string
+		method string
+		path   string
 	}{
-		"notification user is allowed to register origins": {
-			authMiddleware:   testhelper.MockAuthMiddlewareWithNotificationUser,
-			wantResponseCode: http.StatusNoContent,
-		},
-		"normal users are not allowed to register origins": {
-			authMiddleware:   testhelper.MockAuthMiddleware,
-			wantResponseCode: http.StatusForbidden,
-		},
-		"admins are not allowed to register origins": {
-			authMiddleware:   testhelper.MockAuthMiddlewareWithAdmin,
-			wantResponseCode: http.StatusForbidden,
-		},
+		{"Register origins", http.MethodPut, "/origins/serviceX"},
 	}
 
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			mockService := mocks.NewOriginService(t)
-			if tt.wantResponseCode == http.StatusNoContent {
-				mockService.EXPECT().UpsertOrigins(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-			}
+	tests := []struct {
+		role      string
+		wantAllow bool
+	}{
+		// ensure this is the same as in iam/roles.go
+		{iam.OsiViewer, false},
+		{iam.User, false},
+		{iam.OsiUser, false},
+		{iam.OsiAdmin, false},
+		{iam.Admin, false},
+		{iam.NotificationAdmin, false},
+		{iam.Notification, true},
+	}
 
-			registry := errmap.NewRegistry()
-			router := testhelper.NewTestWebEngine(registry)
+	for _, tt := range tests {
+		for _, ep := range endpoints {
+			t.Run(ep.name+" as "+tt.role, func(t *testing.T) {
+				t.Parallel()
 
-			_ = NewOriginController(router, mockService, tt.authMiddleware)
+				router := setupWithAuth(t)
 
-			request := httpassert.New(t, router)
+				req, _ := http.NewRequest(ep.method, ep.path, nil)
+				req.Header.Set("Authorization", "Bearer "+integrationTests.CreateJwtTokenWithRole(tt.role))
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
 
-			request.Put("/origins/serviceX").
-				JsonContentObject([]models.Origin{{Name: "Origin", Class: "origin/class"}}).
-				Expect().
-				StatusCode(tt.wantResponseCode)
-		})
+				if tt.wantAllow {
+					require.NotEqual(t, http.StatusUnauthorized, w.Code)
+					require.NotEqual(t, http.StatusForbidden, w.Code)
+				} else {
+					require.Equal(t, http.StatusForbidden, w.Code)
+				}
+			})
+		}
 	}
 }
