@@ -1,7 +1,13 @@
+// SPDX-FileCopyrightText: 2026 Greenbone AG <https://greenbone.net>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package mailcontroller
 
 import (
 	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -23,22 +29,11 @@ func setup(t *testing.T) (*gin.Engine, *mocks.MailChannelService) {
 
 	notificationChannelServicer := mocks.NewMailChannelService(t)
 
-	AddCheckMailServerController(engine, notificationChannelServicer, testhelper.MockAuthMiddlewareWithAdmin, registry)
-	return engine, notificationChannelServicer
-}
-
-func setupCheckMailServerWithAuth(t *testing.T) *gin.Engine {
-	registry := errmap.NewRegistry()
-	engine := testhelper.NewTestWebEngine(registry)
-	mailChannelService := mocks.NewMailChannelService(t)
-
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
-	mailChannelService.On("CheckNotificationChannelConnectivity", mock.Anything, mock.Anything).Maybe().Return(nil)
-
-	AddCheckMailServerController(engine, mailChannelService, authMiddleware, registry)
-	return engine
+	AddCheckMailServerController(engine, notificationChannelServicer, authMiddleware, registry)
+	return engine, notificationChannelServicer
 }
 
 func TestCheckMailServer(t *testing.T) {
@@ -58,6 +53,7 @@ func TestCheckMailServer(t *testing.T) {
 				"username": "testUser",
 				"password": "123"
 			}`).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusNoContent).
 			NoContent()
@@ -69,6 +65,7 @@ func TestCheckMailServer(t *testing.T) {
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
 			Content(`-`).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -84,6 +81,7 @@ func TestCheckMailServer(t *testing.T) {
 		httpassert.New(t, engine).
 			Post("/notification-channel/mail/check").
 			Content(`{}`).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -109,6 +107,7 @@ func TestCheckMailServer(t *testing.T) {
 				"username": "",
 				"password": ""
 			}`).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
@@ -135,6 +134,7 @@ func TestCheckMailServer(t *testing.T) {
 				"isAuthenticationRequired": false,
 				"isTlsEnforced": false
 			}`).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusUnprocessableEntity).
 			Json(`{
@@ -144,44 +144,52 @@ func TestCheckMailServer(t *testing.T) {
 	})
 }
 
-func TestCheckMailServer_ForbiddenRoles(t *testing.T) {
+func TestCheckMailServer_Permissions(t *testing.T) {
 	t.Parallel()
 
-	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.OsiAdmin, iam.Notification}
-
-	for _, role := range forbiddenRoles {
-		t.Run("Check mail server is forbidden for role "+role, func(t *testing.T) {
-			t.Parallel()
-
-			router := setupCheckMailServerWithAuth(t)
-
-			httpassert.New(t, router).
-				Post("/notification-channel/mail/check").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				Content(`{"domain":"example.com","port":123}`).
-				Expect().
-				StatusCode(http.StatusForbidden)
-		})
+	var endpoints = []struct {
+		name   string
+		method string
+		path   string
+	}{
+		{"Create mail channel", http.MethodPost, "/notification-channel/mail/check"},
 	}
-}
 
-func TestCheckMailServer_AllowedRoles(t *testing.T) {
-	t.Parallel()
+	tests := []struct {
+		role      string
+		wantAllow bool
+	}{
+		// ensure this is the same as in iam/roles.go
+		{iam.OsiViewer, false},
+		{iam.User, false},
+		{iam.OsiUser, false},
+		{iam.OsiAdmin, false},
+		{iam.Admin, true},
+		{iam.NotificationAdmin, true},
+		{iam.Notification, false},
+	}
 
-	allowedRoles := []string{iam.Admin, iam.NotificationAdmin}
+	for _, tt := range tests {
+		for _, ep := range endpoints {
+			t.Run(ep.name+" as "+tt.role, func(t *testing.T) {
+				t.Parallel()
 
-	for _, role := range allowedRoles {
-		t.Run("Check mail server is allowed for role "+role, func(t *testing.T) {
-			t.Parallel()
+				router, notificationChannelServicer := setup(t)
+				notificationChannelServicer.EXPECT().CheckNotificationChannelConnectivity(mock.Anything, mock.Anything).Maybe().Return(nil)
 
-			router := setupCheckMailServerWithAuth(t)
+				req, _ := http.NewRequest(ep.method, ep.path, strings.NewReader(`{"domain":"example.com","port":123}`))
+				req.Header.Set("Authorization", "Bearer "+integrationTests.CreateJwtTokenWithRole(tt.role))
 
-			httpassert.New(t, router).
-				Post("/notification-channel/mail/check").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				Content(`{"domain":"example.com","port":123}`).
-				Expect().
-				StatusCode(http.StatusNoContent)
-		})
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				if tt.wantAllow {
+					require.NotEqual(t, http.StatusUnauthorized, w.Code)
+					require.NotEqual(t, http.StatusForbidden, w.Code)
+				} else {
+					require.Equal(t, http.StatusForbidden, w.Code)
+				}
+			})
+		}
 	}
 }

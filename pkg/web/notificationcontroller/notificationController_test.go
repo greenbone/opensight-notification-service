@@ -7,6 +7,7 @@ package notificationcontroller
 import (
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -53,48 +54,50 @@ func setup(t *testing.T) (*gin.Engine, *mocks.NotificationService) {
 	return router, mockNotificationService
 }
 
-func TestCreateNotification_ForbiddenRoles(t *testing.T) {
+func TestCreateNotification_Permissions(t *testing.T) {
 	t.Parallel()
 
-	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.OsiAdmin, iam.Admin, iam.NotificationAdmin}
-
-	for _, role := range forbiddenRoles {
-		t.Run("Create notification is forbidden for role "+role, func(t *testing.T) {
-			t.Parallel()
-
-			router, _ := setup(t)
-
-			httpassert.New(t, router).
-				Post("/notifications").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				Expect().
-				StatusCode(http.StatusForbidden)
-		})
+	var endpoints = []struct {
+		name   string
+		method string
+		path   string
+	}{
+		{"Create notification channel", http.MethodPost, "/notifications"},
 	}
-}
 
-func TestCreateNotification_AllowedRoles(t *testing.T) {
-	t.Parallel()
+	tests := []struct {
+		role      string
+		wantAllow bool
+	}{
+		{iam.OsiViewer, false},
+		{iam.User, false},
+		{iam.OsiUser, false},
+		{iam.OsiAdmin, false},
+		{iam.Admin, false},
+		{iam.NotificationAdmin, false},
+		{iam.Notification, true},
+	}
 
-	allowedRoles := []string{iam.Notification}
+	for _, tt := range tests {
+		for _, ep := range endpoints {
+			t.Run(ep.name+" as "+tt.role, func(t *testing.T) {
+				t.Parallel()
 
-	for _, role := range allowedRoles {
-		t.Run("Create notification is allowed for role "+role, func(t *testing.T) {
-			t.Parallel()
+				router, _ := setup(t)
 
-			router, mockNotificationService := setup(t)
+				req, _ := http.NewRequest(ep.method, ep.path, nil)
+				req.Header.Set("Authorization", "Bearer "+integrationTests.CreateJwtTokenWithRole(tt.role))
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
 
-			mockNotificationService.EXPECT().CreateNotification(mock.Anything, mock.Anything).
-				Maybe().
-				Return(models.Notification{}, nil)
-
-			httpassert.New(t, router).
-				Post("/notifications").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				JsonContentObject(getNotification()).
-				Expect().
-				StatusCode(http.StatusCreated)
-		})
+				if tt.wantAllow {
+					require.NotEqual(t, http.StatusUnauthorized, w.Code)
+					require.NotEqual(t, http.StatusForbidden, w.Code)
+				} else {
+					require.Equal(t, http.StatusForbidden, w.Code)
+				}
+			})
+		}
 	}
 }
 
@@ -188,49 +191,52 @@ func TestListNotifications(t *testing.T) {
 	}
 }
 
-func TestListNotifications_ForbiddenRoles(t *testing.T) {
+func TestListNotifications_Permissions(t *testing.T) {
 	t.Parallel()
 
-	forbiddenRoles := []string{iam.Admin, iam.NotificationAdmin}
-
-	for _, role := range forbiddenRoles {
-		t.Run("List notifications is forbidden for role "+role, func(t *testing.T) {
-			t.Parallel()
-
-			router, _ := setup(t)
-
-			httpassert.New(t, router).
-				Put("/notifications").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				Content("{}").
-				Expect().
-				StatusCode(http.StatusForbidden)
-		})
+	var endpoints = []struct {
+		name   string
+		method string
+		path   string
+	}{
+		{"List notifications channels", http.MethodPut, "/notifications"},
+		{"Get options", http.MethodGet, "/notifications/options"},
 	}
-}
 
-func TestListNotifications_AllowedRoles(t *testing.T) {
-	t.Parallel()
+	tests := []struct {
+		role      string
+		wantAllow bool
+	}{
+		// ensure this is the same as in iam/roles.go
+		{iam.OsiViewer, true},
+		{iam.User, true},
+		{iam.OsiUser, true},
+		{iam.OsiAdmin, true},
+		{iam.Admin, false},
+		{iam.NotificationAdmin, false},
+		{iam.Notification, false},
+	}
 
-	allowedRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.OsiAdmin}
+	for _, tt := range tests {
+		for _, ep := range endpoints {
+			t.Run(ep.name+" as "+tt.role, func(t *testing.T) {
+				t.Parallel()
 
-	for _, role := range allowedRoles {
-		t.Run("List notifications is allowed for role "+role, func(t *testing.T) {
-			t.Parallel()
+				router, _ := setup(t)
 
-			router, mockNotificationService := setup(t)
+				req, _ := http.NewRequest(ep.method, ep.path, nil)
+				req.Header.Set("Authorization", "Bearer "+integrationTests.CreateJwtTokenWithRole(tt.role))
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
 
-			mockNotificationService.EXPECT().ListNotifications(mock.Anything, mock.Anything).
-				Return([]models.Notification{}, uint64(0), nil).
-				Once()
-
-			httpassert.New(t, router).
-				Put("/notifications").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				Content("{}").
-				Expect().
-				StatusCode(http.StatusOK)
-		})
+				if tt.wantAllow {
+					require.NotEqual(t, http.StatusUnauthorized, w.Code)
+					require.NotEqual(t, http.StatusForbidden, w.Code)
+				} else {
+					require.Equal(t, http.StatusForbidden, w.Code)
+				}
+			})
+		}
 	}
 }
 

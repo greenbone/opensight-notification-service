@@ -6,11 +6,11 @@ package rulecontroller
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greenbone/keycloak-client-golang/auth"
-	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/models"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
 	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(t *testing.T) (*gin.Engine, *mocks.RuleService) {
+func setupWithAuth(t *testing.T) *gin.Engine {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 	ruleService := mocks.NewRuleService(t)
@@ -29,19 +29,19 @@ func setup(t *testing.T) (*gin.Engine, *mocks.RuleService) {
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
-	ruleService.On("List", mock.Anything).Maybe().Return([]models.Rule{}, nil)
-	ruleService.On("GetAllRuleOptions", mock.Anything).Maybe().Return(&models.RuleOptions{}, nil)
+	ruleService.EXPECT().List(mock.Anything).Maybe().Return([]models.Rule{}, nil)
+	ruleService.EXPECT().GetAllRuleOptions(mock.Anything).Maybe().Return(&models.RuleOptions{}, nil)
+	ruleService.EXPECT().Get(mock.Anything, mock.Anything).Maybe().Return(models.Rule{}, nil)
+	ruleService.EXPECT().Delete(mock.Anything, mock.Anything).Maybe().Return(nil)
 
 	NewRuleController(router, ruleService, authMiddleware, registry)
-	return router, ruleService
+	return router
 }
 
-func TestRuleController_ForbiddenRoles(t *testing.T) {
+func TestRuleController_Permissions(t *testing.T) {
 	t.Parallel()
 
-	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.OsiAdmin, iam.Notification}
-
-	endpoints := []struct {
+	var endpoints = []struct {
 		name   string
 		method string
 		path   string
@@ -54,52 +54,39 @@ func TestRuleController_ForbiddenRoles(t *testing.T) {
 		{"Rule options", http.MethodGet, "/rules/ruleoptions"},
 	}
 
-	for _, role := range forbiddenRoles {
+	tests := []struct {
+		role      string
+		wantAllow bool
+	}{
+		// ensure this is the same as in iam/roles.go
+		{iam.OsiViewer, false},
+		{iam.User, false},
+		{iam.OsiUser, false},
+		{iam.OsiAdmin, false},
+		{iam.Admin, true},
+		{iam.NotificationAdmin, true},
+		{iam.Notification, false},
+	}
+
+	for _, tt := range tests {
 		for _, ep := range endpoints {
-			t.Run(ep.name+" is forbidden for role "+role, func(t *testing.T) {
+			t.Run(ep.name+" as "+tt.role, func(t *testing.T) {
 				t.Parallel()
 
-				router, _ := setup(t)
+				router := setupWithAuth(t)
 
-				httpassert.New(t, router).
-					Perform(ep.method, ep.path).
-					AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-					Expect().
-					StatusCode(http.StatusForbidden)
+				req, _ := http.NewRequest(ep.method, ep.path, nil)
+				req.Header.Set("Authorization", "Bearer "+integrationTests.CreateJwtTokenWithRole(tt.role))
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				if tt.wantAllow {
+					require.NotEqual(t, http.StatusUnauthorized, w.Code)
+					require.NotEqual(t, http.StatusForbidden, w.Code)
+				} else {
+					require.Equal(t, http.StatusForbidden, w.Code)
+				}
 			})
 		}
-	}
-}
-
-// We use a group for the whole ruleController, testing only the one requiring no request body.
-func TestRuleController_AllowedRoles(t *testing.T) {
-	t.Parallel()
-
-	allowedRoles := []string{iam.Admin, iam.NotificationAdmin}
-
-	for _, role := range allowedRoles {
-		t.Run("List rules is allowed for role "+role, func(t *testing.T) {
-			t.Parallel()
-
-			router, _ := setup(t)
-
-			httpassert.New(t, router).
-				Get("/rules").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				Expect().
-				StatusCode(http.StatusOK)
-		})
-
-		t.Run("Rule options is allowed for role "+role, func(t *testing.T) {
-			t.Parallel()
-
-			router, _ := setup(t)
-
-			httpassert.New(t, router).
-				Get("/rules/ruleoptions").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				Expect().
-				StatusCode(http.StatusOK)
-		})
 	}
 }

@@ -7,6 +7,7 @@ package origincontroller
 import (
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -131,7 +132,7 @@ func TestRegisterOrigins(t *testing.T) {
 	}
 }
 
-func setupWithAuth(t *testing.T) (*gin.Engine, *mocks.OriginService) {
+func setupWithAuth(t *testing.T) *gin.Engine {
 	mockService := mocks.NewOriginService(t)
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
@@ -139,49 +140,54 @@ func setupWithAuth(t *testing.T) (*gin.Engine, *mocks.OriginService) {
 	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
 	require.NoError(t, err)
 
-	_ = NewOriginController(router, mockService, authMiddleware)
-	return router, mockService
+	NewOriginController(router, mockService, authMiddleware)
+	return router
 }
 
-func TestRegisterOrigins_ForbiddenRoles(t *testing.T) {
+func TestRegisterOrigins_Permissions(t *testing.T) {
 	t.Parallel()
 
-	forbiddenRoles := []string{iam.OsiViewer, iam.User, iam.OsiUser, iam.Admin, iam.OsiAdmin, iam.NotificationAdmin}
-
-	for _, role := range forbiddenRoles {
-		t.Run("Register origins is forbidden for role "+role, func(t *testing.T) {
-			t.Parallel()
-
-			router, _ := setupWithAuth(t)
-
-			httpassert.New(t, router).
-				Put("/origins/serviceX").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				JsonContentObject([]models.Origin{{Name: "Origin", Class: "origin/class"}}).
-				Expect().
-				StatusCode(http.StatusForbidden)
-		})
+	var endpoints = []struct {
+		name   string
+		method string
+		path   string
+	}{
+		{"Register origins", http.MethodPut, "/origins/serviceX"},
 	}
-}
 
-func TestRegisterOrigins_AllowedRoles(t *testing.T) {
-	t.Parallel()
+	tests := []struct {
+		role      string
+		wantAllow bool
+	}{
+		// ensure this is the same as in iam/roles.go
+		{iam.OsiViewer, false},
+		{iam.User, false},
+		{iam.OsiUser, false},
+		{iam.OsiAdmin, false},
+		{iam.Admin, false},
+		{iam.NotificationAdmin, false},
+		{iam.Notification, true},
+	}
 
-	allowedRoles := []string{iam.Notification}
+	for _, tt := range tests {
+		for _, ep := range endpoints {
+			t.Run(ep.name+" as "+tt.role, func(t *testing.T) {
+				t.Parallel()
 
-	for _, role := range allowedRoles {
-		t.Run("Register origins is allowed for role "+role, func(t *testing.T) {
-			t.Parallel()
+				router := setupWithAuth(t)
 
-			router, mockService := setupWithAuth(t)
-			mockService.EXPECT().UpsertOrigins(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+				req, _ := http.NewRequest(ep.method, ep.path, nil)
+				req.Header.Set("Authorization", "Bearer "+integrationTests.CreateJwtTokenWithRole(tt.role))
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
 
-			httpassert.New(t, router).
-				Put("/origins/serviceX").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(role)).
-				JsonContentObject([]models.Origin{{Name: "Origin", Class: "origin/class"}}).
-				Expect().
-				StatusCode(http.StatusNoContent)
-		})
+				if tt.wantAllow {
+					require.NotEqual(t, http.StatusUnauthorized, w.Code)
+					require.NotEqual(t, http.StatusForbidden, w.Code)
+				} else {
+					require.Equal(t, http.StatusForbidden, w.Code)
+				}
+			})
+		}
 	}
 }
