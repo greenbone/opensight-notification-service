@@ -163,7 +163,7 @@ func TestCheckMailServer_Permissions(t *testing.T) {
 		{iam.OsiViewer, false},
 		{iam.User, false},
 		{iam.OsiUser, false},
-		{iam.OsiAdmin, false},
+		{iam.OsiAdmin, true},
 		{iam.Admin, true},
 		{iam.NotificationAdmin, true},
 		{iam.Notification, false},

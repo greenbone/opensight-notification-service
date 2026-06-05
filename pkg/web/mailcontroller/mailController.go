@@ -56,7 +56,7 @@ func (mc *MailController) configureMappings(r errmap.ErrorRegistry) {
 
 func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFunc) {
 	group := router.Group("/notification-channel/mail").
-		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.NotificationAdmin)...)
+		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.OsiAdmin, iam.NotificationAdmin)...)
 	group.POST("", mc.CreateMailChannel)
 	group.GET("", mc.ListMailChannelsByType)
 	group.PUT("/:id", mc.UpdateMailChannel)

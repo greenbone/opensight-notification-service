@@ -29,7 +29,7 @@ func AddCheckMailServerController(
 	}
 
 	group := router.Group("/notification-channel/mail").
-		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.NotificationAdmin)...)
+		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.OsiAdmin, iam.NotificationAdmin)...)
 
 	group.POST("/check", ctrl.CheckMailServer)
 
