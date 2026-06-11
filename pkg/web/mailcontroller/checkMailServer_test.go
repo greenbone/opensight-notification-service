@@ -29,7 +29,7 @@ func setup(t *testing.T) (*gin.Engine, *mocks.MailChannelService) {
 
 	notificationChannelServicer := mocks.NewMailChannelService(t)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	AddCheckMailServerController(engine, notificationChannelServicer, authMiddleware, registry)
@@ -161,10 +161,8 @@ func TestCheckMailServer_Permissions(t *testing.T) {
 	}{
 		// ensure this is the same as in iam/roles.go
 		{iam.OsiViewer, false},
-		{iam.User, false},
 		{iam.OsiUser, false},
 		{iam.OsiAdmin, true},
-		{iam.Admin, true},
 		{iam.NotificationAdmin, true},
 		{iam.Notification, false},
 	}

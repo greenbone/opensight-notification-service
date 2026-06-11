@@ -22,7 +22,7 @@ import (
 
 func createRule(t *testing.T, router *gin.Engine, ruleJSON string) (ruleID string) {
 	httpassert.New(t, router).Post("/rules").
-		AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+		AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 		JsonContent(ruleJSON).
 		Expect().
 		StatusCode(http.StatusCreated).
@@ -59,7 +59,7 @@ func Test_UpdateRule(t *testing.T) {
 			}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(fmt.Sprintf(`{
 				"name": "Updated Test Rule",
 				"trigger": {
@@ -130,7 +130,7 @@ func Test_UpdateRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{}`). // missing required fields
 			Expect().
 			StatusCode(http.StatusBadRequest).
@@ -165,7 +165,7 @@ func Test_UpdateRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"trigger": {
 					"levels": [""],
@@ -209,7 +209,7 @@ func Test_UpdateRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(fmt.Sprintf(`{
 				"name": "Test Rule Updated",
 				"trigger": {
@@ -251,7 +251,7 @@ func Test_UpdateRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(fmt.Sprintf(`{
 				"name": "Test Rule Updated",
 				"trigger": {
@@ -293,7 +293,7 @@ func Test_UpdateRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(fmt.Sprintf(`{
 				"name": "Updated Test Rule",
 				"trigger": {
@@ -334,7 +334,7 @@ func Test_UpdateRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"name": "Updated Test Rule",
 				"trigger": {
@@ -387,7 +387,7 @@ func Test_UpdateRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Putf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(fmt.Sprintf(`{
 				"name": "Other Rule",
 				"trigger": {
@@ -417,7 +417,7 @@ func Test_UpdateRule(t *testing.T) {
 		router := setupTestEnvironment(t, origins, channels, ruleLimit)
 
 		httpassert.New(t, router).Putf("/rules/%s", uuid.New().String()).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(fmt.Sprintf(`{
 				"name": "Test Rule",
 				
@@ -455,7 +455,7 @@ func Test_UpdateRule(t *testing.T) {
 		}
 
 		httpassert.New(t, router).Put("/rules/invalid-id").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContentObject(updateRule).
 			Expect().
 			StatusCode(http.StatusBadRequest).

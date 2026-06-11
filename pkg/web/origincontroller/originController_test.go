@@ -117,11 +117,15 @@ func TestRegisterOrigins(t *testing.T) {
 			registry := errmap.NewRegistry()
 			router := testhelper.NewTestWebEngine(registry)
 
-			_ = NewOriginController(router, mockService, testhelper.MockAuthMiddlewareWithNotificationUser)
+			authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
+			require.NoError(t, err)
+
+			_ = NewOriginController(router, mockService, authMiddleware)
 
 			request := httpassert.New(t, router)
 
 			resp := request.Put("/origins/" + tt.serviceID).
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Notification)).
 				JsonContentObject(tt.origins).
 				Expect().
 				StatusCode(tt.wantResponseCode)
@@ -137,7 +141,7 @@ func setupWithAuth(t *testing.T) *gin.Engine {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	NewOriginController(router, mockService, authMiddleware)
@@ -161,10 +165,8 @@ func TestRegisterOrigins_Permissions(t *testing.T) {
 	}{
 		// ensure this is the same as in iam/roles.go
 		{iam.OsiViewer, false},
-		{iam.User, false},
 		{iam.OsiUser, false},
 		{iam.OsiAdmin, false},
-		{iam.Admin, false},
 		{iam.NotificationAdmin, false},
 		{iam.Notification, true},
 	}

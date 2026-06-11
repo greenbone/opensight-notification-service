@@ -6,9 +6,12 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greenbone/keycloak-client-golang/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 	"github.com/greenbone/opensight-notification-service/pkg/services/notificationchannelservice"
 	"github.com/greenbone/opensight-notification-service/pkg/web/errmap"
+	"github.com/greenbone/opensight-notification-service/pkg/web/iam"
+	"github.com/greenbone/opensight-notification-service/pkg/web/integrationTests"
 	"github.com/greenbone/opensight-notification-service/pkg/web/testhelper"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -23,12 +26,14 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 	t.Run("Perform all the CRUD operations", func(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer func() { _ = db.Close() }()
+		jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 
 		request := httpassert.New(t, router)
 
 		// --- Create ---
 		var mailId string
 		request.Post("/notification-channel/mail").
+			AuthJwt(jwt).
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusCreated).
@@ -47,6 +52,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 		// --- List ---
 		request.Get("/notification-channel/mail").
+			AuthJwt(jwt).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$", httpassert.HasSize(1)).
@@ -68,6 +74,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 		newName := "updated"
 		updated.ChannelName = newName
 		request.Put("/notification-channel/mail/"+mailId).
+			AuthJwt(jwt).
 			JsonContentObject(updated).
 			Expect().
 			StatusCode(http.StatusOK).
@@ -85,11 +92,13 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 		// --- Delete ---
 		request.Delete("/notification-channel/mail/" + mailId).
+			AuthJwt(jwt).
 			Expect().
 			StatusCode(http.StatusNoContent)
 
 		// --- List after delete ---
 		request.Get("/notification-channel/mail").
+			AuthJwt(jwt).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$", httpassert.HasSize(0))
@@ -98,12 +107,14 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 	t.Run("Update password with Update Mail", func(t *testing.T) {
 		router, db := setupTestRouter(t)
 		defer db.Close()
+		jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 
 		request := httpassert.New(t, router)
 		var mailId string
 
 		// --- Create ---
 		request.Post("/notification-channel/mail").
+			AuthJwt(jwt).
 			JsonContentObject(valid).
 			Expect().
 			StatusCode(http.StatusCreated).
@@ -132,6 +143,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 		newName := "updated"
 		updated.ChannelName = newName
 		request.Put("/notification-channel/mail/"+mailId).
+			AuthJwt(jwt).
 			JsonContentObject(updated).
 			Expect().
 			StatusCode(http.StatusOK).
@@ -162,8 +174,10 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
+	require.NoError(t, err)
 
-	NewMailController(router, svc, mailSvc, testhelper.MockAuthMiddlewareWithAdmin, registry)
+	NewMailController(router, svc, mailSvc, authMiddleware, registry)
 
 	return router, db
 }
