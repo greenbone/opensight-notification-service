@@ -213,7 +213,7 @@ func TestListNotifications_Permissions(t *testing.T) {
 		{iam.OsiUser, true},
 		{iam.OsiAdmin, true},
 		{iam.Admin, false},
-		{iam.NotificationAdmin, false},
+		{iam.NotificationAdmin, true},
 		{iam.Notification, false},
 	}
 
