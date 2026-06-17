@@ -27,7 +27,7 @@ func Test_ListRules(t *testing.T) {
 		router := setupTestEnvironment(t, nil, nil, ruleLimit)
 
 		httpassert.New(t, router).Get("/rules").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusOK).
 			Json("[]")
@@ -63,7 +63,7 @@ func Test_ListRules(t *testing.T) {
 			}`, channels[0].Id))
 
 		httpassert.New(t, router).Get("/rules").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$[0].id", httpassert.NotEmpty()).
@@ -152,7 +152,7 @@ func Test_ListRules(t *testing.T) {
 		require.NoError(t, err)
 
 		httpassert.New(t, router).Get("/rules").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$[0].id", httpassert.IsUUID()).

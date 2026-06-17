@@ -21,7 +21,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -34,7 +34,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Update mattermost channel
 		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost2",
 				"webhookUrl": "https://example.com/hooks/id2",
@@ -62,7 +62,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -75,7 +75,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Update mattermost channel
 		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "1",
 				"webhookUrl": "invalid",
@@ -102,7 +102,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -115,7 +115,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Update mattermost channel
 		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
@@ -139,7 +139,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost 1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -150,7 +150,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost 2",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -163,7 +163,7 @@ func TestUpdateMattermostChannel(t *testing.T) {
 
 		// Update mattermost channel
 		httpassert.New(t, router).Putf("/notification-channel/mattermost/%s", mattermostId).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost 1",
 				"webhookUrl": "https://example.com/hooks/id1",

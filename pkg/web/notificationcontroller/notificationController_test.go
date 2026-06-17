@@ -46,7 +46,7 @@ func setup(t *testing.T) (*gin.Engine, *mocks.NotificationService) {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 	mockNotificationService := mocks.NewNotificationService(t)
 	AddNotificationController(router, mockNotificationService, authMiddleware)
@@ -70,10 +70,8 @@ func TestCreateNotification_Permissions(t *testing.T) {
 		wantAllow bool
 	}{
 		{iam.OsiViewer, false},
-		{iam.User, false},
 		{iam.OsiUser, false},
 		{iam.OsiAdmin, false},
-		{iam.Admin, false},
 		{iam.NotificationAdmin, false},
 		{iam.Notification, true},
 	}
@@ -181,7 +179,7 @@ func TestListNotifications(t *testing.T) {
 
 			var gotResponse query.ResponseListWithMetadata[models.Notification]
 			httpassert.New(t, router).Put("/notifications").
-				AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.User)).
+				AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.OsiUser)).
 				JsonContentObject(tt.requestBody).
 				Expect().
 				StatusCode(tt.want.responseCode).
@@ -209,10 +207,8 @@ func TestListNotifications_Permissions(t *testing.T) {
 	}{
 		// ensure this is the same as in iam/roles.go
 		{iam.OsiViewer, true},
-		{iam.User, true},
 		{iam.OsiUser, true},
 		{iam.OsiAdmin, true},
-		{iam.Admin, false},
 		{iam.NotificationAdmin, true},
 		{iam.Notification, false},
 	}

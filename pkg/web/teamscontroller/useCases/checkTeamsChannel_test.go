@@ -32,7 +32,7 @@ func setup(t *testing.T, transport http.Client) *gin.Engine {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	teamscontroller.NewTeamsController(router, svc, teamsChannelSvc, authMiddleware, registry)
@@ -57,7 +57,7 @@ func TestCheckTeamsChannel(t *testing.T) {
 
 		// Check teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -81,7 +81,7 @@ func TestCheckTeamsChannel(t *testing.T) {
 
 		// Check teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/webhook/id1"
 			}`).
@@ -105,7 +105,7 @@ func TestCheckTeamsChannel(t *testing.T) {
 
 		// Check teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"webhookUrl": "invalid"
 			}`).
@@ -137,7 +137,7 @@ func TestCheckTeamsChannel(t *testing.T) {
 
 		// Check teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -166,7 +166,7 @@ func TestCheckTeamsChannel(t *testing.T) {
 
 		// Check teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).

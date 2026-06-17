@@ -27,7 +27,7 @@ func setupWithAuth(t *testing.T) *gin.Engine {
 	notificationChannelService := mocks.NewNotificationChannelService(t)
 	mattermostChannelService := mocks.NewMattermostChannelService(t)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	notificationChannelService.EXPECT().ListNotificationChannelsByType(mock.Anything, mock.Anything).Maybe().Return(nil, nil)
@@ -58,10 +58,8 @@ func TestMattermostController_Permissions(t *testing.T) {
 	}{
 		// ensure this is the same as in iam/roles.go
 		{iam.OsiViewer, false},
-		{iam.User, false},
 		{iam.OsiUser, false},
 		{iam.OsiAdmin, true},
-		{iam.Admin, true},
 		{iam.NotificationAdmin, true},
 		{iam.Notification, false},
 	}

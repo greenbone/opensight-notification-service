@@ -32,7 +32,7 @@ func setup(t *testing.T, transport http.Client) *gin.Engine {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	mattermostcontroller.NewMattermostController(router, svc, mattermostChannelSvc, authMiddleware, registry)
@@ -57,7 +57,7 @@ func TestCheckMattermostChannel(t *testing.T) {
 
 		// Check mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -81,7 +81,7 @@ func TestCheckMattermostChannel(t *testing.T) {
 
 		// Check mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"webhookUrl": "invalid"
 			}`).
@@ -113,7 +113,7 @@ func TestCheckMattermostChannel(t *testing.T) {
 
 		// Check mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"webhookUrl": "https://example.com/hooks/id1"
 			}`).
@@ -142,7 +142,7 @@ func TestCheckMattermostChannel(t *testing.T) {
 
 		// Check mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost/check").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).

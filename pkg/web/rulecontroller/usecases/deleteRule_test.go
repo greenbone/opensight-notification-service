@@ -45,13 +45,13 @@ func Test_DeleteRule(t *testing.T) {
 			}`, channels[0].Id))
 
 		httpassert.New(t, router).Deletef("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusNoContent)
 
 		// verify rule is deleted
 		httpassert.New(t, router).Getf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusNotFound)
 	})
@@ -61,7 +61,7 @@ func Test_DeleteRule(t *testing.T) {
 		router := setupTestEnvironment(t, nil, nil, 10)
 
 		httpassert.New(t, router).Deletef("/rules/%s", uuid.NewString()).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusNoContent)
 	})
@@ -72,7 +72,7 @@ func Test_DeleteRule(t *testing.T) {
 		router := setupTestEnvironment(t, nil, nil, ruleLimit)
 
 		httpassert.New(t, router).Get("/rules/invalid-uuid").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{

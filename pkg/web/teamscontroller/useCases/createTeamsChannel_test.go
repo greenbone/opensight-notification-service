@@ -21,7 +21,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "teams1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -49,7 +49,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "a",
 				"webhookUrl": "invalid",
@@ -74,7 +74,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
@@ -96,7 +96,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "teams 1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -107,7 +107,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 
 		// Create teams channel with the same name
 		httpassert.New(t, router).Post("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "teams 1",
 				"webhookUrl": "https://example.com/hooks/id1",

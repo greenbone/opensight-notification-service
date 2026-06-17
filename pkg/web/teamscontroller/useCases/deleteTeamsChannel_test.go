@@ -26,7 +26,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	teamscontroller.NewTeamsController(router, svc, teamsSvc, authMiddleware, registry)
@@ -45,7 +45,7 @@ func TestDeleteTeamsChannel(t *testing.T) {
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "teams1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -66,7 +66,7 @@ func TestDeleteTeamsChannel(t *testing.T) {
 
 		// Delete teams channel
 		httpassert.New(t, router).Deletef("/notification-channel/teams/%s", teamsId).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusNoContent)
 	})

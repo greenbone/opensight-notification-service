@@ -26,7 +26,7 @@ func setupWithAuth(t *testing.T) *gin.Engine {
 	router := testhelper.NewTestWebEngine(registry)
 	ruleService := mocks.NewRuleService(t)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	ruleService.EXPECT().List(mock.Anything).Maybe().Return([]models.Rule{}, nil)
@@ -60,10 +60,8 @@ func TestRuleController_Permissions(t *testing.T) {
 	}{
 		// ensure this is the same as in iam/roles.go
 		{iam.OsiViewer, false},
-		{iam.User, false},
 		{iam.OsiUser, false},
 		{iam.OsiAdmin, true},
-		{iam.Admin, true},
 		{iam.NotificationAdmin, true},
 		{iam.Notification, false},
 	}

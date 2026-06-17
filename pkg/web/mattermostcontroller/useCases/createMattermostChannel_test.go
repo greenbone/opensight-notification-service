@@ -21,7 +21,7 @@ func TestCreateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -49,7 +49,7 @@ func TestCreateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "a",
 				"webhookUrl": "invalid",
@@ -74,7 +74,7 @@ func TestCreateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{}`).
 			Expect().
 			StatusCode(http.StatusBadRequest).
@@ -96,7 +96,7 @@ func TestCreateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost 1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -107,7 +107,7 @@ func TestCreateMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel with the same name
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost 1",
 				"webhookUrl": "https://example.com/hooks/id1",

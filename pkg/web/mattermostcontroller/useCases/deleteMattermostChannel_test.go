@@ -26,7 +26,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *sqlx.DB) {
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	mattermostcontroller.NewMattermostController(router, svc, mattermostSvc, authMiddleware, registry)
@@ -45,7 +45,7 @@ func TestDeleteMattermostChannel(t *testing.T) {
 
 		// Create mattermost channel
 		httpassert.New(t, router).Post("/notification-channel/mattermost").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "mattermost1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -66,7 +66,7 @@ func TestDeleteMattermostChannel(t *testing.T) {
 
 		// Delete mattermost channel
 		httpassert.New(t, router).Deletef("/notification-channel/mattermost/%s", mattermostId).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusNoContent)
 	})

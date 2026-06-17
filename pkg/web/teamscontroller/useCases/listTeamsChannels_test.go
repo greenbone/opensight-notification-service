@@ -21,7 +21,7 @@ func TestListTeamsChannels(t *testing.T) {
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			JsonContent(`{
 				"channelName": "teams1",
 				"webhookUrl": "https://example.com/hooks/id1",
@@ -42,7 +42,7 @@ func TestListTeamsChannels(t *testing.T) {
 
 		// List teams channels
 		httpassert.New(t, router).Get("/notification-channel/teams").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonTemplate(`[

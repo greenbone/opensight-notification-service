@@ -53,7 +53,7 @@ func NewRuleController(
 
 func (c *RuleController) RegisterRoutes(router gin.IRouter, auth gin.HandlerFunc) {
 	group := router.Group("/rules").
-		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.OsiAdmin, iam.NotificationAdmin)...)
+		Use(middleware.AuthorizeRoles(auth, iam.OsiAdmin, iam.NotificationAdmin)...)
 	group.GET("/:id", c.GetRule)
 	group.POST("", c.CreateRule)
 	group.PUT("/:id", c.UpdateRule)

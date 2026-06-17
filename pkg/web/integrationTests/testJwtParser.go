@@ -8,13 +8,12 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/greenbone/keycloak-client-golang/auth"
 )
 
-func NewTestJwtParser(t *testing.T) func(
+func NewTestJwtParser() func(
 	ctx context.Context,
 	authorizationHeader string,
 	originHeader string,

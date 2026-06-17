@@ -41,11 +41,13 @@ func getValidNotificationChannel() models.NotificationChannel {
 	}
 }
 
-func setupRouter(service *mocks.NotificationChannelService, mailService *mocks.MailChannelService) *gin.Engine {
+func setupRouter(t *testing.T, service *mocks.NotificationChannelService, mailService *mocks.MailChannelService) *gin.Engine {
 	registry := errmap.NewRegistry()
 	engine := testhelper.NewTestWebEngine(registry)
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
+	require.NoError(t, err)
 
-	NewMailController(engine, service, mailService, testhelper.MockAuthMiddlewareWithAdmin, registry)
+	NewMailController(engine, service, mailService, authMiddleware, registry)
 	return engine
 }
 
@@ -96,9 +98,10 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 			mockService := mocks.NewNotificationChannelService(t)
 			mockMailService := mocks.NewMailChannelService(t)
-			router := setupRouter(mockService, mockMailService)
+			router := setupRouter(t, mockService, mockMailService)
 
 			if tt.wantStatusCode == http.StatusCreated || tt.wantStatusCode == http.StatusInternalServerError {
 				mockMailService.On("CreateMailChannel", mock.Anything, mock.Anything).
@@ -106,7 +109,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 					Once()
 			}
 
-			req := httpassert.New(t, router).Post("/notification-channel/mail")
+			req := httpassert.New(t, router).Post("/notification-channel/mail").AuthJwt(jwt)
 			if tt.input != nil {
 				req.JsonContentObject(tt.input)
 			}
@@ -174,14 +177,15 @@ func TestMailController_ListMailChannelsByType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 			mockService := mocks.NewNotificationChannelService(t)
-			router := setupRouter(mockService, nil)
+			router := setupRouter(t, mockService, nil)
 
 			mockService.On("ListNotificationChannelsByType", mock.Anything, tt.queryType).
 				Return(tt.mockReturn, tt.mockErr).
 				Once()
 
-			req := httpassert.New(t, router).Get("/notification-channel/mail")
+			req := httpassert.New(t, router).Get("/notification-channel/mail").AuthJwt(jwt)
 			resp := req.Expect()
 			resp.StatusCode(tt.wantStatusCode)
 			if tt.wantStatusCode == http.StatusOK {
@@ -244,16 +248,17 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 			mockService := mocks.NewNotificationChannelService(t)
 			mockMailService := mocks.NewMailChannelService(t)
-			router := setupRouter(mockService, mockMailService)
+			router := setupRouter(t, mockService, mockMailService)
 
 			if tt.wantStatusCode == http.StatusOK || tt.wantStatusCode == http.StatusInternalServerError {
 				mockService.On("UpdateNotificationChannel", mock.Anything, tt.id, mock.Anything).
 					Return(tt.mockReturn, tt.mockErr).
 					Once()
 			}
-			req := httpassert.New(t, router).Put("/notification-channel/mail/" + tt.id)
+			req := httpassert.New(t, router).Put("/notification-channel/mail/" + tt.id).AuthJwt(jwt)
 			if tt.input != nil {
 				req.JsonContentObject(tt.input)
 			}
@@ -308,14 +313,15 @@ func TestMailController_DeleteMailChannel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 			mockService := mocks.NewNotificationChannelService(t)
-			router := setupRouter(mockService, nil)
+			router := setupRouter(t, mockService, nil)
 
 			mockService.On("DeleteNotificationChannel", mock.Anything, tt.id).
 				Return(tt.mockErr).
 				Once()
 
-			req := httpassert.New(t, router).Delete("/notification-channel/mail/" + tt.id)
+			req := httpassert.New(t, router).Delete("/notification-channel/mail/" + tt.id).AuthJwt(jwt)
 			resp := req.Expect()
 			resp.StatusCode(tt.wantStatusCode)
 			if tt.wantStatusCode == http.StatusNoContent {
@@ -341,7 +347,7 @@ func setupWithAuth(t *testing.T) *gin.Engine {
 	notificationChannelService := mocks.NewNotificationChannelService(t)
 	mailChannelService := mocks.NewMailChannelService(t)
 
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	notificationChannelService.EXPECT().ListNotificationChannelsByType(mock.Anything, mock.Anything).Maybe().Return(nil, nil)
@@ -372,10 +378,8 @@ func TestMailController_Permissions(t *testing.T) {
 	}{
 		// ensure this is the same as in iam/roles.go
 		{iam.OsiViewer, false},
-		{iam.User, false},
 		{iam.OsiUser, false},
 		{iam.OsiAdmin, true},
-		{iam.Admin, true},
 		{iam.NotificationAdmin, true},
 		{iam.Notification, false},
 	}

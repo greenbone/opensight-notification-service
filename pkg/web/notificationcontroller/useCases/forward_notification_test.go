@@ -77,7 +77,7 @@ func setup(t *testing.T) (
 
 	registry := errmap.NewRegistry()
 	router := testhelper.NewTestWebEngine(registry)
-	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser(t))
+	authMiddleware, err := auth.NewGinAuthMiddleware(integrationTests.NewTestJwtParser())
 	require.NoError(t, err)
 
 	mailcontroller.NewMailController(router, channelService, mailChannelService, authMiddleware, registry)
@@ -106,7 +106,7 @@ func TestForwardNotification(t *testing.T) {
 	httpassert.New(t, router).
 		Post("/notification-channel/mail").
 		JsonContentObject(mailChannel).
-		AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+		AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 		Expect().
 		StatusCode(http.StatusCreated).
 		JsonPath("$.id", httpassert.ExtractTo(&mailChannelID))
@@ -135,7 +135,7 @@ func TestForwardNotification(t *testing.T) {
 				"active": true
 			}`, models.OriginAllClass, mailChannelID),
 		).
-		AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+		AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 		Expect().
 		StatusCode(http.StatusCreated).
 		JsonPath("$.id", httpassert.ExtractTo(&ruleID))

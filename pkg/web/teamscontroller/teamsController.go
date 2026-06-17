@@ -35,7 +35,7 @@ func NewTeamsController(
 	}
 
 	group := router.Group("/notification-channel/teams").
-		Use(middleware.AuthorizeRoles(auth, iam.Admin, iam.OsiAdmin, iam.NotificationAdmin)...)
+		Use(middleware.AuthorizeRoles(auth, iam.OsiAdmin, iam.NotificationAdmin)...)
 	group.Use(errorHandler(gin.ErrorTypePrivate))
 
 	group.POST("", ctrl.CreateTeamsChannel)

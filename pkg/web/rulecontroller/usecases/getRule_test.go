@@ -52,7 +52,7 @@ func Test_GetRule(t *testing.T) {
 		}`, channels[0].Id))
 
 		httpassert.New(t, router).Getf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$.id", httpassert.NotEmpty()).
@@ -114,7 +114,7 @@ func Test_GetRule(t *testing.T) {
 		require.NoError(t, err)
 
 		httpassert.New(t, router).Getf("/rules/%s", ruleID).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusOK).
 			JsonPath("$.id", httpassert.IsUUID()).
@@ -150,7 +150,7 @@ func Test_GetRule(t *testing.T) {
 		router := setupTestEnvironment(t, nil, nil, ruleLimit)
 
 		httpassert.New(t, router).Getf("/rules/%s", uuid.NewString()).
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusNotFound)
 	})
@@ -161,7 +161,7 @@ func Test_GetRule(t *testing.T) {
 		router := setupTestEnvironment(t, nil, nil, ruleLimit)
 
 		httpassert.New(t, router).Get("/rules/invalid-uuid").
-			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.Admin)).
+			AuthJwt(integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)).
 			Expect().
 			StatusCode(http.StatusBadRequest).
 			Json(`{
