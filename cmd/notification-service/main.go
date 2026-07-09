@@ -92,9 +92,16 @@ func run(config config.Config) error {
 	realmInfo := auth.KeycloakRealmInfo{
 		RealmId:               config.KeycloakConfig.Realm,
 		AuthServerInternalUrl: config.KeycloakConfig.AuthServerUrl,
+		AuthServerPublicUrl:   config.KeycloakConfig.PublicUrl,
 	}
-
-	authorizer, err := auth.NewKeycloakAuthorizer(realmInfo)
+	options := []func(*auth.KeycloakAuthorizer){
+		auth.WithValidMethods(config.KeycloakConfig.AllowedSigningMethods...),
+		auth.WithLeeway(time.Duration(config.KeycloakConfig.JWTLeewaySeconds) * time.Second),
+	}
+	if config.KeycloakConfig.ExpectedAudience != "" {
+		options = append(options, auth.WithAudience(config.KeycloakConfig.ExpectedAudience))
+	}
+	authorizer, err := auth.NewKeycloakAuthorizer(realmInfo, options...)
 	if err != nil {
 		return fmt.Errorf("error creating keycloak token authorizer: %w", err)
 	}
