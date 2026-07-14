@@ -50,8 +50,11 @@ type DatabaseEncryptionKey struct {
 }
 
 type KeycloakConfig struct {
-	Realm         string `validate:"required" envconfig:"REALM" default:"opensight"`
-	AuthServerUrl string `validate:"required" envconfig:"URL" default:"http://localhost:8082/auth"`
-	WebClientName string `validate:"required" envconfig:"WEBCLIENT_NAME" default:"local-web"`
-	PublicUrl     string `validate:"required" envconfig:"PUBLIC_URL" default:"http://localhost:8082/auth"`
+	Realm                 string   `validate:"required" envconfig:"REALM" default:"opensight"`
+	AuthServerUrl         string   `validate:"required" envconfig:"URL" default:"http://localhost:8082/auth"`
+	WebClientName         string   `validate:"required" envconfig:"WEBCLIENT_NAME" default:"local-web"`
+	PublicUrl             string   `validate:"required" envconfig:"PUBLIC_URL" default:"http://localhost:8082/auth"`
+	AllowedSigningMethods []string `validate:"required,min=1,dive,required" envconfig:"KEYCLOAK_ALLOWED_SIGNING_METHODS" default:"RS256,RS512"`
+	ExpectedAudience      string   `envconfig:"KEYCLOAK_EXPECTED_AUDIENCE"`
+	JWTLeewaySeconds      int      `validate:"min=0" envconfig:"KEYCLOAK_JWT_LEEWAY_SECONDS" default:"30"`
 }
