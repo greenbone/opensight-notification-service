@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	ErrTeamsChannelLimitReached = errors.New("Teams channel limit reached.")
+	ErrTeamsChannelLimitReached = errors.New("Teams channel limit reached.") //nolint:staticcheck // Error message is user-facing.
 	ErrListTeamsChannels        = errors.New("failed to list teams channels")
-	ErrTeamsChannelNameExists   = errors.New("Teams channel name already exists.")
+	ErrTeamsChannelNameExists   = errors.New("Teams channel name already exists.") //nolint:staticcheck // Error message is user-facing.
 	ErrTeamsMessageDelivery     = errors.New("teams message could not be send")
 )
 

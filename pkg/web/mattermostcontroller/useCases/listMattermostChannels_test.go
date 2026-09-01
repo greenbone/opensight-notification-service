@@ -15,7 +15,7 @@ func TestListMattermostChannels(t *testing.T) {
 		t.Parallel()
 
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 
 		var mattermostId string
 
