@@ -36,7 +36,7 @@ func setup(t *testing.T, transport http.Client) *gin.Engine {
 	require.NoError(t, err)
 
 	teamscontroller.NewTeamsController(router, svc, teamsChannelSvc, authMiddleware, registry)
-	defer db.Close()
+	defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 	return router
 }
 

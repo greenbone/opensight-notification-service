@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	ErrMattermostChannelLimitReached = errors.New("Mattermost channel limit reached.")
+	ErrMattermostChannelLimitReached = errors.New("Mattermost channel limit reached.") //nolint:staticcheck // Error message is user-facing.
 	ErrListMattermostChannels        = errors.New("failed to list mattermost channels")
-	ErrMattermostChannelNameExists   = errors.New("Mattermost channel name already exists.")
+	ErrMattermostChannelNameExists   = errors.New("Mattermost channel name already exists.") //nolint:staticcheck // Error message is user-facing.
 	ErrMattermostMassageDelivery     = errors.New("mattermost message could not be send")
 )
 

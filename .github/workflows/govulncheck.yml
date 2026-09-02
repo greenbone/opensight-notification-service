@@ -13,7 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     name: Run govulncheck
     steps:
-      - id: govulncheck
-        uses: golang/govulncheck-action@v1
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: ./go.mod
+          go-version: 'stable'
+          check-latest: true
+
+      - name: govulncheck
+        run: make govulncheck
