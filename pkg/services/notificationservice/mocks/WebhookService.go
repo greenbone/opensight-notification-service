@@ -60,7 +60,7 @@ type WebhookService_SendMessage_Call struct {
 // SendMessage is a helper method to define mock.On call
 //   - webhookUrl string
 //   - message string
-func (_e *WebhookService_Expecter) SendMessage(webhookUrl interface{}, message interface{}) *WebhookService_SendMessage_Call {
+func (_e *WebhookService_Expecter) SendMessage(webhookUrl any, message any) *WebhookService_SendMessage_Call {
 	return &WebhookService_SendMessage_Call{Call: _e.mock.On("SendMessage", webhookUrl, message)}
 }
 

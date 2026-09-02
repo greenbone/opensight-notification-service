@@ -72,7 +72,7 @@ type NotificationChannelRepository_GetNotificationChannelById_Call struct {
 // GetNotificationChannelById is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *NotificationChannelRepository_Expecter) GetNotificationChannelById(ctx interface{}, id interface{}) *NotificationChannelRepository_GetNotificationChannelById_Call {
+func (_e *NotificationChannelRepository_Expecter) GetNotificationChannelById(ctx any, id any) *NotificationChannelRepository_GetNotificationChannelById_Call {
 	return &NotificationChannelRepository_GetNotificationChannelById_Call{Call: _e.mock.On("GetNotificationChannelById", ctx, id)}
 }
 
@@ -140,7 +140,7 @@ type NotificationChannelRepository_ListNotificationChannelsByType_Call struct {
 // ListNotificationChannelsByType is a helper method to define mock.On call
 //   - ctx context.Context
 //   - channelType models.ChannelType
-func (_e *NotificationChannelRepository_Expecter) ListNotificationChannelsByType(ctx interface{}, channelType interface{}) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
+func (_e *NotificationChannelRepository_Expecter) ListNotificationChannelsByType(ctx any, channelType any) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
 	return &NotificationChannelRepository_ListNotificationChannelsByType_Call{Call: _e.mock.On("ListNotificationChannelsByType", ctx, channelType)}
 }
 

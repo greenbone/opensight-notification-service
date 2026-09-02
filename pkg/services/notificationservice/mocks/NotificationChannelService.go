@@ -73,7 +73,7 @@ type NotificationChannelService_GetNotificationChannelByIdAndType_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - channelType models.ChannelType
-func (_e *NotificationChannelService_Expecter) GetNotificationChannelByIdAndType(ctx interface{}, id interface{}, channelType interface{}) *NotificationChannelService_GetNotificationChannelByIdAndType_Call {
+func (_e *NotificationChannelService_Expecter) GetNotificationChannelByIdAndType(ctx any, id any, channelType any) *NotificationChannelService_GetNotificationChannelByIdAndType_Call {
 	return &NotificationChannelService_GetNotificationChannelByIdAndType_Call{Call: _e.mock.On("GetNotificationChannelByIdAndType", ctx, id, channelType)}
 }
 

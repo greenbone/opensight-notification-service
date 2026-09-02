@@ -73,7 +73,7 @@ type NotificationRepository_CreateNotification_Call struct {
 // CreateNotification is a helper method to define mock.On call
 //   - ctx context.Context
 //   - notification models.Notification
-func (_e *NotificationRepository_Expecter) CreateNotification(ctx interface{}, notification interface{}) *NotificationRepository_CreateNotification_Call {
+func (_e *NotificationRepository_Expecter) CreateNotification(ctx any, notification any) *NotificationRepository_CreateNotification_Call {
 	return &NotificationRepository_CreateNotification_Call{Call: _e.mock.On("CreateNotification", ctx, notification)}
 }
 
@@ -147,7 +147,7 @@ type NotificationRepository_ListNotifications_Call struct {
 // ListNotifications is a helper method to define mock.On call
 //   - ctx context.Context
 //   - resultSelector query.ResultSelector
-func (_e *NotificationRepository_Expecter) ListNotifications(ctx interface{}, resultSelector interface{}) *NotificationRepository_ListNotifications_Call {
+func (_e *NotificationRepository_Expecter) ListNotifications(ctx any, resultSelector any) *NotificationRepository_ListNotifications_Call {
 	return &NotificationRepository_ListNotifications_Call{Call: _e.mock.On("ListNotifications", ctx, resultSelector)}
 }
 

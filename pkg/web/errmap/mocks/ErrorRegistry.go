@@ -70,7 +70,7 @@ type ErrorRegistry_Lookup_Call struct {
 
 // Lookup is a helper method to define mock.On call
 //   - err error
-func (_e *ErrorRegistry_Expecter) Lookup(err interface{}) *ErrorRegistry_Lookup_Call {
+func (_e *ErrorRegistry_Expecter) Lookup(err any) *ErrorRegistry_Lookup_Call {
 	return &ErrorRegistry_Lookup_Call{Call: _e.mock.On("Lookup", err)}
 }
 
@@ -112,7 +112,7 @@ type ErrorRegistry_Register_Call struct {
 //   - err error
 //   - status int
 //   - response errorResponses.ErrorResponse
-func (_e *ErrorRegistry_Expecter) Register(err interface{}, status interface{}, response interface{}) *ErrorRegistry_Register_Call {
+func (_e *ErrorRegistry_Expecter) Register(err any, status any, response any) *ErrorRegistry_Register_Call {
 	return &ErrorRegistry_Register_Call{Call: _e.mock.On("Register", err, status, response)}
 }
 

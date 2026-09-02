@@ -7,3 +7,5 @@ coverage:
       default:
         target: 80%
         threshold: 0%
+ignore:
+  - "*/**/mocks/*"
