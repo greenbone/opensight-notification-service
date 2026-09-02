@@ -72,7 +72,7 @@ type MattermostChannelService_CreateMattermostChannel_Call struct {
 // CreateMattermostChannel is a helper method to define mock.On call
 //   - ctx context.Context
 //   - channel mattermostdto.MattermostNotificationChannelRequest
-func (_e *MattermostChannelService_Expecter) CreateMattermostChannel(ctx interface{}, channel interface{}) *MattermostChannelService_CreateMattermostChannel_Call {
+func (_e *MattermostChannelService_Expecter) CreateMattermostChannel(ctx any, channel any) *MattermostChannelService_CreateMattermostChannel_Call {
 	return &MattermostChannelService_CreateMattermostChannel_Call{Call: _e.mock.On("CreateMattermostChannel", ctx, channel)}
 }
 
@@ -128,7 +128,7 @@ type MattermostChannelService_SendMattermostTestMessage_Call struct {
 
 // SendMattermostTestMessage is a helper method to define mock.On call
 //   - webhookUrl string
-func (_e *MattermostChannelService_Expecter) SendMattermostTestMessage(webhookUrl interface{}) *MattermostChannelService_SendMattermostTestMessage_Call {
+func (_e *MattermostChannelService_Expecter) SendMattermostTestMessage(webhookUrl any) *MattermostChannelService_SendMattermostTestMessage_Call {
 	return &MattermostChannelService_SendMattermostTestMessage_Call{Call: _e.mock.On("SendMattermostTestMessage", webhookUrl)}
 }
 
@@ -190,7 +190,7 @@ type MattermostChannelService_UpdateMattermostChannel_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - channel mattermostdto.MattermostNotificationChannelRequest
-func (_e *MattermostChannelService_Expecter) UpdateMattermostChannel(ctx interface{}, id interface{}, channel interface{}) *MattermostChannelService_UpdateMattermostChannel_Call {
+func (_e *MattermostChannelService_Expecter) UpdateMattermostChannel(ctx any, id any, channel any) *MattermostChannelService_UpdateMattermostChannel_Call {
 	return &MattermostChannelService_UpdateMattermostChannel_Call{Call: _e.mock.On("UpdateMattermostChannel", ctx, id, channel)}
 }
 

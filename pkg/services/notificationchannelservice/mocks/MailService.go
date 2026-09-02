@@ -63,7 +63,7 @@ type MailService_ConnectionCheck_Call struct {
 // ConnectionCheck is a helper method to define mock.On call
 //   - ctx context.Context
 //   - mailServer models.NotificationChannel
-func (_e *MailService_Expecter) ConnectionCheck(ctx interface{}, mailServer interface{}) *MailService_ConnectionCheck_Call {
+func (_e *MailService_Expecter) ConnectionCheck(ctx any, mailServer any) *MailService_ConnectionCheck_Call {
 	return &MailService_ConnectionCheck_Call{Call: _e.mock.On("ConnectionCheck", ctx, mailServer)}
 }
 
@@ -123,7 +123,7 @@ type MailService_SendMail_Call struct {
 //   - receiver string
 //   - subject string
 //   - body string
-func (_e *MailService_Expecter) SendMail(ctx interface{}, mailServer interface{}, receiver interface{}, subject interface{}, body interface{}) *MailService_SendMail_Call {
+func (_e *MailService_Expecter) SendMail(ctx any, mailServer any, receiver any, subject any, body any) *MailService_SendMail_Call {
 	return &MailService_SendMail_Call{Call: _e.mock.On("SendMail", ctx, mailServer, receiver, subject, body)}
 }
 

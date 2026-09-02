@@ -72,7 +72,7 @@ type TeamsChannelService_CreateTeamsChannel_Call struct {
 // CreateTeamsChannel is a helper method to define mock.On call
 //   - ctx context.Context
 //   - channel teamsdto.TeamsNotificationChannelRequest
-func (_e *TeamsChannelService_Expecter) CreateTeamsChannel(ctx interface{}, channel interface{}) *TeamsChannelService_CreateTeamsChannel_Call {
+func (_e *TeamsChannelService_Expecter) CreateTeamsChannel(ctx any, channel any) *TeamsChannelService_CreateTeamsChannel_Call {
 	return &TeamsChannelService_CreateTeamsChannel_Call{Call: _e.mock.On("CreateTeamsChannel", ctx, channel)}
 }
 
@@ -128,7 +128,7 @@ type TeamsChannelService_SendTeamsTestMessage_Call struct {
 
 // SendTeamsTestMessage is a helper method to define mock.On call
 //   - webhookUrl string
-func (_e *TeamsChannelService_Expecter) SendTeamsTestMessage(webhookUrl interface{}) *TeamsChannelService_SendTeamsTestMessage_Call {
+func (_e *TeamsChannelService_Expecter) SendTeamsTestMessage(webhookUrl any) *TeamsChannelService_SendTeamsTestMessage_Call {
 	return &TeamsChannelService_SendTeamsTestMessage_Call{Call: _e.mock.On("SendTeamsTestMessage", webhookUrl)}
 }
 
@@ -190,7 +190,7 @@ type TeamsChannelService_UpdateTeamsChannel_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - channel teamsdto.TeamsNotificationChannelRequest
-func (_e *TeamsChannelService_Expecter) UpdateTeamsChannel(ctx interface{}, id interface{}, channel interface{}) *TeamsChannelService_UpdateTeamsChannel_Call {
+func (_e *TeamsChannelService_Expecter) UpdateTeamsChannel(ctx any, id any, channel any) *TeamsChannelService_UpdateTeamsChannel_Call {
 	return &TeamsChannelService_UpdateTeamsChannel_Call{Call: _e.mock.On("UpdateTeamsChannel", ctx, id, channel)}
 }
 

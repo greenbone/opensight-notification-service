@@ -69,7 +69,7 @@ type EncryptManager_Decrypt_Call struct {
 
 // Decrypt is a helper method to define mock.On call
 //   - data []byte
-func (_e *EncryptManager_Expecter) Decrypt(data interface{}) *EncryptManager_Decrypt_Call {
+func (_e *EncryptManager_Expecter) Decrypt(data any) *EncryptManager_Decrypt_Call {
 	return &EncryptManager_Decrypt_Call{Call: _e.mock.On("Decrypt", data)}
 }
 
@@ -131,7 +131,7 @@ type EncryptManager_Encrypt_Call struct {
 
 // Encrypt is a helper method to define mock.On call
 //   - plaintext string
-func (_e *EncryptManager_Expecter) Encrypt(plaintext interface{}) *EncryptManager_Encrypt_Call {
+func (_e *EncryptManager_Expecter) Encrypt(plaintext any) *EncryptManager_Encrypt_Call {
 	return &EncryptManager_Encrypt_Call{Call: _e.mock.On("Encrypt", plaintext)}
 }
 
@@ -171,7 +171,7 @@ type EncryptManager_UpdateKeys_Call struct {
 
 // UpdateKeys is a helper method to define mock.On call
 //   - keyringConfig config.DatabaseEncryptionKey
-func (_e *EncryptManager_Expecter) UpdateKeys(keyringConfig interface{}) *EncryptManager_UpdateKeys_Call {
+func (_e *EncryptManager_Expecter) UpdateKeys(keyringConfig any) *EncryptManager_UpdateKeys_Call {
 	return &EncryptManager_UpdateKeys_Call{Call: _e.mock.On("UpdateKeys", keyringConfig)}
 }
 

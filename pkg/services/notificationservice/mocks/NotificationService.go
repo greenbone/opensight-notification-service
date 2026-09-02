@@ -73,7 +73,7 @@ type NotificationService_CreateNotification_Call struct {
 // CreateNotification is a helper method to define mock.On call
 //   - ctx context.Context
 //   - notificationIn models.Notification
-func (_e *NotificationService_Expecter) CreateNotification(ctx interface{}, notificationIn interface{}) *NotificationService_CreateNotification_Call {
+func (_e *NotificationService_Expecter) CreateNotification(ctx any, notificationIn any) *NotificationService_CreateNotification_Call {
 	return &NotificationService_CreateNotification_Call{Call: _e.mock.On("CreateNotification", ctx, notificationIn)}
 }
 
@@ -147,7 +147,7 @@ type NotificationService_ListNotifications_Call struct {
 // ListNotifications is a helper method to define mock.On call
 //   - ctx context.Context
 //   - resultSelector query.ResultSelector
-func (_e *NotificationService_Expecter) ListNotifications(ctx interface{}, resultSelector interface{}) *NotificationService_ListNotifications_Call {
+func (_e *NotificationService_Expecter) ListNotifications(ctx any, resultSelector any) *NotificationService_ListNotifications_Call {
 	return &NotificationService_ListNotifications_Call{Call: _e.mock.On("ListNotifications", ctx, resultSelector)}
 }
 

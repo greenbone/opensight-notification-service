@@ -66,7 +66,7 @@ type MailService_SendMail_Call struct {
 //   - recipient string
 //   - subject string
 //   - htmlBody string
-func (_e *MailService_Expecter) SendMail(ctx interface{}, channel interface{}, recipient interface{}, subject interface{}, htmlBody interface{}) *MailService_SendMail_Call {
+func (_e *MailService_Expecter) SendMail(ctx any, channel any, recipient any, subject any, htmlBody any) *MailService_SendMail_Call {
 	return &MailService_SendMail_Call{Call: _e.mock.On("SendMail", ctx, channel, recipient, subject, htmlBody)}
 }
 

@@ -1,7 +1,7 @@
 all: generate-code api-docs lint build test
 
 SWAG = github.com/swaggo/swag/cmd/swag@v1.16.4
-MOCKERY = github.com/vektra/mockery/v3@v3.5.1
+MOCKERY = github.com/vektra/mockery/v3@v3.7.4
 GOLANGCI-LINT = github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 GOVULNCHECK = golang.org/x/vuln/cmd/govulncheck@latest
 

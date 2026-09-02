@@ -74,7 +74,7 @@ type RuleService_ProcessRules_Call struct {
 // ProcessRules is a helper method to define mock.On call
 //   - ctx context.Context
 //   - notification models.Notification
-func (_e *RuleService_Expecter) ProcessRules(ctx interface{}, notification interface{}) *RuleService_ProcessRules_Call {
+func (_e *RuleService_Expecter) ProcessRules(ctx any, notification any) *RuleService_ProcessRules_Call {
 	return &RuleService_ProcessRules_Call{Call: _e.mock.On("ProcessRules", ctx, notification)}
 }
 

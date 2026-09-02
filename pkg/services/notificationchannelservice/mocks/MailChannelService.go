@@ -64,7 +64,7 @@ type MailChannelService_CheckNotificationChannelConnectivity_Call struct {
 // CheckNotificationChannelConnectivity is a helper method to define mock.On call
 //   - ctx context.Context
 //   - mailServer models.NotificationChannel
-func (_e *MailChannelService_Expecter) CheckNotificationChannelConnectivity(ctx interface{}, mailServer interface{}) *MailChannelService_CheckNotificationChannelConnectivity_Call {
+func (_e *MailChannelService_Expecter) CheckNotificationChannelConnectivity(ctx any, mailServer any) *MailChannelService_CheckNotificationChannelConnectivity_Call {
 	return &MailChannelService_CheckNotificationChannelConnectivity_Call{Call: _e.mock.On("CheckNotificationChannelConnectivity", ctx, mailServer)}
 }
 
@@ -122,7 +122,7 @@ type MailChannelService_CheckNotificationChannelEntityConnectivity_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - mailServer models.NotificationChannel
-func (_e *MailChannelService_Expecter) CheckNotificationChannelEntityConnectivity(ctx interface{}, id interface{}, mailServer interface{}) *MailChannelService_CheckNotificationChannelEntityConnectivity_Call {
+func (_e *MailChannelService_Expecter) CheckNotificationChannelEntityConnectivity(ctx any, id any, mailServer any) *MailChannelService_CheckNotificationChannelEntityConnectivity_Call {
 	return &MailChannelService_CheckNotificationChannelEntityConnectivity_Call{Call: _e.mock.On("CheckNotificationChannelEntityConnectivity", ctx, id, mailServer)}
 }
 
@@ -193,7 +193,7 @@ type MailChannelService_CreateMailChannel_Call struct {
 // CreateMailChannel is a helper method to define mock.On call
 //   - c context.Context
 //   - channel maildto.MailNotificationChannelRequest
-func (_e *MailChannelService_Expecter) CreateMailChannel(c interface{}, channel interface{}) *MailChannelService_CreateMailChannel_Call {
+func (_e *MailChannelService_Expecter) CreateMailChannel(c any, channel any) *MailChannelService_CreateMailChannel_Call {
 	return &MailChannelService_CreateMailChannel_Call{Call: _e.mock.On("CreateMailChannel", c, channel)}
 }
 

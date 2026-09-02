@@ -72,7 +72,7 @@ type NotificationChannelRepository_CreateNotificationChannel_Call struct {
 // CreateNotificationChannel is a helper method to define mock.On call
 //   - ctx context.Context
 //   - channelIn models.NotificationChannel
-func (_e *NotificationChannelRepository_Expecter) CreateNotificationChannel(ctx interface{}, channelIn interface{}) *NotificationChannelRepository_CreateNotificationChannel_Call {
+func (_e *NotificationChannelRepository_Expecter) CreateNotificationChannel(ctx any, channelIn any) *NotificationChannelRepository_CreateNotificationChannel_Call {
 	return &NotificationChannelRepository_CreateNotificationChannel_Call{Call: _e.mock.On("CreateNotificationChannel", ctx, channelIn)}
 }
 
@@ -129,7 +129,7 @@ type NotificationChannelRepository_DeleteNotificationChannel_Call struct {
 // DeleteNotificationChannel is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *NotificationChannelRepository_Expecter) DeleteNotificationChannel(ctx interface{}, id interface{}) *NotificationChannelRepository_DeleteNotificationChannel_Call {
+func (_e *NotificationChannelRepository_Expecter) DeleteNotificationChannel(ctx any, id any) *NotificationChannelRepository_DeleteNotificationChannel_Call {
 	return &NotificationChannelRepository_DeleteNotificationChannel_Call{Call: _e.mock.On("DeleteNotificationChannel", ctx, id)}
 }
 
@@ -195,7 +195,7 @@ type NotificationChannelRepository_GetNotificationChannelById_Call struct {
 // GetNotificationChannelById is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *NotificationChannelRepository_Expecter) GetNotificationChannelById(ctx interface{}, id interface{}) *NotificationChannelRepository_GetNotificationChannelById_Call {
+func (_e *NotificationChannelRepository_Expecter) GetNotificationChannelById(ctx any, id any) *NotificationChannelRepository_GetNotificationChannelById_Call {
 	return &NotificationChannelRepository_GetNotificationChannelById_Call{Call: _e.mock.On("GetNotificationChannelById", ctx, id)}
 }
 
@@ -262,7 +262,7 @@ type NotificationChannelRepository_GetNotificationChannelByIdAndType_Call struct
 //   - ctx context.Context
 //   - id string
 //   - channelType models.ChannelType
-func (_e *NotificationChannelRepository_Expecter) GetNotificationChannelByIdAndType(ctx interface{}, id interface{}, channelType interface{}) *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call {
+func (_e *NotificationChannelRepository_Expecter) GetNotificationChannelByIdAndType(ctx any, id any, channelType any) *NotificationChannelRepository_GetNotificationChannelByIdAndType_Call {
 	return &NotificationChannelRepository_GetNotificationChannelByIdAndType_Call{Call: _e.mock.On("GetNotificationChannelByIdAndType", ctx, id, channelType)}
 }
 
@@ -335,7 +335,7 @@ type NotificationChannelRepository_ListNotificationChannelsByType_Call struct {
 // ListNotificationChannelsByType is a helper method to define mock.On call
 //   - ctx context.Context
 //   - channelType models.ChannelType
-func (_e *NotificationChannelRepository_Expecter) ListNotificationChannelsByType(ctx interface{}, channelType interface{}) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
+func (_e *NotificationChannelRepository_Expecter) ListNotificationChannelsByType(ctx any, channelType any) *NotificationChannelRepository_ListNotificationChannelsByType_Call {
 	return &NotificationChannelRepository_ListNotificationChannelsByType_Call{Call: _e.mock.On("ListNotificationChannelsByType", ctx, channelType)}
 }
 
@@ -402,7 +402,7 @@ type NotificationChannelRepository_UpdateNotificationChannel_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - in models.NotificationChannel
-func (_e *NotificationChannelRepository_Expecter) UpdateNotificationChannel(ctx interface{}, id interface{}, in interface{}) *NotificationChannelRepository_UpdateNotificationChannel_Call {
+func (_e *NotificationChannelRepository_Expecter) UpdateNotificationChannel(ctx any, id any, in any) *NotificationChannelRepository_UpdateNotificationChannel_Call {
 	return &NotificationChannelRepository_UpdateNotificationChannel_Call{Call: _e.mock.On("UpdateNotificationChannel", ctx, id, in)}
 }
 

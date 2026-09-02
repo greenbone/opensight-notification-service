@@ -73,7 +73,7 @@ type OriginRepository_ListOrigins_Call struct {
 
 // ListOrigins is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *OriginRepository_Expecter) ListOrigins(ctx interface{}) *OriginRepository_ListOrigins_Call {
+func (_e *OriginRepository_Expecter) ListOrigins(ctx any) *OriginRepository_ListOrigins_Call {
 	return &OriginRepository_ListOrigins_Call{Call: _e.mock.On("ListOrigins", ctx)}
 }
 
@@ -126,7 +126,7 @@ type OriginRepository_UpsertOrigins_Call struct {
 //   - ctx context.Context
 //   - serviceID string
 //   - origins []entities.Origin
-func (_e *OriginRepository_Expecter) UpsertOrigins(ctx interface{}, serviceID interface{}, origins interface{}) *OriginRepository_UpsertOrigins_Call {
+func (_e *OriginRepository_Expecter) UpsertOrigins(ctx any, serviceID any, origins any) *OriginRepository_UpsertOrigins_Call {
 	return &OriginRepository_UpsertOrigins_Call{Call: _e.mock.On("UpsertOrigins", ctx, serviceID, origins)}
 }
 

@@ -72,7 +72,7 @@ type RuleRepository_Create_Call struct {
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
 //   - rule models.Rule
-func (_e *RuleRepository_Expecter) Create(ctx interface{}, rule interface{}) *RuleRepository_Create_Call {
+func (_e *RuleRepository_Expecter) Create(ctx any, rule any) *RuleRepository_Create_Call {
 	return &RuleRepository_Create_Call{Call: _e.mock.On("Create", ctx, rule)}
 }
 
@@ -129,7 +129,7 @@ type RuleRepository_Delete_Call struct {
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *RuleRepository_Expecter) Delete(ctx interface{}, id interface{}) *RuleRepository_Delete_Call {
+func (_e *RuleRepository_Expecter) Delete(ctx any, id any) *RuleRepository_Delete_Call {
 	return &RuleRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
@@ -195,7 +195,7 @@ type RuleRepository_Get_Call struct {
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *RuleRepository_Expecter) Get(ctx interface{}, id interface{}) *RuleRepository_Get_Call {
+func (_e *RuleRepository_Expecter) Get(ctx any, id any) *RuleRepository_Get_Call {
 	return &RuleRepository_Get_Call{Call: _e.mock.On("Get", ctx, id)}
 }
 
@@ -262,7 +262,7 @@ type RuleRepository_List_Call struct {
 
 // List is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *RuleRepository_Expecter) List(ctx interface{}) *RuleRepository_List_Call {
+func (_e *RuleRepository_Expecter) List(ctx any) *RuleRepository_List_Call {
 	return &RuleRepository_List_Call{Call: _e.mock.On("List", ctx)}
 }
 
@@ -324,7 +324,7 @@ type RuleRepository_Update_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - rule models.Rule
-func (_e *RuleRepository_Expecter) Update(ctx interface{}, id interface{}, rule interface{}) *RuleRepository_Update_Call {
+func (_e *RuleRepository_Expecter) Update(ctx any, id any, rule any) *RuleRepository_Update_Call {
 	return &RuleRepository_Update_Call{Call: _e.mock.On("Update", ctx, id, rule)}
 }
 

@@ -61,7 +61,7 @@ type HealthService_Ready_Call struct {
 
 // Ready is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *HealthService_Expecter) Ready(ctx interface{}) *HealthService_Ready_Call {
+func (_e *HealthService_Expecter) Ready(ctx any) *HealthService_Ready_Call {
 	return &HealthService_Ready_Call{Call: _e.mock.On("Ready", ctx)}
 }
 

@@ -72,7 +72,7 @@ type RuleService_Create_Call struct {
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
 //   - rule models.Rule
-func (_e *RuleService_Expecter) Create(ctx interface{}, rule interface{}) *RuleService_Create_Call {
+func (_e *RuleService_Expecter) Create(ctx any, rule any) *RuleService_Create_Call {
 	return &RuleService_Create_Call{Call: _e.mock.On("Create", ctx, rule)}
 }
 
@@ -129,7 +129,7 @@ type RuleService_Delete_Call struct {
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *RuleService_Expecter) Delete(ctx interface{}, id interface{}) *RuleService_Delete_Call {
+func (_e *RuleService_Expecter) Delete(ctx any, id any) *RuleService_Delete_Call {
 	return &RuleService_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
@@ -195,7 +195,7 @@ type RuleService_Get_Call struct {
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *RuleService_Expecter) Get(ctx interface{}, id interface{}) *RuleService_Get_Call {
+func (_e *RuleService_Expecter) Get(ctx any, id any) *RuleService_Get_Call {
 	return &RuleService_Get_Call{Call: _e.mock.On("Get", ctx, id)}
 }
 
@@ -262,7 +262,7 @@ type RuleService_GetAllRuleOptions_Call struct {
 
 // GetAllRuleOptions is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *RuleService_Expecter) GetAllRuleOptions(ctx interface{}) *RuleService_GetAllRuleOptions_Call {
+func (_e *RuleService_Expecter) GetAllRuleOptions(ctx any) *RuleService_GetAllRuleOptions_Call {
 	return &RuleService_GetAllRuleOptions_Call{Call: _e.mock.On("GetAllRuleOptions", ctx)}
 }
 
@@ -324,7 +324,7 @@ type RuleService_List_Call struct {
 
 // List is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *RuleService_Expecter) List(ctx interface{}) *RuleService_List_Call {
+func (_e *RuleService_Expecter) List(ctx any) *RuleService_List_Call {
 	return &RuleService_List_Call{Call: _e.mock.On("List", ctx)}
 }
 
@@ -386,7 +386,7 @@ type RuleService_Update_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - rule models.Rule
-func (_e *RuleService_Expecter) Update(ctx interface{}, id interface{}, rule interface{}) *RuleService_Update_Call {
+func (_e *RuleService_Expecter) Update(ctx any, id any, rule any) *RuleService_Update_Call {
 	return &RuleService_Update_Call{Call: _e.mock.On("Update", ctx, id, rule)}
 }
 
