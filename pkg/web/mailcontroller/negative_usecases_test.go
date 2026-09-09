@@ -20,7 +20,7 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 
 	t.Run("Check if Create/List/Update Mail Notification doesnt return password", func(t *testing.T) {
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 		jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 
 		request := httpassert.New(t, router)
@@ -65,7 +65,7 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 
 	t.Run("Do not update password in Update Mail if it passed as nil", func(t *testing.T) {
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 		jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 
 		request := httpassert.New(t, router)
@@ -107,7 +107,7 @@ func TestIntegration_MailController_Negative_Cases(t *testing.T) {
 
 	t.Run("Creating two Mail configs with same name", func(t *testing.T) {
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 		jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 
 		request := httpassert.New(t, router)

@@ -15,7 +15,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 		t.Parallel()
 
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 
 		var teamsId string
 
@@ -45,7 +45,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 		t.Parallel()
 
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
@@ -70,7 +70,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 		t.Parallel()
 
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
@@ -92,7 +92,7 @@ func TestCreateTeamsChannel(t *testing.T) {
 		t.Parallel()
 
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 
 		// Create teams channel
 		httpassert.New(t, router).Post("/notification-channel/teams").
