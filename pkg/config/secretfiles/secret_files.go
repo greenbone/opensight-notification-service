@@ -10,7 +10,9 @@ import (
 )
 
 const (
-	dbPasswordPathEnvVar = "DB_PASSWORD_FILE"
+	dbPasswordPathEnvVar                  = "DB_PASSWORD_FILE"
+	dbEncryptionKeyPasswordPathEnvVar     = "DATABASE_ENCRYPTION_KEY_PASSWORD_FILE"
+	dbEncryptionKeyPasswordSaltPathEnvVar = "DATABASE_ENCRYPTION_KEY_PASSWORD_SALT_FILE"
 )
 
 // Read takes the filepaths from environment variables and parses the content
@@ -18,5 +20,14 @@ const (
 // A failure can have side effects on the passed config, so error from this function
 // should be treated as fatal.
 func Read(cfg *config.Config) (err error) {
-	return secretfiles.ReadSecret(dbPasswordPathEnvVar, &cfg.Database.Password)
+	if err := secretfiles.ReadSecret(dbPasswordPathEnvVar, &cfg.Database.Password); err != nil {
+		return err
+	}
+	if err := secretfiles.ReadSecret(dbEncryptionKeyPasswordPathEnvVar, &cfg.DatabaseEncryptionKey.Password); err != nil {
+		return err
+	}
+	if err := secretfiles.ReadSecret(dbEncryptionKeyPasswordSaltPathEnvVar, &cfg.DatabaseEncryptionKey.PasswordSalt); err != nil {
+		return err
+	}
+	return nil
 }
