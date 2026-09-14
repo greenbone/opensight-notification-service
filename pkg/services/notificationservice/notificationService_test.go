@@ -213,12 +213,22 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 		ChannelName: "Mattermost Channel",
 		WebhookUrl:  new("https://mattermost.example.com/webhook"),
 	}
+	expectFailedForwardNotification := func(notificationRepo *mocks.NotificationRepository) {
+		notificationRepo.EXPECT().CreateNotification(
+			mock.Anything,
+			mock.MatchedBy(func(notification models.Notification) bool {
+				return notification.Title == "Failed to forward notification \"Test Notification\"" &&
+					notification.Level == notifications.LevelError
+			}),
+		).Return(models.Notification{}, nil).Once()
+	}
 
 	tests := map[string]struct {
 		processRuleFailures int
 		actions             []models.Action
 		mockConfig          func(
 			t *testing.T,
+			notificationRepo *mocks.NotificationRepository,
 			channelService *mocks.NotificationChannelService,
 			mailService *mocks.MailService,
 			mattermostService, teamsService *mocks.WebhookService,
@@ -226,7 +236,10 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 	}{
 		"ProcessRules is retried up to max retries": {
 			processRuleFailures: maxRetries + 1,
-			// no more mock calls, as operation is aborted
+			mockConfig: func(t *testing.T, notificationRepo *mocks.NotificationRepository, channelService *mocks.NotificationChannelService, mailService *mocks.MailService, mattermostService, teamsService *mocks.WebhookService) {
+				expectFailedForwardNotification(notificationRepo)
+				// no more mock calls, as operation is aborted
+			},
 		},
 		"Getting channel is retried up to max retries": {
 			actions: []models.Action{{
@@ -235,7 +248,8 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 					Type: models.ChannelTypeTeams,
 				}},
 			},
-			mockConfig: func(t *testing.T, channelService *mocks.NotificationChannelService, _ *mocks.MailService, _, _ *mocks.WebhookService) {
+			mockConfig: func(t *testing.T, notificationRepo *mocks.NotificationRepository, channelService *mocks.NotificationChannelService, _ *mocks.MailService, _, _ *mocks.WebhookService) {
+				expectFailedForwardNotification(notificationRepo)
 				channelService.EXPECT().GetNotificationChannelByIdAndType(
 					mock.Anything,
 					teamsChannel.Id,
@@ -267,7 +281,8 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 					Recipient: "maxRetries@example.com",
 				},
 			},
-			mockConfig: func(t *testing.T, channelService *mocks.NotificationChannelService, mailService *mocks.MailService, _, _ *mocks.WebhookService) {
+			mockConfig: func(t *testing.T, notificationRepo *mocks.NotificationRepository, channelService *mocks.NotificationChannelService, mailService *mocks.MailService, _, _ *mocks.WebhookService) {
+				expectFailedForwardNotification(notificationRepo)
 				channelService.EXPECT().GetNotificationChannelByIdAndType(mock.Anything, mailchannel.Id, models.ChannelTypeMail).
 					Return(mailchannel, nil).Times(1 + (maxRetries + 1) + (maxRetries + 1))
 
@@ -313,7 +328,8 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 					Type: models.ChannelTypeMattermost,
 				},
 			}},
-			mockConfig: func(t *testing.T, channelService *mocks.NotificationChannelService, _ *mocks.MailService, mattermostService, _ *mocks.WebhookService) {
+			mockConfig: func(t *testing.T, notificationRepo *mocks.NotificationRepository, channelService *mocks.NotificationChannelService, _ *mocks.MailService, mattermostService, _ *mocks.WebhookService) {
+				expectFailedForwardNotification(notificationRepo)
 				channelService.EXPECT().GetNotificationChannelByIdAndType(
 					mock.Anything,
 					mattermostChannel.Id,
@@ -333,7 +349,8 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 					Type: models.ChannelTypeTeams,
 				},
 			}},
-			mockConfig: func(t *testing.T, channelService *mocks.NotificationChannelService, _ *mocks.MailService, _, teamsService *mocks.WebhookService) {
+			mockConfig: func(t *testing.T, notificationRepo *mocks.NotificationRepository, channelService *mocks.NotificationChannelService, _ *mocks.MailService, _, teamsService *mocks.WebhookService) {
+				expectFailedForwardNotification(notificationRepo)
 				channelService.EXPECT().GetNotificationChannelByIdAndType(
 					mock.Anything,
 					teamsChannel.Id,
@@ -381,7 +398,7 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 				}
 
 				if tt.mockConfig != nil {
-					tt.mockConfig(t, channelService, mailService, mattermostService, teamsService)
+					tt.mockConfig(t, mockNotificationRepo, channelService, mailService, mattermostService, teamsService)
 				}
 
 				// Create notification - this triggers initial send which will fail

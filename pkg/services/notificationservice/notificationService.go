@@ -151,6 +151,16 @@ func (s *notificationService) CreateNotification(
 			logs.Ctx(ctx).Err(err).Int("attempt", attempt).Msg("failed to process rules")
 			if attempt >= maxRetries {
 				logs.Ctx(ctxForward).Error().Err(err).Int("attempt", attempt+1).Msg("Skip processing of rules after maximum of retries")
+
+				s.store.CreateNotification(ctxForward, models.Notification{
+					Origin: "Communication service",
+					// OriginClass unset, no rules will be applied to this, so the value is not utilized
+					Timestamp: time.Now().Format(time.RFC3339Nano),
+					Title:     fmt.Sprintf("Failed to forward notification %q", notification.Title),
+					Detail: fmt.Sprintf("Could not evaluate alert rules for notification %q after %d retries. No more retries will be attempted, however you can see the notification in this view. Please check the service logs and contact support if the issue persists.",
+						notification.Title, maxRetries),
+					Level: notifications.LevelError,
+				})
 				break
 			}
 			time.Sleep(exponentialBackoff(baseDelayRetryRuleProcessing, attempt))
@@ -232,6 +242,20 @@ func (s *notificationService) scheduleRetry(sendTask SendTask) {
 			Str("channelType", string(sendTask.Action.Channel.Type)).
 			Int("retries", sendTask.attempt).
 			Msg("Dropping message after maximum of retries")
+
+		// Inform User about lost forwards
+		_, err := s.store.CreateNotification(sendTask.ctx, models.Notification{
+			Origin: "Communication service",
+			// OriginClass unset, no rules will be applied to this, so the value is not utilized
+			Timestamp: time.Now().Format(time.RFC3339Nano),
+			Title:     fmt.Sprintf("Failed to forward notification %q", sendTask.Notification.Title),
+			Detail: fmt.Sprintf("A notification could not be forwarded to channel %s after %d retries. No more retries will be attempted, however you can see the notification in this view. Please check the channel configuration and availability if the issue persists.",
+				sendTask.Action.Channel.Name, sendTask.attempt),
+			Level: notifications.LevelError,
+		})
+		if err != nil { // we are out of options here, so just log
+			logs.Ctx(sendTask.ctx).Err(err).Msg("failed to create user facing notification for dropped message")
+		}
 		return
 	}
 	sendTask.nextExecution = time.Now().Add(exponentialBackoff(baseDelayRetryForwarding, sendTask.attempt))
