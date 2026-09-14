@@ -148,11 +148,11 @@ func (s *notificationService) CreateNotification(
 			if err == nil {
 				break
 			}
-			logs.Ctx(ctx).Err(err).Int("attempt", attempt).Msg("failed to process rules")
+			logs.Ctx(ctxForward).Err(err).Int("attempt", attempt).Msg("failed to process rules")
 			if attempt >= maxRetries {
 				logs.Ctx(ctxForward).Error().Err(err).Int("attempt", attempt+1).Msg("Skip processing of rules after maximum of retries")
 
-				s.store.CreateNotification(ctxForward, models.Notification{
+				_, err := s.store.CreateNotification(ctxForward, models.Notification{
 					Origin: "Communication service",
 					// OriginClass unset, no rules will be applied to this, so the value is not utilized
 					Timestamp: time.Now().Format(time.RFC3339Nano),
@@ -161,6 +161,9 @@ func (s *notificationService) CreateNotification(
 						notification.Title, maxRetries),
 					Level: notifications.LevelError,
 				})
+				if err != nil { // we are out of options here, so just log
+					logs.Ctx(ctxForward).Err(err).Msg("failed to create user facing notification for dropped message")
+				}
 				break
 			}
 			time.Sleep(exponentialBackoff(baseDelayRetryRuleProcessing, attempt))
