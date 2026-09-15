@@ -106,7 +106,7 @@ func TestIntegration_MailController_CRUD(t *testing.T) {
 
 	t.Run("Update password with Update Mail", func(t *testing.T) {
 		router, db := setupTestRouter(t)
-		defer db.Close()
+		defer db.Close() //nolint:errcheck // Test database cleanup error is not actionable.
 		jwt := integrationTests.CreateJwtTokenWithRole(iam.NotificationAdmin)
 
 		request := httpassert.New(t, router)
