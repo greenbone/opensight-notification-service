@@ -157,8 +157,8 @@ func (s *notificationService) CreateNotification(
 					// OriginClass unset, no rules will be applied to this, so the value is not utilized
 					Timestamp: time.Now().Format(time.RFC3339Nano),
 					Title:     fmt.Sprintf("Failed to forward notification %q", notification.Title),
-					Detail: fmt.Sprintf("Could not evaluate alert rules for notification %q after %d retries. No more retries will be attempted, however you can see the notification in this view. Please check the service logs and contact support if the issue persists.",
-						notification.Title, maxRetries),
+					Detail: fmt.Sprintf("Could not evaluate alert rules for notification %q from %s after %d retries. No more retries will be attempted for this notification, however you can see it in this view. Please check the service logs and contact support if the issue persists.",
+						notification.Title, notification.Timestamp, maxRetries),
 					Level: notifications.LevelError,
 				})
 				if err != nil { // we are out of options here, so just log
@@ -252,8 +252,8 @@ func (s *notificationService) scheduleRetry(sendTask SendTask) {
 			// OriginClass unset, no rules will be applied to this, so the value is not utilized
 			Timestamp: time.Now().Format(time.RFC3339Nano),
 			Title:     fmt.Sprintf("Failed to forward notification %q", sendTask.Notification.Title),
-			Detail: fmt.Sprintf("A notification could not be forwarded to channel %s after %d retries. No more retries will be attempted, however you can see the notification in this view. Please check the channel configuration and availability if the issue persists.",
-				sendTask.Action.Channel.Name, sendTask.attempt),
+			Detail: fmt.Sprintf("Notification %q from %s could not be forwarded to channel %s after %d retries. No more retries will be attempted for this notification, however you can see it in this view. Please check the channel configuration and availability if the issue persists.",
+				sendTask.Notification.Title, sendTask.Notification.Timestamp, sendTask.Action.Channel.Name, sendTask.attempt),
 			Level: notifications.LevelError,
 		})
 		if err != nil { // we are out of options here, so just log
