@@ -36,12 +36,13 @@ type Http struct {
 }
 
 type Database struct {
-	Host     string `envconfig:"HOST" default:"localhost"`
-	Port     int    `validate:"required,min=1,max=65535" envconfig:"PORT" default:"5432"`
-	User     string `validate:"required" envconfig:"USERNAME"`
-	Password string `validate:"required" envconfig:"PASSWORD"`
-	DBName   string `validate:"required" envconfig:"NAME"`
-	SSLMode  string `envconfig:"SSL_MODE" default:"require"`
+	Host                 string `envconfig:"HOST" default:"localhost"`
+	Port                 int    `validate:"required,min=1,max=65535" envconfig:"PORT" default:"5432"`
+	User                 string `validate:"required" envconfig:"USERNAME"`
+	Password             string `validate:"required" envconfig:"PASSWORD"`
+	DBName               string `validate:"required" envconfig:"NAME"`
+	SSLMode              string `envconfig:"SSL_MODE" default:"require"`
+	MigrationStateSchema string `envconfig:"MIGRATION_STATE_SCHEMA"` // NOTE: Changing this value requires a manual migration of the existing migration state in the database from the old schema to the new schema.
 }
 
 type DatabaseEncryptionKey struct {
