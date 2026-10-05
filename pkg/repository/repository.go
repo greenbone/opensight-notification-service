@@ -15,6 +15,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/greenbone/opensight-notification-service/pkg/config"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -36,7 +37,7 @@ func NewClient(postgres config.Database) (*sqlx.DB, error) {
 		return nil, fmt.Errorf("could not connect to postgres database '%s:%d': %w", postgres.Host, postgres.Port, err)
 	}
 
-	if automigrateErr := autoMigrate(db); automigrateErr != nil {
+	if automigrateErr := autoMigrate(db, postgres.MigrationStateSchema); automigrateErr != nil {
 		if errors.Is(automigrateErr, migrate.ErrNoChange) {
 			log.Debug().Msg("nothing to migrate")
 			return db, nil
@@ -47,11 +48,20 @@ func NewClient(postgres config.Database) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func autoMigrate(db *sqlx.DB) error {
+func autoMigrate(db *sqlx.DB, migrationSchemaName string) error {
 	log.Debug().Msg("starting database migration")
 
+	if migrationSchemaName != "" {
+		_, err := db.Exec("CREATE SCHEMA IF NOT EXISTS " + pq.QuoteIdentifier(migrationSchemaName))
+		if err != nil {
+			return fmt.Errorf("could not create schema for migrations state %q: %w", migrationSchemaName, err)
+		}
+	}
+
 	// We re-use our connection from sqlx from our pool, so no new connections are made here
-	databaseDriver, err := postgres.WithInstance(db.DB, &postgres.Config{})
+	databaseDriver, err := postgres.WithInstance(db.DB, &postgres.Config{
+		SchemaName: migrationSchemaName,
+	})
 	if err != nil {
 		return err
 	}
