@@ -1,8 +1,8 @@
 # default reviewers
-*                 @greenbone/asset @greenbone/vulnerability-intelligence-maintainers
+*                 @greenbone/security-intelligence
 
 # github actions & settings
-/.github/           @greenbone/devops @greenbone/asset @greenbone/vulnerability-intelligence-maintainers
+/.github/           @greenbone/devops @greenbone/security-intelligence
 
 # deployment
-Dockerfile          @greenbone/devops @greenbone/asset @greenbone/vulnerability-intelligence-maintainers
+Dockerfile          @greenbone/devops @greenbone/security-intelligence
