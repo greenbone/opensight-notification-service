@@ -216,9 +216,11 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 	expectFailedForwardNotification := func(notificationRepo *mocks.NotificationRepository) {
 		notificationRepo.EXPECT().CreateNotification(
 			mock.Anything,
-			mock.MatchedBy(func(notification models.Notification) bool {
-				return notification.Title == "Failed to forward notification \"Test Notification\"" &&
-					notification.Level == notifications.LevelError
+			mock.MatchedBy(func(failureNotification models.Notification) bool {
+				return failureNotification.Title == "Failed to forward notification \"Test Notification\"" &&
+					strings.Contains(failureNotification.Detail, notification.Title) &&
+					strings.Contains(failureNotification.Detail, notification.Timestamp) &&
+					failureNotification.Level == notifications.LevelError
 			}),
 		).Return(models.Notification{}, nil).Once()
 	}
@@ -245,6 +247,7 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 			actions: []models.Action{{
 				Channel: models.ChannelReference{
 					ID:   teamsChannel.Id,
+					Name: teamsChannel.ChannelName,
 					Type: models.ChannelTypeTeams,
 				}},
 			},
@@ -262,6 +265,7 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 				{
 					Channel: models.ChannelReference{
 						ID:   mailchannel.Id,
+						Name: mailchannel.ChannelName,
 						Type: mailchannel.ChannelType,
 					},
 					Recipient: "success@example.com",
@@ -269,6 +273,7 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 				{
 					Channel: models.ChannelReference{
 						ID:   mailchannel.Id,
+						Name: mailchannel.ChannelName,
 						Type: mailchannel.ChannelType,
 					},
 					Recipient: "failure@example.com",
@@ -276,6 +281,7 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 				{
 					Channel: models.ChannelReference{
 						ID:   mailchannel.Id,
+						Name: mailchannel.ChannelName,
 						Type: mailchannel.ChannelType,
 					},
 					Recipient: "maxRetries@example.com",
@@ -325,6 +331,7 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 			actions: []models.Action{{
 				Channel: models.ChannelReference{
 					ID:   mattermostChannel.Id,
+					Name: mattermostChannel.ChannelName,
 					Type: models.ChannelTypeMattermost,
 				},
 			}},
@@ -346,6 +353,7 @@ func Test_NotificationService_RetryLogic_MaxRetriesReached(t *testing.T) {
 			actions: []models.Action{{
 				Channel: models.ChannelReference{
 					ID:   teamsChannel.Id,
+					Name: teamsChannel.ChannelName,
 					Type: models.ChannelTypeTeams,
 				},
 			}},
