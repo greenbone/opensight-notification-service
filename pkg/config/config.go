@@ -46,8 +46,8 @@ type Database struct {
 }
 
 type DatabaseEncryptionKey struct {
-	Password     string `envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD" default:"database-encryption-key-default-password"`
-	PasswordSalt string `envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD_SALT" default:"database-encryption-key-default-password-salt"`
+	Password     string `validate:"required" envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD"`
+	PasswordSalt string `validate:"required" envconfig:"DATABASE_ENCRYPTION_KEY_PASSWORD_SALT"`
 }
 
 type KeycloakConfig struct {
