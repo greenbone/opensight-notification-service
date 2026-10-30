@@ -53,21 +53,64 @@ func setupRouter(t *testing.T, service *mocks.NotificationChannelService, mailSe
 
 func TestMailController_CreateMailChannel(t *testing.T) {
 	valid := getValidNotificationChannel()
-	mailValid := maildto.MapNotificationChannelToMail(valid)
-	created := mailValid // Simulate returned object
+	mailValid := maildto.MailNotificationChannelRequest{
+		ChannelName:              valid.ChannelName,
+		Domain:                   *valid.Domain,
+		Port:                     *valid.Port,
+		IsAuthenticationRequired: *valid.IsAuthenticationRequired,
+		IsTlsEnforced:            *valid.IsTlsEnforced,
+		Username:                 valid.Username,
+		Password:                 valid.Password,
+		MaxEmailAttachmentSizeMb: valid.MaxEmailAttachmentSizeMb,
+		MaxEmailIncludeSizeMb:    valid.MaxEmailIncludeSizeMb,
+		SenderEmailAddress:       *valid.SenderEmailAddress,
+	}
+	created := maildto.MapNotificationChannelToMail(valid) // Simulate returned object
 
 	tests := []struct {
-		name           string
-		input          any
-		mockReturn     maildto.MailNotificationChannelResponse
-		mockErr        error
-		wantStatusCode int
+		name                 string
+		input                any
+		mockReturn           maildto.MailNotificationChannelResponse
+		mockErr              error
+		wantStatusCode       int
+		wantValidationFields []string
 	}{
 		{
 			name:           "success",
 			input:          mailValid,
 			mockReturn:     created,
 			wantStatusCode: http.StatusCreated,
+		},
+		{
+			name: "missing authentication credentials",
+			input: func() maildto.MailNotificationChannelRequest {
+				missing := mailValid
+				missing.Username = nil
+				missing.Password = nil
+				return missing
+			}(),
+			wantStatusCode:       http.StatusBadRequest,
+			wantValidationFields: []string{"username", "password"},
+		},
+		{
+			name: "missing authentication username",
+			input: func() maildto.MailNotificationChannelRequest {
+				missing := mailValid
+				missing.Username = nil
+				return missing
+			}(),
+			wantStatusCode:       http.StatusBadRequest,
+			wantValidationFields: []string{"username"},
+		},
+		{
+			name: "missing authentication password",
+			input: func() maildto.MailNotificationChannelRequest {
+				missing := mailValid
+				missing.Password = nil
+				return missing
+			}(),
+			wantStatusCode:       http.StatusBadRequest,
+			wantValidationFields: []string{"password"},
 		},
 		{
 			name:           "invalid input (missing required)",
@@ -87,7 +130,7 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 		},
 		{
 			name: "invalid sender email",
-			input: func() maildto.MailNotificationChannelResponse {
+			input: func() maildto.MailNotificationChannelRequest {
 				invalid := mailValid
 				invalid.SenderEmailAddress = "not-an-email"
 				return invalid
@@ -126,7 +169,20 @@ func TestMailController_CreateMailChannel(t *testing.T) {
 					return actual != ""
 				}))
 			} else if tt.wantStatusCode == http.StatusBadRequest {
-				if tt.name == "invalid sender email" {
+				if len(tt.wantValidationFields) > 0 {
+					resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool {
+						fields, ok := actual.(map[string]interface{})
+						if !ok || len(fields) != len(tt.wantValidationFields) {
+							return false
+						}
+						for _, field := range tt.wantValidationFields {
+							if _, exists := fields[field]; !exists {
+								return false
+							}
+						}
+						return true
+					}))
+				} else if tt.name == "invalid sender email" {
 					resp.JsonPath("$", httpassert.Matcher(func(t *testing.T, actual any) bool {
 						m, ok := actual.(map[string]interface{})
 						if !ok {
@@ -222,6 +278,13 @@ func TestMailController_UpdateMailChannel(t *testing.T) {
 			name:           "success",
 			id:             id,
 			input:          valid,
+			mockReturn:     updated,
+			wantStatusCode: http.StatusOK,
+		},
+		{
+			name:           "success with omitted password",
+			id:             id,
+			input:          maildto.MapNotificationChannelToMail(valid),
 			mockReturn:     updated,
 			wantStatusCode: http.StatusOK,
 		},

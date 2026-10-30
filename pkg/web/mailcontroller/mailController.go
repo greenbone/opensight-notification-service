@@ -72,18 +72,18 @@ func (mc *MailController) registerRoutes(router gin.IRouter, auth gin.HandlerFun
 //	@Accept			json
 //	@Produce		json
 //	@Security		KeycloakAuth
-//	@Param			MailChannel	body		maildto.MailNotificationChannelRequest	true	"Mail channel to add"
-//	@Success		201			{object}	maildto.MailNotificationChannelRequest
+//	@Param			MailChannel	body		maildto.MailNotificationChannelCreateRequest	true	"Mail channel to add"
+//	@Success		201			{object}	maildto.MailNotificationChannelResponse
 //	@Failure		400			{object}	map[string]string
 //	@Failure		500			{object}	map[string]string
 //	@Router			/notification-channel/mail [post]
 func (mc *MailController) CreateMailChannel(c *gin.Context) {
-	var channel maildto.MailNotificationChannelRequest
+	var channel maildto.MailNotificationChannelCreateRequest
 	if !ginEx.BindAndValidateBody(c, &channel) {
 		return
 	}
 
-	mailChannel, err := mc.MailChannelService.CreateMailChannel(c, channel)
+	mailChannel, err := mc.MailChannelService.CreateMailChannel(c, maildto.MailNotificationChannelRequest(channel))
 	if err != nil {
 		ginEx.AddError(c, err)
 		return
