@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	ErrCreateMailClient      = errors.New("failed to create mail client")
-	ErrMailServerUnreachable = errors.New("mail server is unreachable")
-	ErrCreatingMailMessage   = errors.New("failed to create mail message")
-	ErrSendingEmail          = errors.New("failed to send mail")
+	ErrCreateMailClient                      = errors.New("failed to create mail client")
+	errMailAuthenticationCredentialsRequired = errors.New("mail server authentication requires a username and password")
+	ErrMailServerUnreachable                 = errors.New("mail server is unreachable")
+	ErrCreatingMailMessage                   = errors.New("failed to create mail message")
+	ErrSendingEmail                          = errors.New("failed to send mail")
 )
 
 type MailService interface {
@@ -103,6 +104,10 @@ func (m *mailService) createClient(mailServer models.NotificationChannel) (*mail
 	}
 
 	if mailServer.IsAuthenticationRequired != nil && *mailServer.IsAuthenticationRequired {
+		if mailServer.Username == nil || mailServer.Password == nil ||
+			*mailServer.Username == "" || *mailServer.Password == "" {
+			return nil, errMailAuthenticationCredentialsRequired
+		}
 		options = append(options, mail.WithUsername(*mailServer.Username), mail.WithPassword(*mailServer.Password))
 	}
 
