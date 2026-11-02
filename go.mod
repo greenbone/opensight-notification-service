@@ -1,6 +1,6 @@
 module github.com/greenbone/opensight-notification-service
 
-go 1.26.0
+go 1.26.8
 
 require (
 	github.com/gin-contrib/cors v1.7.9
@@ -11,8 +11,8 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/uuid v1.6.0
-	github.com/greenbone/keycloak-client-golang v0.3.0
-	github.com/greenbone/opensight-golang-libraries v1.38.0
+	github.com/greenbone/keycloak-client-golang v0.3.1
+	github.com/greenbone/opensight-golang-libraries v1.38.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.12.3
@@ -30,7 +30,7 @@ require (
 	github.com/Nerzal/gocloak/v14 v14.0.4 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.4 // indirect
-	github.com/bytedance/sonic/loader v0.5.2 // indirect
+	github.com/bytedance/sonic/loader v0.5.3 // indirect
 	github.com/cloudwego/base64x v0.1.7 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/gin-contrib/logger v1.2.9 // indirect
@@ -67,7 +67,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
-	github.com/quic-go/quic-go v0.64.0 // indirect
+	github.com/quic-go/quic-go v0.64.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/stretchr/objx v0.8.0 // indirect
