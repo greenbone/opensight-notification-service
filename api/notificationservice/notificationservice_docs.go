@@ -1588,7 +1588,8 @@ const docTemplatenotificationservice = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "readOnly": true
                 },
                 "isAuthenticationRequired": {
                     "type": "boolean",
@@ -1818,7 +1819,9 @@ const docTemplatenotificationservice = `{
         "models.RuleOptionChannel": {
             "type": "object",
             "required": [
-                "channelType"
+                "channelName",
+                "channelType",
+                "id"
             ],
             "properties": {
                 "channelName": {
@@ -1831,8 +1834,7 @@ const docTemplatenotificationservice = `{
                     "type": "boolean"
                 },
                 "id": {
-                    "type": "string",
-                    "readOnly": true
+                    "type": "string"
                 }
             }
         },
