@@ -193,6 +193,7 @@ definitions:
       domain:
         type: string
       id:
+        readOnly: true
         type: string
       isAuthenticationRequired:
         default: false
@@ -361,10 +362,11 @@ definitions:
       hasRecipient:
         type: boolean
       id:
-        readOnly: true
         type: string
     required:
+    - channelName
     - channelType
+    - id
     type: object
   models.RuleOptions:
     properties:
