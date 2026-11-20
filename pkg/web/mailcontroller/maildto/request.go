@@ -148,3 +148,27 @@ func (r MailNotificationChannelRequest) Validate() models.ValidationErrors {
 
 	return errMap
 }
+
+// MailNotificationChannelCreateRequest is the request body for creating a mail channel.
+// Updates keep credentials optional so callers can retain already stored secrets.
+type MailNotificationChannelCreateRequest MailNotificationChannelRequest
+
+func (r *MailNotificationChannelCreateRequest) Cleanup() {
+	(*MailNotificationChannelRequest)(r).Cleanup()
+}
+
+func (r *MailNotificationChannelCreateRequest) Validate() models.ValidationErrors {
+	errMap := MailNotificationChannelRequest(*r).Validate()
+	if !r.IsAuthenticationRequired {
+		return errMap
+	}
+
+	if r.Username == nil || *r.Username == "" {
+		errMap["username"] = translation.UsernameIsRequired
+	}
+	if r.Password == nil || *r.Password == "" {
+		errMap["password"] = translation.PasswordIsRequired
+	}
+
+	return errMap
+}
