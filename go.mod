@@ -5,7 +5,7 @@ go 1.27.4
 require (
 	github.com/gin-contrib/cors v1.7.11
 	github.com/gin-gonic/gin v1.12.0
-	github.com/go-co-op/gocron/v2 v2.23.0
+	github.com/go-co-op/gocron/v2 v2.23.2
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-playground/validator/v10 v10.30.6
 	github.com/golang-jwt/jwt/v5 v5.3.1
@@ -22,7 +22,7 @@ require (
 	github.com/samber/lo v1.53.0
 	github.com/stretchr/testify v1.12.1
 	github.com/swaggo/swag v1.16.6
-	github.com/wneessen/go-mail v0.8.1
+	github.com/wneessen/go-mail v0.8.2
 )
 
 require (
@@ -35,7 +35,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/gin-contrib/logger v1.2.11 // indirect
 	github.com/gin-contrib/sse v1.2.1 // indirect
-	github.com/go-openapi/jsonpointer v1.0.2 // indirect
+	github.com/go-openapi/jsonpointer v1.0.3 // indirect
 	github.com/go-openapi/jsonreference v1.0.3 // indirect
 	github.com/go-openapi/spec v1.0.1 // indirect
 	github.com/go-openapi/swag/conv v0.29.2 // indirect
@@ -72,24 +72,24 @@ require (
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/stretchr/objx v0.8.0 // indirect
 	github.com/swaggo/files/v2 v2.0.2 // indirect
-	github.com/tidwall/gjson v1.20.1 // indirect
+	github.com/tidwall/gjson v1.20.6 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
-	github.com/tidwall/pretty v1.2.2 // indirect
-	github.com/tidwall/sjson v1.2.7 // indirect
+	github.com/tidwall/pretty v1.3.0 // indirect
+	github.com/tidwall/sjson v1.2.11 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.2 // indirect
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 // indirect
-	go.mongodb.org/mongo-driver/v2 v2.10.0 // indirect
+	go.mongodb.org/mongo-driver/v2 v2.10.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.5 // indirect
 	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/arch v0.33.0 // indirect
-	golang.org/x/crypto v0.58.0 // indirect
-	golang.org/x/mod v0.42.0 // indirect
-	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/crypto v0.59.0 // indirect
+	golang.org/x/mod v0.43.0 // indirect
+	golang.org/x/net v0.63.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
-	golang.org/x/text v0.43.0 // indirect
-	golang.org/x/tools v0.52.0 // indirect
+	golang.org/x/text v0.44.0 // indirect
+	golang.org/x/tools v0.53.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gorm.io/gorm v1.31.2 // indirect
